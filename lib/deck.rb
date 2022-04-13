@@ -1,16 +1,17 @@
 require_relative 'card'
+require_relative 'player'
 
 module Poker
   class Deck
     attr_accessor :state
 
     def initialize
-      @state = { drawpile: [], burnpile: [] }
+      @state = { stack: [], burnt: [], drawn: [] }
 
       Poker::Card::SUITS.each do |suit|
         Poker::Card::VALUES.each do |value|
           @state = @state.merge(
-            drawpile: @state[:drawpile] + [
+            stack: @state[:stack] + [
               Poker::Card.new(value: value, suit: suit)
             ]
           )
@@ -19,49 +20,89 @@ module Poker
     end
 
     def burn
-      target = @state[:drawpile][0]
+      target = @state[:stack][0]
       @state = @state.merge(
-        drawpile: @state[:drawpile][1..-1],
-        burnpile: @state[:burnpile] + [target]
+        stack: @state[:stack][1..-1],
+        burnt: @state[:burnt] + [target]
       )
     end
 
+    def draw
+      target = @state[:stack][0]
+      @state = @state.merge(
+        stack: @state[:stack][1..-1],
+        drawn: @state[:drawn] + [target]
+      )
+      target
+    end
+
     def shuffle
-      unless @state[:drawpile].size == 52
-        raise StandardError, 'Cannot shuffle after drawing'
-      end
+      cards = @state[:stack] + @state[:burnt]
 
-      # TODO: move the burnpile to drawpile here
-
-      # First "wash the cards" with built-in method
-      cards = @state[:drawpile].shuffle
-
-      # now Riffle shuffle 5-8 times
-      (5..8).to_a.sample.times do
-        is_left = false
-        left = cards[0..(25..35).to_a.sample]
-        right = cards - left
-        cards = []
-        until left.empty? || right.empty? do
-          is_left = !is_left
-          slice = (1..10).to_a.sample
-
-          cards = is_left ?
-            cards + left[0..slice] :
-            cards + right[0..slice]
-          is_left ?
-            left = left - cards :
-            right = right - cards
+      # now Riffle shuffle between 4 and 6 times
+      shuffle_count = (4..6).to_a.sample
+      shuffle_count.times do |index|
+        # before last riffle, box twice
+        if index == shuffle_count - 1
+          2.times{ cards = box_shuffle(cards) }
         end
 
-        cards = cards + (
-          left.empty? ?
-            right : left
-        )
-
-        # TODO: Add 1 box shuffle before the last riffle
+        cards = riffle_shuffle(cards)
       end
-      @state = @state.merge(drawpile: cards, burnpile: [])
+      @state = @state.merge(stack: cards, burnt: [])
+    end
+
+    def to_s
+      @state[:stack].
+        map{ |c| c.value[:name][0] + c.suit[:name][0] }.
+        join(' ')
+    end
+
+    def wash
+      @state = @state.merge(
+        stack: (@state[:stack] + @state[:burnt]).
+          shuffle,
+        burnt: []
+      )
+      puts 'Washed'
+    end
+
+  private
+
+    def riffle_shuffle(cards)
+      is_left_hand = false
+      left_hand = cards[0..(25..35).to_a.sample]
+      right_hand = cards - left_hand
+      cards = []
+      until left_hand.empty? || right_hand.empty?
+        is_left_hand = !is_left_hand
+        slice = (1..10).to_a.sample
+
+        cards = is_left_hand ?
+          cards + left_hand[0..slice] :
+          cards + right_hand[0..slice]
+        is_left_hand ?
+          left_hand = left_hand - cards :
+          right_hand = right_hand - cards
+      end
+
+      puts 'Riffled'
+      cards + (
+        left_hand.empty? ?
+          right_hand : left_hand
+      )
+    end
+
+    def box_shuffle(cards)
+      left_hand = cards
+      right_hand = []
+      until left_hand.empty?
+        slice = (5..15).to_a.sample
+        right_hand = right_hand + left_hand[0..slice].reverse
+        left_hand = left_hand - right_hand
+      end
+      puts 'Boxed'
+      right_hand
     end
   end
 end
