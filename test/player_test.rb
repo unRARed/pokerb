@@ -4,7 +4,9 @@ class PlayerTest < PokerTest
   let(:subject) { Poker::Player.new }
 
   def test_initialize
-    assert_equal({ bankroll: 0 }, subject.state)
+    assert_equal(
+      { bankroll: 0, hole_cards: [] }, subject.state
+    )
   end
 
   def test_adjust_bankroll
