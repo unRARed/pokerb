@@ -3,12 +3,12 @@ module Poker
     attr_accessor :state
 
     def initialize
-      @state = { bankroll: 0, hole_cards: [] }
+      @state = { chip_count: 0, hole_cards: [] }
     end
 
-    def adjust_bankroll(amount)
+    def adjust_chip_count(amount)
       @state = @state.merge(
-        bankroll: (@state[:bankroll] + amount)
+        chip_count: (@state[:chip_count] + amount)
       )
     end
 
@@ -17,5 +17,9 @@ module Poker
         hole_cards: @state[:hole_cards] + [card]
       )
     end
+
+    # def holding
+    #   Poker::Holding.new @state[:hole_cards]
+    # end
   end
 end
