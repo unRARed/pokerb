@@ -20,12 +20,12 @@ module Poker
       @state[:players].each do |player|
         player.draw(@state[:deck].draw)
       end
-      dealer = @state[:players].max do |a,b|
+      winner = @state[:players].max do |a,b|
         a.state[:hole_cards].sum(&:full_value) <=> b.
           state[:hole_cards].sum(&:full_value)
       end
       @state = @state.merge(
-        button_index: @state[:players].index(dealer)
+        button_index: @state[:players].index(winner)
       )
     end
 
@@ -37,6 +37,33 @@ module Poker
 
     def ready?
       @state[:players].size > 1 && @state[:button_index]
+    end
+
+    def players_in_turn_order
+      @state[:players][(@state[:button_index] + 1)..-1] +
+      @state[:players][0..@state[:button_index]]
+    end
+
+    def dealer
+      players_in_turn_order[-1]
+    end
+
+    def player_in_small_blind
+      players_in_turn_order[0]
+    end
+
+    def player_in_big_blind
+      players_in_turn_order[1]
+    end
+
+    # def deal(hand = Poker::Hand.new)
+    def deal
+      @state[:deck].shuffle
+      2.times do
+        @state[:players].each do |player|
+          player.draw(@state[:deck].draw)
+        end
+      end
     end
   end
 end

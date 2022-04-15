@@ -24,6 +24,32 @@ class GameTest < PokerTest
     refute_nil subject.state[:button_index]
   end
 
+  def test_players_in_turn_order
+    4.times{ subject.add_player }
+    subject.determine_button
+
+    player_with_button =
+      subject.state[:players][subject.state[:button_index]]
+    assert_equal player_with_button,
+      subject.players_in_turn_order[-1]
+  end
+
+  def test_player_in_small_blind
+    4.times{ subject.add_player }
+    subject.determine_button
+
+    assert_equal subject.player_in_small_blind,
+      subject.players_in_turn_order[0]
+  end
+
+  def test_player_in_big_blind
+    4.times{ subject.add_player }
+    subject.determine_button
+
+    assert_equal subject.player_in_big_blind,
+      subject.players_in_turn_order[1]
+  end
+
   def test_ready?
     refute subject.ready?
     subject.add_player
