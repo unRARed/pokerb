@@ -1,43 +1,66 @@
 module Poker
   class Card
-    attr_reader :suit, :value
+    attr_reader :suit, :rank
 
-    VALUES = [
-      { name: '2', value: 2 },
-      { name: '3', value: 3 },
-      { name: '4', value: 4 },
-      { name: '5', value: 5 },
-      { name: '6', value: 6 },
-      { name: '7', value: 7 },
-      { name: '8', value: 8 },
-      { name: '9', value: 9 },
-      { name: 'Ten', value: 10 },
-      { name: 'Jack', value: 11 },
-      { name: 'Queen', value: 12 },
-      { name: 'King', value: 13 },
-      { name: 'Ace', value: 14 }
+    RANKS = [
+      '2', '3', '4', '5', '6', '7', '8', '9',
+      'Ten', 'Jack', 'Queen', 'King', 'Ace'
     ].freeze
     SUITS = [
-      { name: :clubs, value: 0.1 },
-      { name: :diamonds, value: 0.2 },
-      { name: :hearts, value: 0.3 },
-      { name: :spades, value: 0.4 }
+      :clubs, :diamonds, :hearts, :spades
     ].freeze
 
-    def initialize(value: VALUES.sample, suit: SUITS.sample)
-      @value = value
+    def initialize(
+      rank = RANKS.sample, suit = SUITS.sample
+    )
+      @rank = rank
       @suit = suit
       raise ArgumentError, 'Not a valid card' unless valid?
     end
 
+    def id
+      rank[0] + suit.to_s[0]
+    end
+
+    def name
+      "#{rank} of #{suit}"
+    end
+
     def full_value
-      @value[:value] + @suit[:value]
+      value(rank) + value(suit)
+    end
+
+    def value(v)
+      case v
+      when :clubs
+        0.1
+      when :diamonds
+        0.2
+      when :hearts
+        0.3
+      when :spades
+        0.4
+      when /\d{1}/
+        v.to_i
+      when 'Ten'
+        10
+      when 'Jack'
+        11
+      when 'Queen'
+        12
+      when 'King'
+        13
+      when 'Ace'
+        14
+      else
+        0
+      end
     end
 
   private
 
     def valid?
-       VALUES.include?(value) && SUITS.include?(suit)
+       RANKS.include?(rank) && SUITS.include?(suit)
     end
   end
 end

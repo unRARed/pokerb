@@ -9,10 +9,10 @@ module Poker
       @state = { stack: [], burnt: [], drawn: [] }
 
       Poker::Card::SUITS.each do |suit|
-        Poker::Card::VALUES.each do |value|
+        Poker::Card::RANKS.each do |rank|
           @state = @state.merge(
             stack: @state[:stack] + [
-              Poker::Card.new(value: value, suit: suit)
+              Poker::Card.new(rank, suit)
             ]
           )
         end
@@ -53,9 +53,7 @@ module Poker
     end
 
     def to_s
-      @state[:stack].
-        map{ |c| c.value[:name][0] + c.suit[:name][0] }.
-        join(' ')
+      @state[:stack].map{ |c| c.id }.join(' ')
     end
 
     def wash
