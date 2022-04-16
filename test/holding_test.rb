@@ -25,15 +25,15 @@ class HoldingTest < PokerTest
       Poker::Card.new('7', :clubs),
       Poker::Card.new('3', :hearts)
     ]
-    # 3,4,T,Q,5,6,7,3
+
     holding = Poker::Holding.new(cards)
-    assert_equal true, holding.straight?
-    # 3,4,T,Q,5,6,7
+    assert_equal true, holding.straight?[0]
+
     holding = Poker::Holding.new(cards[0..-2])
-    assert_equal true, holding.straight?
-    # 3,4,T,Q,5,6
+    assert_equal true, holding.straight?[0]
+
     holding = Poker::Holding.new(cards[0..-3])
-    assert_equal false, holding.straight?
+    assert_equal false, holding.straight?[0]
   end
 
   def test_flush?
@@ -48,13 +48,13 @@ class HoldingTest < PokerTest
       Poker::Card.new('3', :hearts)
     ]
     holding = Poker::Holding.new(cards)
-    assert_equal true, holding.flush?
-    # 3,4,T,Q,5,6,7
+    assert_equal true, holding.flush?[0]
+
     holding = Poker::Holding.new(cards[0..-2])
-    assert_equal true, holding.flush?
-    # 3,4,T,Q,5,6
+    assert_equal true, holding.flush?[0]
+
     holding = Poker::Holding.new(cards[0..-3])
-    assert_equal false, holding.flush?
+    assert_equal false, holding.flush?[0]
   end
 
   def test_straight_flush?
@@ -65,14 +65,123 @@ class HoldingTest < PokerTest
       Poker::Card.new('6', :spades)
     ]
     holding = Poker::Holding.new(cards)
-    assert_equal false, holding.straight_flush?
-    # 3,4,T,Q,5,6,7
+    assert_equal false, holding.straight_flush?[0]
+
     holding = Poker::Holding.
       new(cards + [Poker::Card.new('7', :hearts)])
-    assert_equal false, holding.flush?
-    # 3,4,T,Q,5,6
+    assert_equal false, holding.straight_flush?[0]
+
     holding = Poker::Holding.
       new(cards + [Poker::Card.new('7', :spades)])
-    assert_equal true, holding.flush?
+    assert_equal true, holding.straight_flush?[0]
+  end
+
+  def test_quads?
+    cards = [
+      Poker::Card.new('3', :hearts),
+      Poker::Card.new('3', :diamonds),
+      Poker::Card.new('3', :spades),
+      Poker::Card.new('6', :spades)
+    ]
+    holding = Poker::Holding.new(cards)
+    assert_equal false, holding.quads?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('7', :hearts)])
+    assert_equal false, holding.quads?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('3', :clubs)])
+    assert_equal true, holding.quads?[0]
+  end
+
+  def test_boat?
+    cards = [
+      Poker::Card.new('3', :hearts),
+      Poker::Card.new('3', :diamonds),
+      Poker::Card.new('3', :clubs),
+      Poker::Card.new('6', :hearts)
+    ]
+    holding = Poker::Holding.new(cards)
+    assert_equal false, holding.boat?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('7', :hearts)])
+    assert_equal false, holding.boat?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('6', :clubs)])
+    assert_equal true, holding.boat?[0]
+  end
+
+  def test_set?
+    cards = [
+      Poker::Card.new('3', :hearts),
+      Poker::Card.new('3', :diamonds)
+    ]
+    holding = Poker::Holding.new(cards)
+    assert_equal false, holding.set?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('7', :hearts)])
+    assert_equal false, holding.set?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('3', :clubs)])
+    assert_equal true, holding.set?[0]
+  end
+
+  def test_two_pair?
+    cards = [
+      Poker::Card.new('3', :hearts),
+      Poker::Card.new('3', :diamonds),
+      Poker::Card.new('5', :clubs),
+      Poker::Card.new('6', :hearts)
+    ]
+    holding = Poker::Holding.new(cards)
+    assert_equal false, holding.two_pair?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('7', :hearts)])
+    assert_equal false, holding.two_pair?[0]
+
+    holding = Poker::Holding.
+      new(cards + [Poker::Card.new('6', :clubs)])
+    assert_equal true, holding.two_pair?[0]
+  end
+
+  def test_pair?
+    cards = []
+    holding = Poker::Holding.new(cards)
+    assert_equal false, holding.pair?[0]
+
+    cards = cards + [Poker::Card.new('7', :hearts)]
+    holding = Poker::Holding.new(cards)
+    assert_equal false, holding.pair?[0]
+
+    cards = cards + [Poker::Card.new('4', :diamonds)]
+    holding = Poker::Holding.new(cards)
+    assert_equal false, holding.pair?[0]
+
+    cards = cards + [Poker::Card.new('7', :clubs)]
+    holding = Poker::Holding.new(cards)
+    assert_equal true, holding.pair?[0]
+  end
+
+  def test_best_hand
+    cards = [
+      Poker::Card.new('3', :hearts),
+      Poker::Card.new('3', :diamonds)
+    ]
+    holding = Poker::Holding.new(cards)
+    assert_equal 'Pair', holding.best_hand[0]
+
+    cards = cards + [Poker::Card.new('3', :clubs)]
+    holding = Poker::Holding.new(cards)
+    assert_equal 'Set', holding.best_hand[0]
+
+    cards = cards + [Poker::Card.new('3', :spades)]
+    holding = Poker::Holding.new(cards)
+    assert_equal 'Quads', holding.best_hand[0]
   end
 end
