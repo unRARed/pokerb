@@ -29,9 +29,9 @@ module Poker
     def straight_flush?
       return [false, []] unless @cards.size > 4
       flush_result = flush?[1]
-      return [false, []] unless flush_result.present?
+      return [false, []] if flush_result.empty?
       straight_result = _get_straight(flush_result)
-      return [false, []] unless straight_result.present?
+      return [false, []] if straight_result.empty?
       [true, straight_result]
     end
 
@@ -40,7 +40,7 @@ module Poker
       result = cards.
         group_by{|c| c.value(c.rank) }.
         find{|_, v| v.size > 3 }
-      return [false, []] unless result.present?
+      return [false, []] if result.nil?
       [true, result[1]]
     end
 
@@ -52,7 +52,7 @@ module Poker
           find{|_, v| v.size > 2 }
       )
       pair = _get_pair(cards - set[1])
-      return [false, []] unless pair.present?
+      return [false, []] if pair.empty?
       [true, set[1] + pair]
     end
 
@@ -69,7 +69,7 @@ module Poker
       return [false, []] unless @cards.size > 4
 
       result = _get_straight(@cards)
-      return [false, []] unless result.present?
+      return [false, []] if result.empty?
       [true, result]
     end
 
@@ -78,23 +78,23 @@ module Poker
       result = cards.
         group_by{|c| c.value(c.rank) }.
         find{|_, v| v.size > 2 }
-      return [false, []] unless result.present?
+      return [false, []] if result.nil?
       [true, result[1]]
     end
 
     def two_pair?
       return [false, []] unless @cards.size > 3
       first_pair = _get_pair(cards)
-      return [false, []] unless first_pair.present?
+      return [false, []] if first_pair.empty?
       second_pair = _get_pair(@cards - first_pair)
-      return [false, []] unless second_pair.present?
+      return [false, []] if second_pair.empty?
       [true, second_pair]
     end
 
     def pair?
       return [false, []] unless @cards.size > 1
       pair = _get_pair(cards)
-      return [false, []] unless pair.present?
+      return [false, []] if pair.empty?
       [true, pair]
     end
 
@@ -103,7 +103,7 @@ module Poker
     def _get_pair(cards)
       group = cards.group_by{|c| c.value(c.rank) }.
         find{|_, v| v.size > 1 }
-      return [] unless group.present?
+      return [] if group.nil?
       group[1]
     end
 

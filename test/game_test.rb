@@ -20,7 +20,7 @@ class GameTest < PokerTest
     subject.determine_button
 
     assert subject.state[:players].
-      all?{ |p| p.state[:hole_cards].present? }
+      all?{ |p| !p.state[:hole_cards].nil? }
     refute_nil subject.state[:button_index]
   end
 

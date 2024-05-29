@@ -62,7 +62,6 @@ module Poker
           shuffle,
         burnt: []
       )
-      puts 'Washed'
     end
 
   private
@@ -84,7 +83,6 @@ module Poker
           right_hand = right_hand - cards
       end
 
-      puts 'Riffled'
       cards + (
         left_hand.empty? ?
           right_hand : left_hand
@@ -99,7 +97,6 @@ module Poker
         right_hand = right_hand + left_hand[0..slice].reverse
         left_hand = left_hand - right_hand
       end
-      puts 'Boxed'
       right_hand
     end
   end
