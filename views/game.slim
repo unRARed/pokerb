@@ -1,0 +1,24 @@
+div style="text-align: center;"
+  - if @game.is_playing?(session["user"])
+    - player = @game.player_by_name(session["user"])
+    a href="/games/#{@game.state[:id]}#{'?peek=true' if
+    params["peek"].nil?}"
+      - if !params["peek"].nil?
+        .hole_cards
+          - player.hole_cards.each do |card|
+            .card == card.image
+      - else
+        .hole_cards
+          - 2.times do
+            .card
+              img src="/assets/Back.png" alt="Back of card" width="140"
+    - if !params["peek"].nil?
+      p
+        span You have
+        span< = player.holding(@game.community_cards).best_hand[0]
+  - else
+    h2 Join Game
+    form action="/games/#{@game.state[:id]}/join" method="POST"
+      input type="submit" value="Join game"
+  p
+    a href="/games/#{@game.state[:id]}/community" Community Cards

@@ -9,21 +9,22 @@ module Poker
 
     def best_hand
       check, result = straight_flush?
-      return ['Straight Flush', result] if check
+      return ['a Straight Flush', result] if check
       check, result = quads?
       return ['Quads', result] if check
       check, result = boat?
-      return ['Boat', result] if check
+      return ['a Boat', result] if check
       check, result = flush?
-      return ['Flush', result] if check
+      return ['a Flush', result] if check
       check, result = straight?
-      return ['Straight', result] if check
+      return ['a Straight', result] if check
       check, result = set?
-      return ['Set', result] if check
+      return ['Three of a Kind', result] if check
       check, result = two_pair?
       return ['Two Pair', result] if check
       check, result = pair?
-      return ['Pair', result] if check
+      return ['a Pair', result] if check
+      ["a whole lot of Nothing", cards]
     end
 
     def straight_flush?

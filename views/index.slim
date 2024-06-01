@@ -1,0 +1,11 @@
+p Home Page
+- if session["user"]
+  p Welcome, #{session["user"]}
+  form action="/games/new" method="POST"
+    input type="text" name="password" placeholder="Set a password"
+    br
+    input type="submit" value="Begin new game"
+  p
+    a href="/logout" Logout
+- else
+  a href="/login" Login

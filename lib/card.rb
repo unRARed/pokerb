@@ -22,6 +22,10 @@ module Poker
       rank[0] + suit.to_s[0]
     end
 
+    def tuple
+      [rank, suit]
+    end
+
     def name
       "#{rank} of #{suit}"
     end
@@ -55,6 +59,10 @@ module Poker
       else
         0
       end
+    end
+
+    def image
+      "<img src='/assets/#{id}.png' alt='#{name}' width='140'>"
     end
 
   private

@@ -3,66 +3,123 @@ require_relative 'player'
 
 module Poker
   class Deck
-    attr_accessor :state
+    attr_reader :state, :flopped, :phase
 
-    def initialize
-      @state = { stack: [], burnt: [], drawn: [] }
-
+    def self.fresh
+      stack = []
       Poker::Card::SUITS.each do |suit|
         Poker::Card::RANKS.each do |rank|
-          @state = @state.merge(
-            stack: @state[:stack] + [
-              Poker::Card.new(rank, suit)
-            ]
-          )
+          stack << Poker::Card.new(rank, suit)
         end
+      end
+      stack
+    end
+
+    def initialize(state = {})
+      @state = {
+        stack: [], burnt: [], drawn: [],
+        flopped: [], phase: :pre_flop
+      }.merge(state)
+
+      @phase = @state[:phase]
+      @stack = @state[:stack].map{ |c| Poker::Card.new *c }
+      @burnt = @state[:burnt].map{ |c| Poker::Card.new *c }
+      @drawn = @state[:drawn].map{ |c| Poker::Card.new *c }
+      @flopped = @state[:flopped].map{ |c| Poker::Card.new *c }
+    end
+
+    def reset
+      puts "Resetting deck"
+      @stack = Deck.fresh
+      @burnt = []
+      @drawn = []
+      @flopped = []
+      @phase = :pre_flop
+    end
+
+    def next_phase
+      case @phase
+      when :pre_flop
+        @phase = :flop
+      when :flop
+        @phase = :turn
+      when :turn
+        @phase = :river
+      when :river
+        @phase = :pre_flop
+      end
+    end
+
+    def advance
+      # NOTE: assumes hole cards already dealt
+      case @phase
+      when :pre_flop
+        turn_over(3)
+        @phase = :flop
+      when :flop
+        turn_over
+        @phase = :turn
+      when :turn
+        turn_over
+        @phase = :river
+      when :river
+        reset
       end
     end
 
     def burn
-      target = @state[:stack][0]
-      @state = @state.merge(
-        stack: @state[:stack][1..-1],
-        burnt: @state[:burnt] + [target]
-      )
+      target = @stack[0]
+      @stack = @stack - [target]
+      @burnt << target
+    end
+
+    def turn_over(count = 1)
+      burn
+      count.times { @flopped << draw }
     end
 
     def draw
-      target = @state[:stack][0]
-      @state = @state.merge(
-        stack: @state[:stack][1..-1],
-        drawn: @state[:drawn] + [target]
-      )
+      puts "Drawing card"
+      target = @stack[0]
+      @stack = @stack - [target]
+      @drawn << target
       target
     end
 
     def shuffle
-      cards = @state[:stack] + @state[:burnt]
-
-      # now Riffle shuffle between 4 and 6 times
+      # Riffle shuffle between 4 and 6 times
       shuffle_count = (4..6).to_a.sample
       shuffle_count.times do |index|
         # before last riffle, box twice
         if index == shuffle_count - 1
-          2.times{ cards = box_shuffle(cards) }
+          2.times{ @stack = box_shuffle(@stack) }
         end
 
-        cards = riffle_shuffle(cards)
+        @stack = riffle_shuffle(@stack)
       end
-      @state = @state.merge(stack: cards, burnt: [])
     end
 
     def to_s
-      @state[:stack].map{ |c| c.id }.join(' ')
+      @stack.map{ |c| c.id }.join(' ')
     end
 
-    def wash
-      @state = @state.merge(
-        stack: (@state[:stack] + @state[:burnt]).
-          shuffle,
-        burnt: []
-      )
+    def to_hash
+      {
+        stack: @stack.map{ |c| c.tuple },
+        burnt: @burnt.map{ |c| c.tuple },
+        drawn: @drawn.map{ |c| c.tuple },
+        flopped: @flopped.map{ |c| c.tuple },
+        phase: @phase
+      }
     end
+
+    # def wash
+    #   @state = @state.merge(
+    #     stack: (@state[:stack] + @state[:burnt]).
+    #       shuffle,
+    #     burnt: []
+    #   )
+    # end
 
   private
 

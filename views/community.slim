@@ -1,0 +1,36 @@
+.community_body
+  .board
+    .card style="margin-right: 5px;"
+      img src="/assets/Back.png" alt="Back of card" width="140"
+    - @game.community_cards.each do |card|
+      .card == card.image
+  div style="text-align: center;"
+    - value = @game.deck.phase == :river ? \
+        "Next Hand" : "See the #{@game.deck.next_phase.capitalize}"
+    p
+      form action="/games/#{@game.state[:id]}/advance" method="POST"
+        input type="submit" value="#{value}"
+.community_footer
+  div
+    p
+      strong Game State
+    ul
+      li Stack #{@game.deck.state[:stack].length}
+      li Burnt #{@game.deck.state[:burnt].length}
+      li Flopped #{@game.deck.state[:flopped].length}
+      li Drawn #{@game.deck.state[:drawn].length}
+  div
+    - if @game.players.any?
+      p
+        strong Players
+      ul
+        - @game.players.each do |player|
+          li
+            small = "#{player.name} has " \
+              "#{player.holding(@game.community_cards).best_hand[0]}"
+  div
+    p
+      strong Scan to join
+    .hidden-dark == @game.qr_code.as_svg module_size: 4
+    .hidden-light == @game.qr_code.as_svg module_size: 4,
+      color: "FFF"
