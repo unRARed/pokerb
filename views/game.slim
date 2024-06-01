@@ -22,3 +22,7 @@ div style="text-align: center;"
       input type="submit" value="Join game"
   p
     a href="/games/#{@game.state[:id]}/community" Community Cards
+
+javascript:
+  var game_id = "#{@game.state[:id]}";
+  var user_name = "#{session["user"]}";

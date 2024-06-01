@@ -5,8 +5,8 @@
     - @game.community_cards.each do |card|
       .card == card.image
   div style="text-align: center;"
-    - value = @game.deck.phase == :river ? \
-        "Next Hand" : "See the #{@game.deck.next_phase.capitalize}"
+    - value = !@game.state[:is_dealt] || @game.deck.phase == :river ? \
+        "Deal Hand" : "See the #{@game.deck.next_phase.capitalize}"
     p
       form action="/games/#{@game.state[:id]}/advance" method="POST"
         input type="submit" value="#{value}"
@@ -34,3 +34,31 @@
     .hidden-dark == @game.qr_code.as_svg module_size: 4
     .hidden-light == @game.qr_code.as_svg module_size: 4,
       color: "FFF"
+
+javascript:
+  document.addEventListener('DOMContentLoaded', function(){
+    var gameId = "#{@game.state[:id]}";
+    var userName = "#{session["user"]}";
+    var socketId = Date.now();
+
+    ActionCable.startDebugging();
+    var cable = ActionCable.createConsumer('#{{ CABLE_URL }}?sid=' + socketId);
+    var chatChannel = cable.subscriptions.create(
+      { channel: 'chat', id: gameId },
+      {
+        connected: function(){
+          console.log("Connected");
+        },
+
+        disconnected: function(){
+          console.log("Connected");
+        },
+
+        received: function(data){
+          console.log("Received", data);
+        }
+      }
+    );
+
+    chatChannel.perform('speak', { message: "sent from JS" });
+  });

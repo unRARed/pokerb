@@ -1,1 +1,2 @@
 broadcast_adapter: http
+websocket_url: ws://0.0.0.0:9293/cable

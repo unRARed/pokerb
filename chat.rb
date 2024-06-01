@@ -11,7 +11,7 @@ module Chat
     def connect
       self.user = cookies["user"]
       self.sid = request.params["sid"]
-      reject_unauthorized_connection unless user
+      #reject_unauthorized_connection unless user
       $stdout.puts "#{user} connected"
     end
 
@@ -21,22 +21,22 @@ module Chat
   end
 
   class Channel < LiteCable::Channel::Base # :nodoc:
-    identifier :chat
+    identifier :game
 
     def subscribed
-      reject unless chat_id
-      stream_from "chat_#{chat_id}"
+      reject unless game_id
+      stream_from "game_#{game_id}"
     end
 
     def speak(data)
-      LiteCable.broadcast "chat_#{chat_id}",
+      LiteCable.broadcast "game_#{game_id}",
         {user: user, message: data["message"], sid: sid}
     end
 
     private
 
-    def chat_id
-      params.fetch("id")
+    def game_id
+      params.fetch("game_id")
     end
   end
 end

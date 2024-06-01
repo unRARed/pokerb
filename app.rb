@@ -45,6 +45,8 @@ class App < Sinatra::Base
   set :session_secret,
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
 
+  set :public_folder, "assets"
+
   # Returns the full path to the root folder for
   # the :game_id value given
   #
