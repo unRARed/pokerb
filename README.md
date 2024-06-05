@@ -8,7 +8,7 @@ Play Texas Holdem' Poker with your friends... even if they can't deal for shit.
 Using the App
 -------------
 
-<img align="left" src="https://raw.githubusercontent.com/unRARed/pokerb/main/hole-cards.jpg">
+<img align="left" src="https://raw.githubusercontent.com/unRARed/pokerb/main/hand.jpg">
 
 - Run `bin/server` from machine on local network
 - Access `YOUR_SERVERS_IP:5000` on tablet / shared device
