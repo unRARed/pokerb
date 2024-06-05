@@ -14,12 +14,12 @@ module Poker
           base64.gsub(/[^a-zA-Z]/, '')[0..3].upcase,
         manager: "",
         password: "",
+        step_color: "#ffffff",
         url: "https://example.com",
         players: [],
         hands: [],
         deck: { },
-        button_index: nil,
-        is_dealt: false
+        button_index: nil
       }.merge(state)
 
       @deck = Poker::Deck.new @state[:deck]
@@ -27,6 +27,14 @@ module Poker
 
       puts "Game #{@state[:id]} initialized"
       puts "Players: #{players.map(&:state).map{ |p| p[:name] }}"
+    end
+
+    def rand_color
+      "##{SecureRandom.hex(3)}"
+    end
+
+    def is_manager?(player_name)
+      @state[:manager] == player_name
     end
 
     def community_cards
@@ -49,20 +57,26 @@ module Poker
     end
 
     def qr_code
-      RQRCode::QRCode.new @state[:url]
+      RQRCode::QRCode.new @state[:url] + "/games/#{@state[:id]}"
     end
 
     def advance
       puts "Advancing game"
-      if !@state[:is_dealt] || @deck.state[:phase] == :river
+      case @deck.phase
+      when :deal
+        deal
+        @deck.advance
+      when :river
         @players.each{ |player| player.reset }
         @deck.reset
         @deck.shuffle
-        deal
-        @state = @state.merge(is_dealt: true)
+        @deck.advance
       else
         @deck.advance
       end
+      # set color for the next step, so folks can know
+      # if their client is up to date
+      @state = @state.merge(step_color: rand_color)
     end
 
     def determine_button

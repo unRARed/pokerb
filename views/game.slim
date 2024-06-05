@@ -1,3 +1,4 @@
+.step_color style="background-color: #{@game.state[:step_color]}"
 div style="text-align: center;"
   - if @game.is_playing?(session["user"])
     - player = @game.player_by_name(session["user"])
@@ -24,5 +25,26 @@ div style="text-align: center;"
     a href="/games/#{@game.state[:id]}/community" Community Cards
 
 javascript:
-  var game_id = "#{@game.state[:id]}";
-  var user_name = "#{session["user"]}";
+  var gameId = '#{@game.state[:id]}';
+  var stepColor = '#{@game.state[:step_color]}';
+  var params = JSON.
+    stringify({game_id: gameId, step_color: stepColor});
+
+  setInterval(function() {
+    var http = new XMLHttpRequest();
+    http.open("POST", `/games/${gameId}/poll`, true);
+    http.setRequestHeader("Content-type",
+      "application/json; charset=utf-8");
+
+    http.onreadystatechange = function() {
+      if(http.readyState == 4 && http.status == 200) {
+        result = http.responseText;
+
+        if (!JSON.parse(result).in_sync) {
+          window.location.reload();
+        }
+      }
+    }
+
+    http.send(params);
+  }, 3000);

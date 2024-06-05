@@ -11,11 +11,24 @@ require "yaml"
 # require "fileutils"
 require "securerandom"
 require "byebug"
+require 'socket'
+
 Dir.glob(Dir.pwd + '/lib/**/*.rb').each do |file_path|
   require file_path
 end
 
 CABLE_URL = ENV.fetch("CABLE_URL", "/cable")
+
+IP_ADDRESS =
+  Socket.
+    ip_address_list.
+    map{|addr| addr.inspect_sockaddr }.
+    reject do |addr|
+      addr.length > 15 ||
+        addr == "127.0.0.1" ||
+        addr.count(".") < 3
+    end.
+    first
 
 class Flash
   attr_reader :is_read
@@ -46,6 +59,19 @@ class App < Sinatra::Base
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
 
   set :public_folder, "assets"
+
+  set :bind, IP_ADDRESS
+
+  def self.debug(msg)
+    return unless !ENV["DEBUG"].nil?
+
+    count = msg.length
+    divider = []
+    [msg.length, 79].min.times{ divider << "-" }
+    puts divider.join
+    puts "DEBUG: #{msg}"
+    puts divider.join
+  end
 
   # Returns the full path to the root folder for
   # the :game_id value given
@@ -105,6 +131,7 @@ class App < Sinatra::Base
     if params["user"]
       session[:user] = params["user"]
       cookies["user"] = params["user"]
+      App.debug "User logged in: #{session[:user]}"
       redirect "/"
     else
       slim :login
@@ -113,17 +140,17 @@ class App < Sinatra::Base
 
   namespace '/games' do
     post "/new" do
-      puts "Creating new game"
+      App.debug "Creating new game"
       # TODO: check if game id is already taken
       game = Poker::Game.new(
         manager: session[:user],
         password: params["password"],
-        url: App.server_url(request),
+        url: App.server_url(request)
       )
       game.deck.reset
       game.deck.shuffle
       App.write_state(game.to_hash)
-      redirect "/games/#{game.state[:id]}/community"
+      redirect "/games/#{game.state[:id]}"
     end
 
     namespace '/:game_id' do
@@ -131,6 +158,20 @@ class App < Sinatra::Base
         state = App.load_state_for_game(params["game_id"])
         @game = Poker::Game.new(state)
         slim :game
+      end
+
+      # For clients to check if they are up to date
+      # and if not, to reload their hole cards.
+      post "/poll" do
+        return unless (data = JSON.parse(request.body.read))
+
+        state = App.load_state_for_game(data["game_id"])
+        App.debug "state: #{state}"
+        if data["step_color"] != state[:step_color]
+          App.debug "Step color mismatch"
+          return { in_sync: false }.to_json
+        end
+        { in_sync: true }.to_json
       end
 
       post "/join" do
@@ -149,7 +190,7 @@ class App < Sinatra::Base
       get "/community" do
         state = App.load_state_for_game(params["game_id"])
 
-        puts "Loading community cards for #{params["game_id"]}"
+        App.debug "Loading community cards for #{params["game_id"]}"
         @game = Poker::Game.new(state)
         slim :community
       end
@@ -159,6 +200,7 @@ class App < Sinatra::Base
         game = Poker::Game.new(state)
         if session[:user] == game.state[:manager]
           game.advance
+          App.debug "Phase: #{game.deck.phase}"
           App.write_state(game.to_hash)
         else
           session[:flash].message =

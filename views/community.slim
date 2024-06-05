@@ -1,64 +1,34 @@
 .community_body
+  .step_color(
+    style="background-color: #{@game.state[:step_color]}"
+  )
   .board
     .card style="margin-right: 5px;"
       img src="/assets/Back.png" alt="Back of card" width="140"
     - @game.community_cards.each do |card|
       .card == card.image
+    div style="margin-left: 12px; text-align: center;"
+      - if @game.deck.phase == :deal
+        small Scan QR to Join
+        p style="margin: 6px;"
+          .hidden-dark == @game.qr_code.as_svg module_size: 4
+          .hidden-light == @game.qr_code.as_svg module_size: 4,
+            color: "FFF"
   div style="text-align: center;"
-    - value = !@game.state[:is_dealt] || @game.deck.phase == :river ? \
-        "Deal Hand" : "See the #{@game.deck.next_phase.capitalize}"
+    - value = @game.deck.phase == :deal ? \
+        "Deal the Hand" : "See the #{@game.deck.next_phase.capitalize}"
+    - value = "Next Hand" if @game.deck.phase == :river
     p
-      form action="/games/#{@game.state[:id]}/advance" method="POST"
+      form(
+        id="advance"
+        action="/games/#{@game.state[:id]}/advance"
+        method="POST"
+      )
         input type="submit" value="#{value}"
+  .step_color style="background-color: #{@game.state[:step_color]}"
 .community_footer
   div
-    p
-      strong Game State
-    ul
-      li Stack #{@game.deck.state[:stack].length}
-      li Burnt #{@game.deck.state[:burnt].length}
-      li Flopped #{@game.deck.state[:flopped].length}
-      li Drawn #{@game.deck.state[:drawn].length}
+    - # TODO: put something here
   div
-    - if @game.players.any?
-      p
-        strong Players
-      ul
-        - @game.players.each do |player|
-          li
-            small = "#{player.name} has " \
-              "#{player.holding(@game.community_cards).best_hand[0]}"
+    - # TODO: put something here
   div
-    p
-      strong Scan to join
-    .hidden-dark == @game.qr_code.as_svg module_size: 4
-    .hidden-light == @game.qr_code.as_svg module_size: 4,
-      color: "FFF"
-
-javascript:
-  document.addEventListener('DOMContentLoaded', function(){
-    var gameId = "#{@game.state[:id]}";
-    var userName = "#{session["user"]}";
-    var socketId = Date.now();
-
-    ActionCable.startDebugging();
-    var cable = ActionCable.createConsumer('#{{ CABLE_URL }}?sid=' + socketId);
-    var chatChannel = cable.subscriptions.create(
-      { channel: 'chat', id: gameId },
-      {
-        connected: function(){
-          console.log("Connected");
-        },
-
-        disconnected: function(){
-          console.log("Connected");
-        },
-
-        received: function(data){
-          console.log("Received", data);
-        }
-      }
-    );
-
-    chatChannel.perform('speak', { message: "sent from JS" });
-  });

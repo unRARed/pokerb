@@ -34,25 +34,28 @@ module Poker
       @burnt = []
       @drawn = []
       @flopped = []
-      @phase = :pre_flop
     end
 
     def next_phase
       case @phase
+      when :deal
+        :pre_flop
       when :pre_flop
-        @phase = :flop
+        :flop
       when :flop
-        @phase = :turn
+        :turn
       when :turn
-        @phase = :river
-      when :river
-        @phase = :pre_flop
+        :river
+      else
+        :deal
       end
     end
 
     def advance
       # NOTE: assumes hole cards already dealt
       case @phase
+      when :deal
+        @phase = :pre_flop
       when :pre_flop
         turn_over(3)
         @phase = :flop
@@ -63,7 +66,7 @@ module Poker
         turn_over
         @phase = :river
       when :river
-        reset
+        @phase = :deal
       end
     end
 

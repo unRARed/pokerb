@@ -21,24 +21,23 @@ html
       .title { font-size: 0.4rem; text-align: right; }
       .flash { color: red; }
       .community_body {
-        margin-top: 20px;
-        height: 40vh;
       }
       .community_footer {
-        height: 60vh;
         display: flex;
         justify-content: space-between;
         align-items: top;
       }
       .board {
+        padding-top: 32px;
         display: flex;
         justify-content: center;
         align-items: center;
       }
       .board .card + .card { margin-left: 4px; }
-      .hole_cards { position: relative; left: 50px; }
+      .hole_cards { position: relative; left: 50px; padding-top: 32px;}
       .hole_cards .card { display: inline-block; position: relative; }
       .hole_cards .card + .card { top: 10px; left: -100px; }
+      .step_color { width: 100%; height: 24px; }
 
       @media (prefers-color-scheme: dark) {
         .hidden-dark { display: none; }
