@@ -37,6 +37,10 @@ module Poker
       @state[:manager] == player_name
     end
 
+    def is_common_phase?
+      [:flop, :turn, :river].include? @deck.phase
+    end
+
     def community_cards
       @deck.flopped
     end

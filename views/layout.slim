@@ -2,7 +2,8 @@ doctype html
 html
   head
     title PokeRb
-    meta name="viewport" content="width=device-width"
+    meta name="viewport" content="width=device-width,
+    initial-scale=1"
     meta charset="UTF-8"
     link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"
     link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"
@@ -17,33 +18,63 @@ html
     )
     script type="text/javascript" src="/cable.js"
     css:
-      body { grid-template-columns: 1fr min(56rem, 90%) 1fr; }
+      .clearfix::after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+      body {
+        max-width: 100%;
+        overflow-x: hidden;
+        grid-template-columns: 1fr min(72rem, 90%) 1fr;
+      }
       .title { font-size: 0.4rem; text-align: right; }
       .flash { color: red; }
-      .community_body {
-      }
       .community_footer {
         display: flex;
         justify-content: space-between;
         align-items: top;
       }
       .board {
-        padding-top: 32px;
+        padding: 16px 0;
         display: flex;
-        justify-content: center;
+        justify-content: start;
         align-items: center;
       }
+      .card { max-width: 300px; }
+      .card img { width: 100%; display: block; }
       .board .card + .card { margin-left: 4px; }
-      .hole_cards { position: relative; left: 50px; padding-top: 32px;}
-      .hole_cards .card { display: inline-block; position: relative; }
-      .hole_cards .card + .card { top: 10px; left: -100px; }
+      .board .card img { max-width: 189px; }
+      .hole_cards {
+        overscroll-behavior: auto contain;
+        position: relative;
+        left: 50px;
+        margin-top: 32px;
+      }
+      .hole_cards:hover .card:last-child { opacity: 0.8; }
+      .hole_cards .card {
+        position: absolute;
+        top: 0;
+        left: -5%;
+        max-width: 70%;
+        max-height: 60%;
+
+      }
+      .hole_cards .card + .card {
+        top: 0;
+        left: 12%;
+        transform: rotate(9deg);
+        max-width: 70%;
+      }
       .step_color { width: 100%; height: 24px; }
 
       @media (prefers-color-scheme: dark) {
         .hidden-dark { display: none; }
+        img, video { opacity: 1; }
       }
       @media (prefers-color-scheme: light) {
         .hidden-light { display: none; }
+        img, video { opacity: 1; }
       }
   body
     .header

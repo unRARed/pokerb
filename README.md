@@ -1,12 +1,19 @@
-Poker
-=====
+PokeRb
+======
 
-Texas Holdem' Poker in `ruby`.
+Play Texas Holdem' Poker with your friends... even if they can't deal for shit.
 
-Running the App
----------------
+![Community Cards](https://raw.githubusercontent.com/unRARed/pokerb/main/community-cards.jpg)
 
-- `brew install anycable-go`
+Using the App
+-------------
+
+<img align="left" src="https://raw.githubusercontent.com/unRARed/pokerb/main/hole-cards.jpg">
+
+- Run `bin/server` from machine on local network
+- Access `YOUR_SERVERS_IP:5000` on tablet / shared device
+- Create a new game
+- Scan QR code from another device to join
 
 Development
 -----------
