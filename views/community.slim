@@ -1,7 +1,4 @@
 .community_body
-  .step_color(
-    style="background-color: #{@game.state[:step_color]}"
-  )
   .board
     - if @game.is_common_phase?
       form(
@@ -32,8 +29,12 @@
               method="POST"
             )
               input type="submit" value="#{value}" style="margin: 0;"
-  .step_color style="background-color: #{@game.state[:step_color]}"
 .community_footer
+  - @game.players.each do |player|
+    .player class="#{@game.has_cards?(player.name) ? \
+        '' : 'player--out'}"
+      .player__cards
+      .player__name = player.name
   div
     - # TODO: put something here
   div

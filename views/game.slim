@@ -1,22 +1,31 @@
-.step_color style="background-color: #{@game.state[:step_color]}"
 div style="text-align: center;"
   - if @game.is_playing?(session["user"])
-    - player = @game.player_by_name(session["user"])
-    - if !params["peek"].nil?
-      p.holding
-        span You have
-        span< = player.holding(@game.community_cards).best_hand[0]
-    .hole_cards
-      a href="/games/#{@game.state[:id]}#{'?peek=true' if
-      params["peek"].nil?}"
-        - if !params["peek"].nil?
-          - player.hole_cards.each do |card|
-            .card == card.image
-        - else
-          - 2.times do
-            .card
-              img src="/assets/Back.png" alt="Back of card" width="140"
-    .clearfix
+    - if @game.has_cards?(session["user"])
+      p
+        a(
+          class="button button-primary"
+          href="/games/#{@game.state[:id]}/fold"
+        ) Fold my Hand
+      - player = @game.player_by_name(session["user"])
+      - if !params["peek"].nil?
+        p
+          span You have
+          span< = player.holding(@game.community_cards).best_hand[0]
+      - else
+        p Click your cards to peek.
+      .hole_cards
+        a href="/games/#{@game.state[:id]}#{'?peek=true' if
+        params["peek"].nil?}"
+          - if !params["peek"].nil?
+            - player.hole_cards.each do |card|
+              .card == card.image
+          - else
+            - 2.times do
+              .card
+                img src="/assets/Back.png" alt="Back of card" width="140"
+      .clearfix
+    - else
+      h2 Waiting for Cards.
   - else
     h2 Join Game
     form action="/games/#{@game.state[:id]}/join" method="POST"

@@ -38,7 +38,6 @@ class Flash
     @is_read = is_read
   end
 
-
   def read
     @is_read = true
     @message
@@ -119,6 +118,11 @@ class App < Sinatra::Base
     end
   end
 
+  def set_game
+    state = App.load_state_for_game(params["game_id"])
+    @game = Poker::Game.new(state)
+  end
+
   get '/' do
     slim :index
   end
@@ -142,21 +146,20 @@ class App < Sinatra::Base
     post "/new" do
       App.debug "Creating new game"
       # TODO: check if game id is already taken
-      game = Poker::Game.new(
+      @game = Poker::Game.new(
         manager: session[:user],
         password: params["password"],
         url: App.server_url(request)
       )
-      game.deck.reset
-      game.deck.shuffle
-      App.write_state(game.to_hash)
-      redirect "/games/#{game.state[:id]}"
+      @game.deck.reset
+      @game.deck.shuffle
+      App.write_state(@game.to_hash)
+      redirect "/games/#{@game.state[:id]}"
     end
 
     namespace '/:game_id' do
       get "" do
-        state = App.load_state_for_game(params["game_id"])
-        @game = Poker::Game.new(state)
+        set_game
         slim :game
       end
 
@@ -166,7 +169,6 @@ class App < Sinatra::Base
         return unless (data = JSON.parse(request.body.read))
 
         state = App.load_state_for_game(data["game_id"])
-        App.debug "state: #{state}"
         if data["step_color"] != state[:step_color]
           App.debug "Step color mismatch"
           return { in_sync: false }.to_json
@@ -175,42 +177,52 @@ class App < Sinatra::Base
       end
 
       post "/join" do
-        state = App.load_state_for_game(params["game_id"])
-        game = Poker::Game.new(state)
+        set_game
 
         # TODO: handle name already taken
-        game.add_player Poker::Player.new(
+        @game.add_player Poker::Player.new(
           { name: session[:user] }
         )
 
-        App.write_state(game.to_hash)
-        redirect "/games/#{params["game_id"]}"
+        App.write_state(@game.to_hash)
+        redirect "/games/#{@game.state[:id]}"
+      end
+
+      get "/fold" do
+        set_game
+        slim :fold
+      end
+
+      post "/fold" do
+        set_game
+        if (player = @game.player_by_name(session[:user]))
+          break unless @game.has_cards?(player.name)
+          player.fold
+          App.write_state(@game.to_hash)
+        end
+        redirect "/games/#{@game.state[:id]}"
       end
 
       get "/community" do
-        state = App.load_state_for_game(params["game_id"])
-
-        App.debug "Loading community cards for #{params["game_id"]}"
-        @game = Poker::Game.new(state)
+        set_game
+        App.debug "Loading community cards for #{@game.state[:id]}"
         slim :community
       end
 
       post "/advance" do
-        state = App.load_state_for_game(params["game_id"])
-        game = Poker::Game.new(state)
-        if session[:user] == game.state[:manager]
-          game.advance
-          App.debug "Phase: #{game.deck.phase}"
-          App.write_state(game.to_hash)
+        set_game
+        if session[:user] == @game.state[:manager]
+          @game.advance
+          App.debug "Phase: #{@game.deck.phase}"
+          App.write_state(@game.to_hash)
         else
           session[:flash].message =
             "Only the manager can advance the game"
         end
-        redirect "/games/#{game.state[:id]}/community"
+        redirect "/games/#{@game.state[:id]}/community"
       end
     end
   end
-
 
   get '/assets/:asset_filename' do
     path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"

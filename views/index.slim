@@ -1,6 +1,6 @@
 p Home Page
 - if session["user"]
-  p Welcome, #{session["user"]}
+  p Hi, #{session["user"]}. I want to play a game.
   form action="/games/new" method="POST"
     input type="text" name="password" placeholder="Set a password"
     br

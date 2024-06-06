@@ -49,6 +49,10 @@ module Poker
       @state[:players].any?{ |p| p[:name] == player_name }
     end
 
+    def has_cards?(player_name)
+      player_by_name(player_name).state[:hole_cards].size > 0
+    end
+
     def player_by_name(player_name)
       @players.find{ |p| p.state[:name] == player_name }
     end

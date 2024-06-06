@@ -28,12 +28,71 @@ html
         overflow-x: hidden;
         grid-template-columns: 1fr min(72rem, 90%) 1fr;
       }
-      .title { font-size: 0.4rem; text-align: right; }
+      main { padding: 0; }
+      .button {
+        border: 1px solid var(--accent);
+        background-color: var(--accent);
+        color: var(--accent-text);
+        padding: .5rem .9rem;
+        line-height: normal;
+        text-decoration: none;
+      }
+      .button + .button { margin-left: 1rem; }
+      .button.button-primary {
+        background-color: #72f5ff;
+        border-color: #42b6c4;
+      }
+      .button.button-primary:hover {
+        background-color: #42b6c4 !important;
+        border-color: #42b6c4 !important;
+      }
+      .title { font-size: 0.6rem; }
       .flash { color: red; }
       .community_footer {
         display: flex;
-        justify-content: space-between;
+        justify-content: space-evenly;
         align-items: top;
+        height: 88px;
+        border: 1px solid #999;
+        padding: 8px 4px 2px;
+      }
+      .player {
+        position: relative;
+        min-width: 72px;
+        text-align: center;
+      }
+      .player__name {
+        position: absolute;
+        bottom: 0;
+        color: #999;
+        width: 100%;
+        text-align: center;
+      }
+      .player__cards {
+        position: relative;
+        background: #999;
+        width: 100%;
+        height: 64%;
+      }
+
+      /* black bar separator */
+      .player__cards:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        height: 100%;
+        width: 3px;
+        background-color: var(--bg);
+      }
+      .player.player--out .player__cards {
+        display: none;
+      }
+      .player.player--out .player__name {
+        color: #999
       }
       .board {
         padding: 16px 0;
@@ -46,27 +105,34 @@ html
       .board .card + .card { margin-left: 4px; }
       .board .card img { max-width: 189px; }
       .hole_cards {
-        overscroll-behavior: auto contain;
         position: relative;
-        left: 50px;
-        margin-top: 32px;
+        left: 4%;
+        right: 0;
+        max-width: 300px;
+        margin: 16px auto 0;
       }
       .hole_cards:hover .card:last-child { opacity: 0.8; }
       .hole_cards .card {
         position: absolute;
         top: 0;
-        left: -5%;
-        max-width: 70%;
-        max-height: 60%;
-
+        left: 0;
+        max-width: 80%;
       }
       .hole_cards .card + .card {
-        top: 0;
+        top: 12px;
         left: 12%;
-        transform: rotate(9deg);
-        max-width: 70%;
+        transform: rotate(10deg);
       }
-      .step_color { width: 100%; height: 24px; }
+      .game-indicator {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 2rem;
+      }
+      .game-indicator__id {
+        margin-right: 8px;
+      }
+      .game-indicator__color { width: 100%; height: 24px; }
 
       @media (prefers-color-scheme: dark) {
         .hidden-dark { display: none; }
@@ -76,10 +142,19 @@ html
         .hidden-light { display: none; }
         img, video { opacity: 1; }
       }
+      @media only screen and (width <= 720px) {
+        .button { width: 100%; }
+        .button + .button { margin-left: 0; }
+      }
   body
-    .header
+    - color = @game.nil? ? "white" : @game.state[:step_color]
+    div style="text-align: right;"
       h1.title
         a href='/' PokeRb
-    .container.main
+    main
+      == slim :"/_game_indicator", locals: { game: @game }
       .flash == session[:flash].read
       == yield
+    div style="text-align: center;"
+      p.title
+        small &copy; #{Time.now.year} PokeRb

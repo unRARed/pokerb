@@ -1,0 +1,5 @@
+- color = game.nil? ? "white" : game.state[:step_color]
+.game-indicator
+  .game-indicator__id style="color: #{color};"
+    = game.state[:id] || ""
+  .game-indicator__color style="background-color: #{color};"

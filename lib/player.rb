@@ -12,6 +12,10 @@ module Poker
       @hole_cards = @hole_cards + [card]
     end
 
+    def fold
+      @hole_cards = []
+    end
+
     def to_hash
       {
         name: @state[:name],
