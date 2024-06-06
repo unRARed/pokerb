@@ -107,7 +107,11 @@ class App < Sinatra::Base
   def self.server_url(request)
     env = request.env
     parts = ["http://"]
-    parts << env["SERVER_NAME"]
+    if !ENV["POKERB_HOSTNAME"].nil?
+      parts << ENV["POKERB_HOSTNAME"]
+    else
+      parts << env["SERVER_NAME"]
+    end
     parts << ":#{env["SERVER_PORT"]}" if env["SERVER_PORT"]
     parts.join
   end
@@ -129,6 +133,12 @@ class App < Sinatra::Base
 
   get "/login" do
     slim :login
+  end
+
+  get "/logout" do
+    session[:user] = nil
+    cookies["user"] = nil
+    redirect "/"
   end
 
   post "/login" do

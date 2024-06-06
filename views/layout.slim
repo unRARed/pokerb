@@ -152,7 +152,7 @@ html
       h1.title
         a href='/' PokeRb
     main
-      == slim :"/_game_indicator", locals: { game: @game }
+      == slim :"/_game_indicator", locals: { game: @game || Poker::Game.new(id: "PokeRb") }
       .flash == session[:flash].read
       == yield
     div style="text-align: center;"
