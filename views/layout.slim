@@ -160,6 +160,10 @@ html
           is_fresh: true) }
       .flash == session[:flash].read
       == yield
+      - if session["user"]
+        p
+          small
+            a href="/logout" Logout #{session["user"]}
     div style="text-align: center;"
       p.title
         small &copy; #{Time.now.year} PokeRb

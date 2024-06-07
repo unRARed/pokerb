@@ -1,0 +1,11 @@
+div style="text-align: center;"
+  h3 Get in the Game
+  form action="/games/#{@game.state[:id]}/join" method="POST"
+    - if @game.has_password?
+      label for="password" Password
+      input type="password" placeholder="Enter password" name="password"
+    - if !session["user"]
+      label for="user" User Name
+      input type="text" required="required" name="user"
+    p
+      input type="submit" value="Join game"

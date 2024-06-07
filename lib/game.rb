@@ -41,6 +41,10 @@ module Poker
       end
     end
 
+    def has_password?
+      !@state[:password].nil? && @state[:password].size > 0
+    end
+
     def all_cards
       (@deck.all_cards + @players.map(&:hole_cards).flatten)
     end
@@ -114,8 +118,10 @@ module Poker
 
     def add_player(player = Poker::Player.new({}))
       puts "Adding player #{player.state[:name]}"
-      if @players.size >= 10
-        raise ArgumentError, 'Game is full'
+      raise ArgumentError, 'Game is full' if @players.size >= 10
+      if @players.any?{|p| p.state[:name] == player.state[:name] }
+        raise ArgumentError,
+          "The User Name '#{player.state[:name]}' is taken."
       end
       @players << player
     end

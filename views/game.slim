@@ -28,9 +28,10 @@ div style="text-align: center;"
     - else
       h2 Waiting for Cards.
   - else
-    h2 Join Game
-    form action="/games/#{@game.state[:id]}/join" method="POST"
-      input type="submit" value="Join game"
+    p You are not in this game right now.
+    a(
+      href="/games/#{@game.state[:id]}/join"
+    ) Want to join?
 
 javascript:
   var gameId = '#{@game.state[:id]}';

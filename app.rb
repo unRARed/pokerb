@@ -125,10 +125,16 @@ class App < Sinatra::Base
   def set_game
     state = App.load_state_for_game(params["game_id"])
     @game = Poker::Game.new(state)
+    join_path = "/games/#{@game.state[:id]}/join"
     unless session[:user]
       session[:flash].message =
-        "You must be logged in to access a game."
-      return redirect("/")
+        "You must be logged in to access this game."
+      return redirect join_path
+    end
+    if @game.state[:password] != session["#{@game.state[:id]}_password"]
+      session[:flash].message =
+        "You must enter the correct password to access this game."
+      return redirect join_path
     end
   end
 
@@ -171,7 +177,8 @@ class App < Sinatra::Base
       @game.deck.wash
       @game.deck.shuffle
       App.write_state(@game.to_hash)
-      redirect "/games/#{@game.state[:id]}"
+      session["#{@game.state[:id]}_password"] = params["password"]
+      redirect "/games/#{@game.state[:id]}/community"
     end
 
     namespace '/:game_id' do
@@ -193,16 +200,32 @@ class App < Sinatra::Base
         { in_sync: true }.to_json
       end
 
+      get "/join" do
+        state = App.load_state_for_game(params["game_id"])
+        @game = Poker::Game.new(state)
+        slim :join
+      end
+
       post "/join" do
-        set_game
+        state = App.load_state_for_game(params["game_id"])
+        @game = Poker::Game.new(state)
+
+        session[:user] = params["user"] if params["user"]
 
         # TODO: handle name already taken
         @game.add_player Poker::Player.new(
           { name: session[:user] }
         )
 
+        if @game.has_password?
+          password_key = "#{@game.state[:id]}_password"
+          session[password_key] = params["password"]
+        end
         App.write_state(@game.to_hash)
         redirect "/games/#{@game.state[:id]}"
+      rescue ArgumentError => e
+        session[:flash].message = e.message
+        return redirect "/games/#{params["game_id"]}/join"
       end
 
       get "/fold" do

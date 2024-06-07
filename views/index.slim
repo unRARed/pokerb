@@ -1,11 +1,11 @@
-p Home Page
-- if session["user"]
-  p Hi, #{session["user"]}. I want to play a game.
-  form action="/games/new" method="POST"
-    input type="text" name="password" placeholder="Set a password"
-    br
-    input type="submit" value="Begin new game"
-  p
-    a href="/logout" Logout
-- else
-  a href="/login" Login
+div style="text-align: center;"
+  - if session["user"]
+    p Hi, #{session["user"]}. Ready to play?
+    form action="/games/new" method="POST"
+      input type="password" name="password" placeholder="Set a password?"
+      br
+      button.button.button-primary type="submit" Ok, let's go
+  - else
+    div style="text-align: center;"
+      p Hi, stranger. I want to play a game.
+      a.button.button-primary href="/login" Tell me your name
