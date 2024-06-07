@@ -152,7 +152,10 @@ html
     - color = @game.nil? ? "white" : @game.state[:step_color]
     div style="text-align: right;"
       h1.title
-        a href='/' PokeRb
+        - if session["user"]
+          a> href="/logout" Logout #{session["user"]}
+          span> |
+        a< href="/" PokeRb
     main
       == slim :"/_game_indicator",
         locals: { game: @game || \
@@ -160,10 +163,6 @@ html
           is_fresh: true) }
       .flash == session[:flash].read
       == yield
-      - if session["user"]
-        p
-          small
-            a href="/logout" Logout #{session["user"]}
     div style="text-align: center;"
       p.title
         small &copy; #{Time.now.year} PokeRb
