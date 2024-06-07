@@ -6,7 +6,7 @@ require 'rqrcode'
 
 module Poker
   class Game
-    attr_accessor :state, :deck, :players
+    attr_reader :state, :deck, :players, :all_cards
 
     def initialize(state = {})
       @state = {
@@ -18,15 +18,31 @@ module Poker
         url: "https://example.com",
         players: [],
         hands: [],
-        deck: { },
-        button_index: nil
+        deck: {},
+        button_index: nil,
+        is_fresh: false
       }.merge(state)
 
-      @deck = Poker::Deck.new @state[:deck]
+      if @state[:is_fresh]
+        @deck = Poker::Deck.
+          new stack: Deck.fresh.map{ |c| c.tuple }
+        @state[:is_fresh] = false
+      else
+        @deck = Poker::Deck.new @state[:deck]
+      end
       @players = @state[:players].map{ |p| Poker::Player.new p }
 
       puts "Game #{@state[:id]} initialized"
       puts "Players: #{players.map(&:state).map{ |p| p[:name] }}"
+
+      unless @state[:is_fresh]
+        raise if all_cards.size != 52
+        raise if all_cards.uniq.length != all_cards.length
+      end
+    end
+
+    def all_cards
+      (@deck.all_cards + @players.map(&:hole_cards).flatten)
     end
 
     def rand_color
@@ -39,10 +55,6 @@ module Poker
 
     def is_common_phase?
       [:flop, :turn, :river].include? @deck.phase
-    end
-
-    def community_cards
-      @deck.flopped
     end
 
     def is_playing?(player_name)
@@ -75,9 +87,8 @@ module Poker
         deal
         @deck.advance
       when :river
-        @players.each{ |player| player.reset }
+        @players.each{ |player| @deck.discard(player.reset) }
         @deck.reset
-        @deck.shuffle
         @deck.advance
       else
         @deck.advance
@@ -90,7 +101,7 @@ module Poker
     def determine_button
       @state[:deck].wash
       @players.each do |player|
-        player.draw(@state[:deck].draw)
+        player.draw(@deck.draw)
       end
       winner = @players.max do |a,b|
         a.state[:hole_cards].sum(&:full_value) <=> b.

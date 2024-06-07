@@ -4,7 +4,8 @@ module Poker
 
     def initialize(state = {})
       @state = { name: nil, hole_cards: [] }.merge(state)
-      @hole_cards = @state[:hole_cards].map{ |c| Poker::Card.new *c }
+      @hole_cards = @state[:hole_cards].
+        map{ |c| Poker::Card.new *c }
       @name = @state[:name]
     end
 
@@ -13,7 +14,9 @@ module Poker
     end
 
     def fold
+      cards = @hole_cards
       @hole_cards = []
+      cards
     end
 
     def to_hash
@@ -24,7 +27,7 @@ module Poker
     end
 
     def reset
-      @hole_cards = []
+      fold
     end
 
     def holding(board)

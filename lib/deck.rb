@@ -3,7 +3,7 @@ require_relative 'player'
 
 module Poker
   class Deck
-    attr_reader :state, :flopped, :phase
+    attr_reader :state, :community, :phase, :all_cards
 
     def self.fresh
       stack = []
@@ -17,23 +17,30 @@ module Poker
 
     def initialize(state = {})
       @state = {
-        stack: [], burnt: [], drawn: [],
-        flopped: [], phase: :pre_flop
+        stack: [], discarded: [],
+        community: [], phase: :deal
       }.merge(state)
 
       @phase = @state[:phase]
-      @stack = @state[:stack].map{ |c| Poker::Card.new *c }
-      @burnt = @state[:burnt].map{ |c| Poker::Card.new *c }
-      @drawn = @state[:drawn].map{ |c| Poker::Card.new *c }
-      @flopped = @state[:flopped].map{ |c| Poker::Card.new *c }
+      [:stack, :discarded, :community].each do |key|
+        instance_variable_set("@#{key}",
+          @state[key].map!{ |c| Poker::Card.new *c }
+        )
+      end
+
+      raise if all_cards.uniq.length != all_cards.length
+    end
+
+    def all_cards
+      @stack + @discarded + @community
     end
 
     def reset
       puts "Resetting deck"
-      @stack = Deck.fresh
-      @burnt = []
-      @drawn = []
-      @flopped = []
+      @stack = all_cards
+      @discarded = []
+      @community = []
+      shuffle
     end
 
     def next_phase
@@ -73,20 +80,38 @@ module Poker
     def burn
       target = @stack[0]
       @stack = @stack - [target]
-      @burnt << target
+      @discarded << target
     end
 
     def turn_over(count = 1)
       burn
-      count.times { @flopped << draw }
+      count.times { @community << draw }
     end
 
     def draw
       puts "Drawing card"
       target = @stack[0]
       @stack = @stack - [target]
-      @drawn << target
       target
+    end
+
+    def discard(cards)
+      @discarded = @discarded + cards
+    end
+
+    def wash
+      unless all_cards.count == 52
+        raise ArgumentError, 'Incomplete Deck'
+      end
+      old_stack = all_cards
+      new_stack = []
+
+      while old_stack.length > 0
+        new_stack << old_stack.delete_at(rand(old_stack.length))
+      end
+      @state = {
+        stack: new_stack, discarded: [], community: []
+      }.merge(state)
     end
 
     def shuffle
@@ -109,20 +134,11 @@ module Poker
     def to_hash
       {
         stack: @stack.map{ |c| c.tuple },
-        burnt: @burnt.map{ |c| c.tuple },
-        drawn: @drawn.map{ |c| c.tuple },
-        flopped: @flopped.map{ |c| c.tuple },
+        discarded: @discarded.map{ |c| c.tuple },
+        community: @community.map{ |c| c.tuple },
         phase: @phase
       }
     end
-
-    # def wash
-    #   @state = @state.merge(
-    #     stack: (@state[:stack] + @state[:burnt]).
-    #       shuffle,
-    #     burnt: []
-    #   )
-    # end
 
   private
 

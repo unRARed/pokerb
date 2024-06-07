@@ -10,7 +10,8 @@ div style="text-align: center;"
       - if !params["peek"].nil?
         p
           span You have
-          span< = player.holding(@game.community_cards).best_hand[0]
+          span< = player. \
+            holding(@game.deck.community).best_hand[0]
       - else
         p Click your cards to peek.
       .hole_cards

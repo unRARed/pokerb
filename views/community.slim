@@ -12,7 +12,7 @@
           style="display: block; cursor: pointer;"
         )
           img src="/assets/Back.png" alt="Deal the Hand"
-      - @game.community_cards.each do |card|
+      - @game.deck.community.each do |card|
         .card == card.image
     - else
       div style="align-self: center; text-align: center; width: 100%;"
@@ -40,3 +40,6 @@
   div
     - # TODO: put something here
   div
+- if !ENV["DEBUG"].nil?
+  = @game.to_hash
+  p = @game.deck.all_cards.count

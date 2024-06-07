@@ -125,6 +125,11 @@ class App < Sinatra::Base
   def set_game
     state = App.load_state_for_game(params["game_id"])
     @game = Poker::Game.new(state)
+    unless session[:user]
+      session[:flash].message =
+        "You must be logged in to access a game."
+      return redirect("/")
+    end
   end
 
   get '/' do
@@ -159,9 +164,11 @@ class App < Sinatra::Base
       @game = Poker::Game.new(
         manager: session[:user],
         password: params["password"],
-        url: App.server_url(request)
+        url: App.server_url(request),
+        is_fresh: true
       )
       @game.deck.reset
+      @game.deck.wash
       @game.deck.shuffle
       App.write_state(@game.to_hash)
       redirect "/games/#{@game.state[:id]}"
@@ -207,7 +214,7 @@ class App < Sinatra::Base
         set_game
         if (player = @game.player_by_name(session[:user]))
           break unless @game.has_cards?(player.name)
-          player.fold
+          @game.deck.discard(player.fold)
           App.write_state(@game.to_hash)
         end
         redirect "/games/#{@game.state[:id]}"
@@ -223,7 +230,7 @@ class App < Sinatra::Base
         set_game
         if session[:user] == @game.state[:manager]
           @game.advance
-          App.debug "Phase: #{@game.deck.phase}"
+          App.debug "Advanced to #{@game.deck.phase}"
           App.write_state(@game.to_hash)
         else
           session[:flash].message =
