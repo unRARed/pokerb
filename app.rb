@@ -131,10 +131,12 @@ class App < Sinatra::Base
         "You must be logged in to access this game."
       return redirect join_path
     end
-    if @game.state[:password] != session["#{@game.state[:id]}_password"]
-      session[:flash].message =
-        "You must enter the correct password to access this game."
-      return redirect join_path
+    if @game.has_password?
+      if @game.state[:password] != session["#{@game.state[:id]}_password"]
+        session[:flash].message =
+          "You must enter the correct password to access this game."
+        return redirect join_path
+      end
     end
   end
 
@@ -177,7 +179,14 @@ class App < Sinatra::Base
       @game.deck.wash
       @game.deck.shuffle
       App.write_state(@game.to_hash)
-      session["#{@game.state[:id]}_password"] = params["password"]
+
+      # only set the password for the
+      # manager's session if we set one
+      if @game.has_password?
+        App.debug "Setting password for manager"
+        session["#{@game.state[:id]}_password"] =
+          params["password"]
+      end
       redirect "/games/#{@game.state[:id]}/community"
     end
 
@@ -185,19 +194,6 @@ class App < Sinatra::Base
       get "" do
         set_game
         slim :game
-      end
-
-      # For clients to check if they are up to date
-      # and if not, to reload their hole cards.
-      post "/poll" do
-        return unless (data = JSON.parse(request.body.read))
-
-        state = App.load_state_for_game(data["game_id"])
-        if data["step_color"] != state[:step_color]
-          App.debug "Step color mismatch"
-          return { in_sync: false }.to_json
-        end
-        { in_sync: true }.to_json
       end
 
       get "/join" do
@@ -212,7 +208,6 @@ class App < Sinatra::Base
 
         session[:user] = params["user"] if params["user"]
 
-        # TODO: handle name already taken
         @game.add_player Poker::Player.new(
           { name: session[:user] }
         )
@@ -228,6 +223,60 @@ class App < Sinatra::Base
         return redirect "/games/#{params["game_id"]}/join"
       end
 
+      get "/community" do
+        set_game
+        App.debug "Loading community cards for #{@game.state[:id]}"
+        slim :community
+      end
+
+      #####################
+      ## Manager Actions ##
+      #####################
+      post "/advance" do
+        set_game
+        if session[:user] == @game.state[:manager]
+          @game.advance
+          App.debug "Advanced to #{@game.deck.phase}"
+          App.write_state(@game.to_hash)
+        else
+          session[:flash].message =
+            "Only the manager can advance the game"
+        end
+        redirect "/games/#{@game.state[:id]}/community"
+      end
+
+      post "/remove_player" do
+        set_game
+        if session[:user] != @game.state[:manager]
+          session[:flash].message =
+            "Only #{@game.state[:manager]} can remove players."
+          redirect "/games/#{params["game_id"]}/community"
+        end
+
+        if (player = @game.player_by_name(params["player_name"]))
+          if @game.has_cards?(player.name)
+            @game.deck.discard(player.fold)
+          end
+          @game.remove_player(params["player_name"])
+          App.write_state(@game.to_hash)
+        end
+        redirect "/games/#{params["game_id"]}/community"
+      end
+
+      ##################
+      ## User Actions ##
+      ##################
+      post "/poll" do
+        return unless (data = JSON.parse(request.body.read))
+
+        state = App.load_state_for_game(data["game_id"])
+        if data["step_color"] != state[:step_color]
+          App.debug "Step color mismatch"
+          return { in_sync: false }.to_json
+        end
+        { in_sync: true }.to_json
+      end
+
       get "/fold" do
         set_game
         slim :fold
@@ -241,25 +290,6 @@ class App < Sinatra::Base
           App.write_state(@game.to_hash)
         end
         redirect "/games/#{@game.state[:id]}"
-      end
-
-      get "/community" do
-        set_game
-        App.debug "Loading community cards for #{@game.state[:id]}"
-        slim :community
-      end
-
-      post "/advance" do
-        set_game
-        if session[:user] == @game.state[:manager]
-          @game.advance
-          App.debug "Advanced to #{@game.deck.phase}"
-          App.write_state(@game.to_hash)
-        else
-          session[:flash].message =
-            "Only the manager can advance the game"
-        end
-        redirect "/games/#{@game.state[:id]}/community"
       end
     end
   end

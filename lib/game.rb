@@ -126,6 +126,15 @@ module Poker
       @players << player
     end
 
+    def remove_player(player_name)
+      if (player = @players.
+        find{|p| p.state[:name] == player_name }
+      )
+        @players.delete(player)
+      end
+      player
+    end
+
     def ready?
       @players.size > 1 && @state[:button_index]
     end
