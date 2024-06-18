@@ -10,6 +10,18 @@ module Poker
       :clubs, :diamonds, :hearts, :spades
     ].freeze
 
+    BACKS = Dir.glob('./**/*Back.png').map do |path|
+      path.split('/').last
+    end
+
+    def self.backs_for_select
+      pairs = BACKS.map do |image|
+        key = image.scan(/([A-Z].*)Back\.png/)
+        { key.flatten.first => image }
+      end
+      pairs.reduce({}, :merge)
+    end
+
     def initialize(
       rank = RANKS.sample, suit = SUITS.sample
     )

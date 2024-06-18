@@ -11,7 +11,7 @@
           onclick="this.parentNode.submit();"
           style="display: block; cursor: pointer;"
         )
-          img src="/assets/Back.png" alt="Deal the Hand"
+          img src="/assets/#{@game.state[:card_back]}" alt="Deal the Hand"
       - @game.deck.community.each do |card|
         .card == card.image
     - else

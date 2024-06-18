@@ -166,12 +166,17 @@ class App < Sinatra::Base
   end
 
   namespace '/games' do
+    get '' do
+      slim :games
+    end
+
     post "/new" do
       App.debug "Creating new game"
       # TODO: check if game id is already taken
       @game = Poker::Game.new(
         manager: session[:user],
         password: params["password"],
+        card_back: params["card_back"],
         url: App.server_url(request),
         is_fresh: true
       )

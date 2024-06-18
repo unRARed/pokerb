@@ -19,6 +19,7 @@ module Poker
         players: [],
         hands: [],
         deck: {},
+        card_back: "DefaultBack.png",
         button_index: nil,
         is_fresh: false
       }.merge(state)

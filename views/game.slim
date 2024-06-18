@@ -23,7 +23,7 @@ div style="text-align: center;"
           - else
             - 2.times do
               .card
-                img src="/assets/Back.png" alt="Back of card" width="140"
+                img src="/assets/#{@game.state[:card_back]}" alt="Back of card" width="140"
       .clearfix
     - else
       h2 Waiting for Cards.
@@ -50,7 +50,7 @@ javascript:
         result = http.responseText;
 
         if (!JSON.parse(result).in_sync) {
-          window.location.reload();
+          window.location = window.location.pathname;
         }
       }
     }

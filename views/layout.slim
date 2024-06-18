@@ -103,6 +103,7 @@ html
         align-items: center;
       }
       .card { max-width: 300px; }
+      .card.card--inline { display: inline-block; }
       .card img { width: 100%; display: block; }
       .board .card + .card { margin-left: 4px; }
       .board .card img { max-width: 189px; }
@@ -113,7 +114,6 @@ html
         max-width: 300px;
         margin: 16px auto 0;
       }
-      .hole_cards:hover .card:last-child { opacity: 0.8; }
       .hole_cards .card {
         position: absolute;
         top: 0;
@@ -135,6 +135,8 @@ html
         margin-right: 8px;
       }
       .game-indicator__color { width: 100%; height: 24px; }
+
+      .hidden { display: none !important; }
 
       @media (prefers-color-scheme: dark) {
         .hidden-dark { display: none; }
