@@ -8,7 +8,6 @@ require "sinatra/cookies"
 
 require "slim"
 require "yaml"
-# require "fileutils"
 require "securerandom"
 require "byebug"
 require 'socket'
@@ -16,8 +15,6 @@ require 'socket'
 Dir.glob(Dir.pwd + '/lib/**/*.rb').each do |file_path|
   require file_path
 end
-
-CABLE_URL = ENV.fetch("CABLE_URL", "/cable")
 
 IP_ADDRESS =
   Socket.
@@ -44,22 +41,22 @@ class Flash
   end
 end
 
-class App < Sinatra::Base
+class PokeRb < Sinatra::Base
   configure :development do
-    register Sinatra::Namespace
-
     register Sinatra::Reloader
     also_reload Dir.pwd + '/lib/**/*.rb'
   end
 
+  configure :production do
+    set :bind, IP_ADDRESS
+  end
+
+  register Sinatra::Namespace
   helpers Sinatra::Cookies
   enable :sessions
   set :session_secret,
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
-
   set :public_folder, "assets"
-
-  set :bind, IP_ADDRESS
 
   def self.debug(msg)
     return unless !ENV["DEBUG"].nil?
@@ -86,7 +83,7 @@ class App < Sinatra::Base
   #
   def self.load_state_for_game(game_id)
     YAML.load(
-      File.open("#{App.game_root(game_id)}/state.yml")
+      File.open("#{PokeRb.game_root(game_id)}/state.yml")
     )
   end
 
@@ -94,11 +91,11 @@ class App < Sinatra::Base
   # from errors and prevent having redundant requests.
   #
   def self.write_state(state)
-    unless Dir.exist?(App.game_root(state[:id]))
-      Dir.mkdir(App.game_root(state[:id]))
+    unless Dir.exist?(PokeRb.game_root(state[:id]))
+      Dir.mkdir(PokeRb.game_root(state[:id]))
     end
     File.write(
-      "#{App.game_root(state[:id])}/state.yml",
+      "#{PokeRb.game_root(state[:id])}/state.yml",
       state.to_yaml
     )
     state
@@ -123,7 +120,7 @@ class App < Sinatra::Base
   end
 
   def set_game
-    state = App.load_state_for_game(params["game_id"])
+    state = PokeRb.load_state_for_game(params["game_id"])
     @game = Poker::Game.new(state)
     join_path = "/games/#{@game.state[:id]}/join"
     unless session[:user]
@@ -158,7 +155,7 @@ class App < Sinatra::Base
     if params["user"]
       session[:user] = params["user"]
       cookies["user"] = params["user"]
-      App.debug "User logged in: #{session[:user]}"
+      PokeRb.debug "User logged in: #{session[:user]}"
       redirect "/"
     else
       slim :login
@@ -171,24 +168,24 @@ class App < Sinatra::Base
     end
 
     post "/new" do
-      App.debug "Creating new game"
+      PokeRb.debug "Creating new game"
       # TODO: check if game id is already taken
       @game = Poker::Game.new(
         manager: session[:user],
         password: params["password"],
         card_back: params["card_back"],
-        url: App.server_url(request),
+        url: PokeRb.server_url(request),
         is_fresh: true
       )
       @game.deck.reset
       @game.deck.wash
       @game.deck.shuffle
-      App.write_state(@game.to_hash)
+      PokeRb.write_state(@game.to_hash)
 
       # only set the password for the
       # manager's session if we set one
       if @game.has_password?
-        App.debug "Setting password for manager"
+        PokeRb.debug "Setting password for manager"
         session["#{@game.state[:id]}_password"] =
           params["password"]
       end
@@ -202,13 +199,13 @@ class App < Sinatra::Base
       end
 
       get "/join" do
-        state = App.load_state_for_game(params["game_id"])
+        state = PokeRb.load_state_for_game(params["game_id"])
         @game = Poker::Game.new(state)
         slim :join
       end
 
       post "/join" do
-        state = App.load_state_for_game(params["game_id"])
+        state = PokeRb.load_state_for_game(params["game_id"])
         @game = Poker::Game.new(state)
 
         session[:user] = params["user"] if params["user"]
@@ -221,7 +218,7 @@ class App < Sinatra::Base
           password_key = "#{@game.state[:id]}_password"
           session[password_key] = params["password"]
         end
-        App.write_state(@game.to_hash)
+        PokeRb.write_state(@game.to_hash)
         redirect "/games/#{@game.state[:id]}"
       rescue ArgumentError => e
         session[:flash].message = e.message
@@ -230,7 +227,7 @@ class App < Sinatra::Base
 
       get "/community" do
         set_game
-        App.debug "Loading community cards for #{@game.state[:id]}"
+        PokeRb.debug "Loading community cards for #{@game.state[:id]}"
         slim :community
       end
 
@@ -241,8 +238,8 @@ class App < Sinatra::Base
         set_game
         if session[:user] == @game.state[:manager]
           @game.advance
-          App.debug "Advanced to #{@game.deck.phase}"
-          App.write_state(@game.to_hash)
+          PokeRb.debug "Advanced to #{@game.deck.phase}"
+          PokeRb.write_state(@game.to_hash)
         else
           session[:flash].message =
             "Only the manager can advance the game"
@@ -263,7 +260,7 @@ class App < Sinatra::Base
             @game.deck.discard(player.fold)
           end
           @game.remove_player(params["player_name"])
-          App.write_state(@game.to_hash)
+          PokeRb.write_state(@game.to_hash)
         end
         redirect "/games/#{params["game_id"]}/community"
       end
@@ -274,9 +271,9 @@ class App < Sinatra::Base
       post "/poll" do
         return unless (data = JSON.parse(request.body.read))
 
-        state = App.load_state_for_game(data["game_id"])
+        state = PokeRb.load_state_for_game(data["game_id"])
         if data["step_color"] != state[:step_color]
-          App.debug "Step color mismatch"
+          PokeRb.debug "Step color mismatch"
           return { in_sync: false }.to_json
         end
         { in_sync: true }.to_json
@@ -292,7 +289,7 @@ class App < Sinatra::Base
         if (player = @game.player_by_name(session[:user]))
           break unless @game.has_cards?(player.name)
           @game.deck.discard(player.fold)
-          App.write_state(@game.to_hash)
+          PokeRb.write_state(@game.to_hash)
         end
         redirect "/games/#{@game.state[:id]}"
       end
@@ -303,6 +300,4 @@ class App < Sinatra::Base
     path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"
     send_file path, :type => :png
   end
-
-  run!
 end

@@ -14,7 +14,7 @@ Using the App
 
 <img align="left" src="https://raw.githubusercontent.com/unRARed/pokerb/main/hand.jpg">
 
-- Run `bin/server`
+- Run `rackup -p 5001` (or whatever port you want it on)
   - This uses the first ipv4 ip found for accessing on your LAN
   - Add `POKERB_HOSTNAME=yourdomain.com bin/server` to specify host
   - Or use `DEBUG=1 bin/server` to see debug logging

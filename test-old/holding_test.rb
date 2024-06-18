@@ -174,11 +174,11 @@ class HoldingTest < PokerTest
       Poker::Card.new('3', :diamonds)
     ]
     holding = Poker::Holding.new(cards)
-    assert_equal 'Pair', holding.best_hand[0]
+    assert_equal 'a Pair', holding.best_hand[0]
 
     cards = cards + [Poker::Card.new('3', :clubs)]
     holding = Poker::Holding.new(cards)
-    assert_equal 'Set', holding.best_hand[0]
+    assert_equal 'a Set', holding.best_hand[0]
 
     cards = cards + [Poker::Card.new('3', :spades)]
     holding = Poker::Holding.new(cards)
