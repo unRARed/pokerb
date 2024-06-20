@@ -1,6 +1,8 @@
 PokeRb
 ======
 
+[![Ruby](https://github.com/unRARed/pokerb/actions/workflows/ruby.yml/badge.svg)](https://github.com/unRARed/pokerb/actions/workflows/ruby.yml)
+
 Play Texas Holdem' Poker with your friends... even if they can't
 deal for shit. This is NOT meant for production usage. Any use
 of this software is of your own risk. This exists to speed up your
