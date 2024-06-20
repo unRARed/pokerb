@@ -5,7 +5,7 @@
         id="advance"
         action="/games/#{@game.state[:id]}/advance"
         method="POST"
-        class="card"
+        class="card card--back"
       )
         a(
           onclick="this.parentNode.submit();"
@@ -13,7 +13,7 @@
         )
           img src="/assets/#{@game.state[:card_back]}" alt="Deal the Hand"
       - @game.deck.community.each do |card|
-        .card == card.image
+        .card.card--face == card.image
     - else
       div style="align-self: center; text-align: center; width: 100%;"
         == slim :"streets/_#{@game.deck.phase}",

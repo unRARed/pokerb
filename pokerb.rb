@@ -12,9 +12,7 @@ require "securerandom"
 require "byebug"
 require 'socket'
 
-Dir.glob(Dir.pwd + '/lib/**/*.rb').each do |file_path|
-  require file_path
-end
+require "./poker"
 
 IP_ADDRESS =
   Socket.

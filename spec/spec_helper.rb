@@ -13,20 +13,51 @@
 # the additional setup, and require it from the spec files that actually need
 # it.
 
+require 'simplecov'
+
+SimpleCov.start do
+  filters.clear
+  track_files "*.rb"
+  track_files "**/*.rb"
+  add_filter "/spec/"
+  add_filter "/config/"
+  add_filter "/test-old/"
+  add_group "Library", "lib"
+end
+
 ENV['RACK_ENV'] = "test"
 ENV['SERVER_PORT'] = "4568"
+
 require "./pokerb.rb"
 
 require 'rack/test' # it is needed to run rspec
 require "./config/environment"
 require "capybara/rspec"
+require 'webdrivers/chromedriver'
 
 def app
   PokeRb
 end
 
 Capybara.app = PokeRb
-Capybara.default_max_wait_time = 2
+
+IS_DEBUG_MODE = -> { !ENV['DEBUG'].nil? ? :chrome : :headless_chrome }
+
+Capybara.register_driver :chrome do |app|
+  Capybara::Selenium::Driver.new(app, browser: :chrome)
+end
+
+Capybara.register_driver :headless_chrome do |app|
+  options = ::Selenium::WebDriver::Chrome::Options.new
+  options.add_argument 'headless'
+  Capybara::Selenium::Driver.new app, browser: :chrome, options: options
+end
+
+Capybara.configure do |config|
+  config.default_max_wait_time = 10
+  config.default_driver = :rack_test
+  config.javascript_driver = IS_DEBUG_MODE.call
+end
 
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
@@ -38,6 +69,10 @@ RSpec.configure do |config|
 
   config.include Rack::Test::Methods
   config.include Capybara::DSL, type: :feature
+
+  config.before(:each, type: :feature) do
+    Capybara.current_driver = Capybara.javascript_driver
+  end
 
   config.expect_with :rspec do |expectations|
     # This option will default to `true` in RSpec 4. It makes the `description`

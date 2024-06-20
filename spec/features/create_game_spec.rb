@@ -16,13 +16,21 @@ RSpec.describe "Creating a Game", type: :feature do
     click_on "Deal Cards"
     expect(page).not_to have_selector(".card")
 
+    # Show the flop
     click_on "Head to the Flop"
-    expect(page).to have_selector(".card", count: 4)
+    expect(page).to have_selector(".card--back", count: 1)
+    expect(page).to have_selector(".card--face", count: 3)
 
-    # TODO: different driver needed to test this
-    #
-    # find(id: "advance").find("a").click
-    # expect(page).to have_selector(".card", count: 5)
+    # Show the turn
+    find(id: "advance").find("a").click
+    expect(page).to have_selector(".card--face", count: 4)
+
+    # Show the river
+    find(id: "advance").find("a").click
+    expect(page).to have_selector(".card--face", count: 5)
+
+    # Return to the pre-deal state
+    find(id: "advance").find("a").click
+    expect(page).to have_content("Scan QR to Join")
   end
 end
-
