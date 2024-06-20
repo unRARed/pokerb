@@ -20,10 +20,10 @@ permissions:
 jobs:
   test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        ruby-version: ['2.6', '2.7', '3.0']
+        ruby-version: ['3.2']
 
     steps:
     - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
     # https://github.com/ruby/setup-ruby#versioning): uses:
     # ruby/setup-ruby@v1
     # # v1.146.0
-      uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf
+      uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby-version }}
         # runs 'bundle install' and caches installed
