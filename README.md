@@ -18,8 +18,8 @@ Using the App
 
 - Run `rackup -p 5001` (or whatever port you want it on)
   - This uses the first ipv4 ip found for accessing on your LAN
-  - Add `POKERB_HOSTNAME=yourdomain.com bin/server` to specify host
-  - Or use `DEBUG=1 bin/server` to see debug logging
+  - Add `POKERB_HOSTNAME=yourdomain.com rackup` to specify host
+  - Or use `DEBUG=1 rackup` to see debug logging
 - Now access `HOST:5000` on tablet / shared device
 - Create a new game
 - Scan QR code from other device(s) to join the game
