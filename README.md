@@ -9,25 +9,58 @@ of this software is of your own risk. This exists to speed up your
 home game card dealing. If you have a cool idea, submit an issue,
 or better yet, a PR.
 
+### What does it do?
+
+- Deals cards for a Texas Hold'em home game
+- Keeps track of the players with a session
+- Rotates the dealer button, player to player
+- Offers a choice of card-backs (thanks Billy T.)
+- Also, it allows the game manager/creator to:
+  - Advance the game/deck state
+  - Remove players from the game (stale sessions)
+
+### WHAT IT DOES NOT DO (at least yet)
+
+- It does not... Deal other game formats
+- It does not... Track hand history
+- It does not... Determine winners
+- It does not... Handle betting / pots
+
+### Why?
+
+- Dealing wastes a lot of time
+  (see online vs. live poker hands per hour stats)
+- People suck at dealing. I took a course even, and I still suck.
+- Low stakes cash games can't support paying for a dealer.
+- `rand()` > Dealer
+
+
 ![Community Cards](https://raw.githubusercontent.com/unRARed/pokerb/main/community-cards.jpg)
 
-Using the App
--------------
+Running the Server
+------------------
 
 <img align="left" src="https://raw.githubusercontent.com/unRARed/pokerb/main/hand.jpg">
 
-- Run `rackup -p 5001` (or whatever port you want it on)
-  - This uses the first ipv4 ip found for accessing on your LAN
-  - Add `POKERB_HOSTNAME=yourdomain.com rackup` to specify host
-  - Or use `DEBUG=1 rackup` to see debug logging
-- Now access `HOST:5000` on tablet / shared device
-- Create a new game
+- First `bundle install`
+- Then run `rackup`.
+  - This will run a server from `http://127.0.0.1:9292`
+- To expose to your network, set `RACK_ENV=production`
+  - Further, add `POKERB_HOSTNAME=yourdomain.com rackup` to specify
+    host for qrcode
+  - Use `DEBUG=1 rackup` to view debug logging
+
+Client Access
+-------------
+
+- Browse to `http://POKERB_HOSTNAME:9292` on tablet / shared device
+- Set a user name and create a new game
 - Scan QR code from other device(s) to join the game
 
 Development
 -----------
 
-- `rake test` runs the test suite
+- `rspec spec` runs the test suite
 
 Conventions
 -----------
