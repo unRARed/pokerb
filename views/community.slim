@@ -30,12 +30,16 @@
             )
               input type="submit" value="#{value}" style="margin: 0;"
 .community_footer
-  - @game.players.each do |player|
+  - @game.players_in_turn_order.each_with_index do |player|
+    - player_class = []
+    - unless @game.has_cards?(player.name)
+      - player_class << 'player--out'
+    - if @game.dealer == player
+      - player_class << 'player--dealer'
     form.player(
       method="POST"
       action="/games/#{@game.state[:id]}/remove_player"
-      class="#{@game.has_cards?(player.name) ? \
-        '' : 'player--out'}"
+      class="#{player_class.join(' ')}"
     )
       input(
         type="hidden" name="player_name"
@@ -43,6 +47,7 @@
       )
       .player__cards
       .player__name = player.name
+
   div
     - # TODO: put something here
   div

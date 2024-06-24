@@ -89,12 +89,24 @@ html
         width: 3px;
         background-color: var(--bg);
       }
+      .player.player--dealer .player__cards {
+        background: #76c209;
+      }
+      .player.player--dealer .player__name {
+        color: #76c209;
+      }
       .player.player--out { opacity: 0.4; }
       .player.player--out .player__cards {
         background: #999;
       }
       .player.player--out .player__name {
         color: #999
+      }
+      .player.player--dealer.player--out .player__cards {
+        background: #4d944c;
+      }
+      .player.player--dealer.player--out .player__name {
+        color: #4d944c;
       }
       .board {
         padding: 16px 0;

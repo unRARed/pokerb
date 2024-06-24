@@ -16,6 +16,22 @@ RSpec.describe "Creating a Game", type: :feature do
     click_on "Deal Cards"
     expect(page).not_to have_selector(".card")
 
+    # No players have been added yet
+    expect(page).to have_content(
+      "Please add at least one player to deal"
+    )
+
+    # So dealer adds himself
+    community_url = current_url
+    visit community_url.split("/community").first
+    click_on "Want to join"
+    click_on "Join"
+    visit community_url
+
+    # Ok, now we can deal
+    click_on "Deal Cards"
+    expect(page).not_to have_selector(".card")
+
     # Show the flop
     click_on "Head to the Flop"
     expect(page).to have_selector(".card--back", count: 1)

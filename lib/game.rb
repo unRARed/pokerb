@@ -6,7 +6,7 @@ require 'rqrcode'
 
 module Poker
   class Game
-    attr_reader :state, :deck, :players, :all_cards
+    attr_reader :state, :deck, :players, :all_cards, :dealer
 
     def initialize(state = {})
       @state = {
@@ -20,7 +20,7 @@ module Poker
         hands: [],
         deck: {},
         card_back: "DefaultBack.png",
-        button_index: nil,
+        button_index: 0,
         is_fresh: false
       }.merge(state)
 
@@ -87,6 +87,9 @@ module Poker
 
     def advance
       puts "Advancing game"
+      if @players.size < 1
+        raise ArgumentError, "Please add at least one player to deal"
+      end
       case @deck.phase
       when :deal
         deal
@@ -95,6 +98,8 @@ module Poker
         @players.each{ |player| @deck.discard(player.reset) }
         @deck.reset
         @deck.advance
+        @state[:button_index] =
+          (@state[:button_index] + 1) % @players.size
       else
         @deck.advance
       end
@@ -103,19 +108,12 @@ module Poker
       @state = @state.merge(step_color: rand_color)
     end
 
-    def determine_button
-      @state[:deck].wash
-      @players.each do |player|
-        player.draw(@deck.draw)
-      end
-      winner = @players.max do |a,b|
-        a.state[:hole_cards].sum(&:full_value) <=> b.
-          state[:hole_cards].sum(&:full_value)
-      end
-      @state = @state.merge(
-        button_index: @players.index(winner)
-      )
-    end
+    # def winner
+    #   @players.max do |a,b|
+    #     a.state[:hole_cards].sum(&:full_value) <=> b.
+    #       state[:hole_cards].sum(&:full_value)
+    #   end
+    # end
 
     def add_player(player = Poker::Player.new({}))
       puts "Adding player #{player.state[:name]}"
@@ -141,6 +139,8 @@ module Poker
     end
 
     def players_in_turn_order
+      return @players if @players.size < 2
+
       @players[(@state[:button_index] + 1)..-1] +
       @players[0..@state[:button_index]]
     end
@@ -159,8 +159,9 @@ module Poker
 
     # def deal(hand = Poker::Hand.new)
     def deal
+      # TODO: deal only 1 card to each player, but twice
       2.times do
-        @players.each do |player|
+        players_in_turn_order.each do |player|
           player.draw(@deck.draw)
         end
       end

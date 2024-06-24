@@ -1,12 +1,13 @@
 module Poker
   class Player
-    attr_reader :state, :hole_cards, :name
+    attr_reader :state, :hole_cards, :name, :is_dealer
 
     def initialize(state = {})
       @state = { name: nil, hole_cards: [] }.merge(state)
       @hole_cards = @state[:hole_cards].
         map{ |c| Poker::Card.new *c }
       @name = @state[:name]
+      @is_dealer = @state[:is_dealer]
     end
 
     def draw(card)

@@ -42,6 +42,7 @@ end
 class PokeRb < Sinatra::Base
   configure :development do
     register Sinatra::Reloader
+    also_reload Dir.pwd + '/lib/*.rb'
     also_reload Dir.pwd + '/lib/**/*.rb'
   end
 
@@ -243,6 +244,9 @@ class PokeRb < Sinatra::Base
             "Only the manager can advance the game"
         end
         redirect "/games/#{@game.state[:id]}/community"
+      rescue ArgumentError => e
+        session[:flash].message = e.message
+        return redirect "/games/#{params["game_id"]}/community"
       end
 
       post "/remove_player" do
