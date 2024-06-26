@@ -12,8 +12,8 @@ module Poker
       return ['a Straight Flush', result] if check
       check, result = quads?
       return ['Quads', result] if check
-      check, result = boat?
-      return ['a Boat', result] if check
+      check, result = full_house?
+      return ['a Full House', result] if check
       check, result = flush?
       return ['a Flush', result] if check
       check, result = straight?
@@ -45,7 +45,7 @@ module Poker
       [true, result[1]]
     end
 
-    def boat?
+    def full_house?
       return [false, []] unless @cards.size > 4
       return [false, []] unless (
         set = cards.
