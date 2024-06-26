@@ -33,6 +33,7 @@ module Poker
         @deck = Poker::Deck.
           new stack: Deck.fresh.map{ |c| c.tuple }
         @state[:is_fresh] = false
+        @state[:created_at] = Time.now.to_i
       else
         @deck = Poker::Deck.new @state[:deck]
       end
@@ -43,9 +44,15 @@ module Poker
       puts "Players: #{players.map(&:state).map{ |p| p[:name] }}"
 
       unless @state[:is_fresh]
-        raise if all_cards.size != 52
-        raise if all_cards.uniq.length != all_cards.length
+        raise ArgumentError, "Incomplete Deck" if all_cards.size != 52
+        raise ArgumentError, "Card Discrepancy" if all_cards.uniq.length != all_cards.length
       end
+    end
+
+    # Games older than a day are considered stale
+    def is_stale?
+      @state[:created_at].nil? ||
+        (Time.now - Time.at(@state[:created_at])) > 86400
     end
 
     def has_password?

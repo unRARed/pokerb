@@ -191,6 +191,25 @@ class PokeRb < Sinatra::Base
       redirect "/games/#{@game.state[:id]}/community"
     end
 
+    get "/cleanup" do
+      Dir.glob('./games/*').each do |file|
+        begin
+          game_id = file.split('/').last
+          puts "Deleting #{game_id}"
+          game = Poker::Game.new(PokeRb.load_state_for_game(game_id))
+          if game.is_stale?
+            puts "Deleting #{game_id}"
+            FileUtils.rm_rf(file)
+          end
+        rescue ArgumentError => e
+          puts e.message
+          next
+        end
+      end
+      session[:flash].message = "Cleaned up stale games"
+      redirect "/"
+    end
+
     namespace '/:game_id' do
       get "" do
         set_game
