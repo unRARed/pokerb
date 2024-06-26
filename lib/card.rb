@@ -42,8 +42,12 @@ module Poker
       "#{rank} of #{suit}"
     end
 
-    def full_value
+    def absolute_value
       value(rank) + value(suit)
+    end
+
+    def game_value
+      value(rank).to_i
     end
 
     def value(v)
@@ -57,19 +61,19 @@ module Poker
       when :spades
         0.4
       when /\d{1}/
-        v.to_i
+        v.to_f
       when 'Ten'
-        10
+        10.0
       when 'Jack'
-        11
+        11.0
       when 'Queen'
-        12
+        12.0
       when 'King'
-        13
+        13.0
       when 'Ace'
-        14
+        14.0
       else
-        0
+        0.0
       end
     end
 

@@ -117,8 +117,8 @@ module Poker
 
     # def winner
     #   @players.max do |a,b|
-    #     a.state[:hole_cards].sum(&:full_value) <=> b.
-    #       state[:hole_cards].sum(&:full_value)
+    #     a.state[:hole_cards].sum(&:absolute_value) <=> b.
+    #       state[:hole_cards].sum(&:absolute_value)
     #   end
     # end
 
@@ -170,8 +170,8 @@ module Poker
       @deck.wash
       @players.each{|player| player.draw(@deck.draw) }
       winner = @players.max do |a,b|
-        a.state[:hole_cards].sum(&:full_value) <=> b.
-          state[:hole_cards].sum(&:full_value)
+        a.state[:hole_cards].sum(&:absolute_value) <=> b.
+          state[:hole_cards].sum(&:absolute_value)
       end
       reset
       puts "Winner: #{winner.state[:name]}"

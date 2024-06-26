@@ -4,7 +4,7 @@ module Poker
 
     # cards is hole_cards + the board
     def initialize(cards)
-      @cards = cards.sort_by(&:full_value)&.reverse || []
+      @cards = cards.sort_by(&:absolute_value)&.reverse || []
     end
 
     def best_hand
@@ -114,7 +114,7 @@ module Poker
       cards.each_with_index do |card, i|
         next if i == 0
         if (
-          last.full_value.floor - card.full_value.floor
+          last.absolute_value.floor - card.absolute_value.floor
         ) == 1
           straight = straight + [card]
         else
