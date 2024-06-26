@@ -7,7 +7,7 @@ module Poker
       @hole_cards = @state[:hole_cards].
         map{ |c| Poker::Card.new *c }
       @name = @state[:name]
-      @is_dealer = @state[:is_dealer]
+      @is_dealer = @state[:is_dealer] || false
     end
 
     def draw(card)
