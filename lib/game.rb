@@ -6,7 +6,12 @@ require 'rqrcode'
 
 module Poker
   class Game
-    attr_reader :state, :deck, :players, :all_cards, :dealer
+    attr_reader :state,
+      :deck,
+      :players,
+      :all_cards,
+      :dealer,
+      :button_index
 
     def initialize(state = {})
       @state = {
@@ -32,6 +37,7 @@ module Poker
         @deck = Poker::Deck.new @state[:deck]
       end
       @players = @state[:players].map{ |p| Poker::Player.new p }
+      @button_index = @state[:button_index]
 
       puts "Game #{@state[:id]} initialized"
       puts "Players: #{players.map(&:state).map{ |p| p[:name] }}"
@@ -77,7 +83,8 @@ module Poker
     def to_hash
       @state.merge(
         deck: deck.to_hash,
-        players: @players.map(&:to_hash)
+        players: @players.map(&:to_hash),
+        button_index: @button_index
       )
     end
 
@@ -90,7 +97,7 @@ module Poker
       if @players.size < 1
         raise ArgumentError, "Please add at least one player to deal"
       end
-      if @state[:button_index].nil?
+      if @button_index.nil?
         raise ArgumentError, "Determine the button first"
       end
       case @deck.phase
@@ -100,8 +107,7 @@ module Poker
       when :river
         reset
         @deck.advance
-        @state[:button_index] =
-          (@state[:button_index] + 1) % @players.size
+        move_button
       else
         @deck.advance
       end
@@ -113,6 +119,10 @@ module Poker
     def reset
       @players.each{ |player| @deck.discard(player.reset) }
       @deck.reset
+    end
+
+    def move_button
+      @button_index = (@button_index + 1) % @players.size
     end
 
     # def winner
@@ -142,15 +152,15 @@ module Poker
     end
 
     def ready?
-      @players.size > 1 && !@state[:button_index].nil?
+      @players.size > 1 && !@button_index.nil?
     end
 
     def players_in_turn_order
       return @players if @players.size < 2
-      return @players if @state[:button_index].nil?
+      return @players if @button_index.nil?
 
-      @players[(@state[:button_index] + 1)..-1] +
-      @players[0..@state[:button_index]]
+      @players[(@button_index + 1)..-1] +
+      @players[0..@button_index]
     end
 
     def dealer
@@ -170,15 +180,13 @@ module Poker
       @deck.wash
       @players.each{|player| player.draw(@deck.draw) }
       winner = @players.max do |a,b|
-        a.state[:hole_cards].sum(&:absolute_value) <=> b.
-          state[:hole_cards].sum(&:absolute_value)
+        a.hole_cards.sum(&:absolute_value) <=> b.
+          hole_cards.sum(&:absolute_value)
       end
       reset
       puts "Winner: #{winner.state[:name]}"
       puts "Button index: #{players.index(winner)}"
-      @state = @state.merge(
-        button_index: players.index(winner)
-      )
+      @button_index = players.index(winner)
     end
 
     # def deal(hand = Poker::Hand.new)
