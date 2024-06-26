@@ -30,7 +30,12 @@ RSpec.describe "Creating a Game", type: :feature do
 
     # Ok, now we can deal
     click_on "Deal Cards"
-    expect(page).not_to have_selector(".card")
+    # Or not, because we haven't determined the button yet
+    expect(page).to have_content("Determine the button first")
+
+    click_on "Determine Button"
+    # Ok, now we can really deal
+    click_on "Deal Cards"
 
     # Show the flop
     click_on "Head to the Flop"

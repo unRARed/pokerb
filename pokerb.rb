@@ -233,6 +233,19 @@ class PokeRb < Sinatra::Base
       #####################
       ## Manager Actions ##
       #####################
+
+      get "/determine_button" do
+        set_game
+        if session[:user] == @game.state[:manager]
+          @game.determine_button
+          PokeRb.write_state(@game.to_hash)
+        else
+          session[:flash].message =
+            "Only the manager can determine the button"
+        end
+        redirect "/games/#{params["game_id"]}/community"
+      end
+
       post "/advance" do
         set_game
         if session[:user] == @game.state[:manager]

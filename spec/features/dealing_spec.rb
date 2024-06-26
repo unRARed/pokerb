@@ -24,12 +24,16 @@ RSpec.describe "Dealing", type: :feature do
     visit community_url
     expect(page).to have_selector(".player", count: 3)
 
+    # No one is the dealer yet... make it so
+    click_on "Determine Button"
+
     within ".player--dealer" do
       expect(page).to have_content("Foo")
 
       expect(page).not_to have_content("Bar")
       expect(page).not_to have_content("Baz")
     end
+
 
     advance_game
 

@@ -20,7 +20,7 @@ module Poker
         hands: [],
         deck: {},
         card_back: "DefaultBack.png",
-        button_index: 0,
+        button_index: nil,
         is_fresh: false
       }.merge(state)
 
@@ -90,13 +90,15 @@ module Poker
       if @players.size < 1
         raise ArgumentError, "Please add at least one player to deal"
       end
+      if @state[:button_index].nil?
+        raise ArgumentError, "Determine the button first"
+      end
       case @deck.phase
       when :deal
         deal
         @deck.advance
       when :river
-        @players.each{ |player| @deck.discard(player.reset) }
-        @deck.reset
+        reset
         @deck.advance
         @state[:button_index] =
           (@state[:button_index] + 1) % @players.size
@@ -106,6 +108,11 @@ module Poker
       # set color for the next step, so folks can know
       # if their client is up to date
       @state = @state.merge(step_color: rand_color)
+    end
+
+    def reset
+      @players.each{ |player| @deck.discard(player.reset) }
+      @deck.reset
     end
 
     # def winner
@@ -135,11 +142,12 @@ module Poker
     end
 
     def ready?
-      @players.size > 1 && @state[:button_index]
+      @players.size > 1 && !@state[:button_index].nil?
     end
 
     def players_in_turn_order
       return @players if @players.size < 2
+      return @players if @state[:button_index].nil?
 
       @players[(@state[:button_index] + 1)..-1] +
       @players[0..@state[:button_index]]
@@ -155,6 +163,22 @@ module Poker
 
     def player_in_big_blind
       players_in_turn_order[1]
+    end
+
+    def determine_button
+      reset
+      @deck.wash
+      @players.each{|player| player.draw(@deck.draw) }
+      winner = @players.max do |a,b|
+        a.state[:hole_cards].sum(&:full_value) <=> b.
+          state[:hole_cards].sum(&:full_value)
+      end
+      reset
+      puts "Winner: #{winner.state[:name]}"
+      puts "Button index: #{players.index(winner)}"
+      @state = @state.merge(
+        button_index: players.index(winner)
+      )
     end
 
     # def deal(hand = Poker::Hand.new)

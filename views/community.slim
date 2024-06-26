@@ -29,6 +29,10 @@
               method="POST"
             )
               input type="submit" value="#{value}" style="margin: 0;"
+        - if !@game.players.empty? && !@game.ready?
+          a(
+            href="/games/#{@game.state[:id]}/determine_button"
+          ) Determine Button
 .community_footer
   - @game.players_in_turn_order.each_with_index do |player|
     - player_class = []
