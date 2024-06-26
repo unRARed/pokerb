@@ -304,6 +304,7 @@ class PokeRb < Sinatra::Base
         if (player = @game.player_by_name(session[:user]))
           break unless @game.has_cards?(player.name)
           @game.deck.discard(player.fold)
+          @game.change_color
           PokeRb.write_state(@game.to_hash)
         end
         redirect "/games/#{@game.state[:id]}"

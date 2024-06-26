@@ -32,28 +32,5 @@ div style="text-align: center;"
     a(
       href="/games/#{@game.state[:id]}/join"
     ) Want to join?
-
-javascript:
-  var gameId = '#{@game.state[:id]}';
-  var stepColor = '#{@game.state[:step_color]}';
-  var params = JSON.
-    stringify({game_id: gameId, step_color: stepColor});
-
-  setInterval(function() {
-    var http = new XMLHttpRequest();
-    http.open("POST", `/games/${gameId}/poll`, true);
-    http.setRequestHeader("Content-type",
-      "application/json; charset=utf-8");
-
-    http.onreadystatechange = function() {
-      if(http.readyState == 4 && http.status == 200) {
-        result = http.responseText;
-
-        if (!JSON.parse(result).in_sync) {
-          window.location = window.location.pathname;
-        }
-      }
-    }
-
-    http.send(params);
-  }, 3000);
+== slim :"/_poll",
+  locals: { game: @game, interval: 5000 }

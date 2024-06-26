@@ -61,6 +61,8 @@
   = @game.to_hash
   p = @game.deck.all_cards.count
 
+== slim :"/_poll",
+  locals: { game: @game, interval: 10000 }
 javascript:
   document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll("form.player").forEach(function(player) {
