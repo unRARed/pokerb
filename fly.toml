@@ -1,0 +1,28 @@
+# fly.toml app configuration file generated for rbpkr on 2024-06-26T23:12:31-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'rbpkr'
+primary_region = 'sea'
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  size = 'shared-cpu-1x'
+
+[env]
+  RACK_ENV = "production"
+  RBPKR_HOSTNAME = "rbpkr.com"
+
+[mounts]
+  source = "rbpkr_data"
+  destination = "/app/games"

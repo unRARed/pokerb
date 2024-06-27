@@ -96,7 +96,7 @@ module Poker
     end
 
     def qr_code
-      RQRCode::QRCode.new @state[:url] + "/games/#{@state[:id]}"
+      RQRCode::QRCode.new @state[:url] + "/#{@state[:id]}"
     end
 
     def advance

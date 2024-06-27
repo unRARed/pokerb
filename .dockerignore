@@ -1,0 +1,9 @@
+# flyctl launch added from .gitignore
+**/.byebug*
+**/coverage
+
+**/.DS_Store
+
+**/games/*
+!**/games/.keep
+fly.toml

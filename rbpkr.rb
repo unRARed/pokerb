@@ -71,7 +71,7 @@ class RbPkr < Sinatra::Base
   # Returns the full path to the root folder for
   # the :game_id value given
   #
-  #   Example: /Users/some_user/audio-images/games/2fgdaf"
+  #   Example: /Users/some_user/rbpkr/games/2fgdaf"
   #
   def self.game_root(game_id)
     Dir.pwd + "/games/#{game_id}"
@@ -102,13 +102,16 @@ class RbPkr < Sinatra::Base
 
   def self.server_url(request)
     env = request.env
-    parts = ["http://"]
+    parts = ENV["RACK_ENV"] == "production" ?
+      ["https://"] : ["http://"]
     if !ENV["RBPKR_HOSTNAME"].nil?
       parts << ENV["RBPKR_HOSTNAME"]
     else
       parts << env["SERVER_NAME"]
     end
-    parts << ":#{env["SERVER_PORT"]}" if env["SERVER_PORT"]
+    unless ENV["RACK_ENV"] == "production"
+      parts << ":#{env["SERVER_PORT"]}" if env["SERVER_PORT"]
+    end
     parts.join
   end
 
@@ -121,7 +124,7 @@ class RbPkr < Sinatra::Base
   def set_game
     state = RbPkr.load_state_for_game(params["game_id"])
     @game = Poker::Game.new(state)
-    join_path = "/games/#{@game.state[:id]}/join"
+    join_path = "/#{@game.state[:id]}/join"
     unless session[:user]
       session[:flash].message =
         "You must be logged in to access this game."
@@ -161,178 +164,176 @@ class RbPkr < Sinatra::Base
     end
   end
 
-  namespace '/games' do
-    get '' do
-      slim :games
-    end
-
-    post "/new" do
-      RbPkr.debug "Creating new game"
-      # TODO: check if game id is already taken
-      @game = Poker::Game.new(
-        manager: session[:user],
-        password: params["password"],
-        card_back: params["card_back"],
-        url: RbPkr.server_url(request),
-        is_fresh: true
-      )
-      @game.deck.reset
-      @game.deck.wash
-      @game.deck.shuffle
-      RbPkr.write_state(@game.to_hash)
-
-      # only set the password for the
-      # manager's session if we set one
-      if @game.has_password?
-        RbPkr.debug "Setting password for manager"
-        session["#{@game.state[:id]}_password"] =
-          params["password"]
-      end
-      redirect "/games/#{@game.state[:id]}/community"
-    end
-
-    get "/cleanup" do
-      Dir.glob('./games/*').each do |file|
-        begin
-          game_id = file.split('/').last
-          puts "Deleting #{game_id}"
-          game = Poker::Game.new(RbPkr.load_state_for_game(game_id))
-          if game.is_stale?
-            puts "Deleting #{game_id}"
-            FileUtils.rm_rf(file)
-          end
-        rescue ArgumentError => e
-          puts e.message
-          next
-        end
-      end
-      session[:flash].message = "Cleaned up stale games"
-      redirect "/"
-    end
-
-    namespace '/:game_id' do
-      get "" do
-        set_game
-        slim :game
-      end
-
-      get "/join" do
-        state = RbPkr.load_state_for_game(params["game_id"])
-        @game = Poker::Game.new(state)
-        slim :join
-      end
-
-      post "/join" do
-        state = RbPkr.load_state_for_game(params["game_id"])
-        @game = Poker::Game.new(state)
-
-        session[:user] = params["user"] if params["user"]
-
-        @game.add_player Poker::Player.new(
-          { name: session[:user] }
-        )
-
-        if @game.has_password?
-          password_key = "#{@game.state[:id]}_password"
-          session[password_key] = params["password"]
-        end
-        RbPkr.write_state(@game.to_hash)
-        redirect "/games/#{@game.state[:id]}"
-      rescue ArgumentError => e
-        session[:flash].message = e.message
-        return redirect "/games/#{params["game_id"]}/join"
-      end
-
-      get "/community" do
-        set_game
-        RbPkr.debug "Loading community cards for #{@game.state[:id]}"
-        slim :community
-      end
-
-      #####################
-      ## Manager Actions ##
-      #####################
-
-      get "/determine_button" do
-        set_game
-        if session[:user] == @game.state[:manager]
-          @game.determine_button
-          RbPkr.write_state(@game.to_hash)
-        else
-          session[:flash].message =
-            "Only the manager can determine the button"
-        end
-        redirect "/games/#{params["game_id"]}/community"
-      end
-
-      post "/advance" do
-        set_game
-        if session[:user] == @game.state[:manager]
-          @game.advance
-          RbPkr.debug "Advanced to #{@game.deck.phase}"
-          RbPkr.write_state(@game.to_hash)
-        else
-          session[:flash].message =
-            "Only the manager can advance the game"
-        end
-        redirect "/games/#{@game.state[:id]}/community"
-      rescue ArgumentError => e
-        session[:flash].message = e.message
-        return redirect "/games/#{params["game_id"]}/community"
-      end
-
-      post "/remove_player" do
-        set_game
-        if session[:user] != @game.state[:manager]
-          session[:flash].message =
-            "Only #{@game.state[:manager]} can remove players."
-          redirect "/games/#{params["game_id"]}/community"
-        end
-
-        if (player = @game.player_by_name(params["player_name"]))
-          if @game.has_cards?(player.name)
-            @game.deck.discard(player.fold)
-          end
-          @game.remove_player(params["player_name"])
-          RbPkr.write_state(@game.to_hash)
-        end
-        redirect "/games/#{params["game_id"]}/community"
-      end
-
-      ##################
-      ## User Actions ##
-      ##################
-      post "/poll" do
-        return unless (data = JSON.parse(request.body.read))
-
-        state = RbPkr.load_state_for_game(data["game_id"])
-        if data["step_color"] != state[:step_color]
-          RbPkr.debug "Step color mismatch"
-          return { in_sync: false }.to_json
-        end
-        { in_sync: true }.to_json
-      end
-
-      get "/fold" do
-        set_game
-        slim :fold
-      end
-
-      post "/fold" do
-        set_game
-        if (player = @game.player_by_name(session[:user]))
-          break unless @game.has_cards?(player.name)
-          @game.deck.discard(player.fold)
-          @game.change_color
-          RbPkr.write_state(@game.to_hash)
-        end
-        redirect "/games/#{@game.state[:id]}"
-      end
-    end
-  end
-
   get '/assets/:asset_filename' do
     path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"
     send_file path, :type => :png
+  end
+
+  get '/new' do
+    slim :new
+  end
+
+  post "/new" do
+    RbPkr.debug "Creating new game"
+    # TODO: check if game id is already taken
+    @game = Poker::Game.new(
+      manager: session[:user],
+      password: params["password"],
+      card_back: params["card_back"],
+      url: RbPkr.server_url(request),
+      is_fresh: true
+    )
+    @game.deck.reset
+    @game.deck.wash
+    @game.deck.shuffle
+    RbPkr.write_state(@game.to_hash)
+
+    # only set the password for the
+    # manager's session if we set one
+    if @game.has_password?
+      RbPkr.debug "Setting password for manager"
+      session["#{@game.state[:id]}_password"] =
+        params["password"]
+    end
+    redirect "/#{@game.state[:id]}/community"
+  end
+
+  get "/cleanup" do
+    Dir.glob('./games/*').each do |file|
+      begin
+        game_id = file.split('/').last
+        puts "Deleting #{game_id}"
+        game = Poker::Game.new(RbPkr.load_state_for_game(game_id))
+        if game.is_stale?
+          puts "Deleting #{game_id}"
+          FileUtils.rm_rf(file)
+        end
+      rescue ArgumentError => e
+        puts e.message
+        next
+      end
+    end
+    session[:flash].message = "Cleaned up stale games"
+    redirect "/"
+  end
+
+  namespace '/:game_id' do
+    get "" do
+      set_game
+      slim :game
+    end
+
+    get "/join" do
+      state = RbPkr.load_state_for_game(params["game_id"])
+      @game = Poker::Game.new(state)
+      slim :join
+    end
+
+    post "/join" do
+      state = RbPkr.load_state_for_game(params["game_id"])
+      @game = Poker::Game.new(state)
+
+      session[:user] = params["user"] if params["user"]
+
+      @game.add_player Poker::Player.new(
+        { name: session[:user] }
+      )
+
+      if @game.has_password?
+        password_key = "#{@game.state[:id]}_password"
+        session[password_key] = params["password"]
+      end
+      RbPkr.write_state(@game.to_hash)
+      redirect "/#{@game.state[:id]}"
+    rescue ArgumentError => e
+      session[:flash].message = e.message
+      return redirect "/#{params["game_id"]}/join"
+    end
+
+    get "/community" do
+      set_game
+      RbPkr.debug "Loading community cards for #{@game.state[:id]}"
+      slim :community
+    end
+
+    #####################
+    ## Manager Actions ##
+    #####################
+
+    get "/determine_button" do
+      set_game
+      if session[:user] == @game.state[:manager]
+        @game.determine_button
+        RbPkr.write_state(@game.to_hash)
+      else
+        session[:flash].message =
+          "Only the manager can determine the button"
+      end
+      redirect "/#{params["game_id"]}/community"
+    end
+
+    post "/advance" do
+      set_game
+      if session[:user] == @game.state[:manager]
+        @game.advance
+        RbPkr.debug "Advanced to #{@game.deck.phase}"
+        RbPkr.write_state(@game.to_hash)
+      else
+        session[:flash].message =
+          "Only the manager can advance the game"
+      end
+      redirect "/#{@game.state[:id]}/community"
+    rescue ArgumentError => e
+      session[:flash].message = e.message
+      return redirect "/#{params["game_id"]}/community"
+    end
+
+    post "/remove_player" do
+      set_game
+      if session[:user] != @game.state[:manager]
+        session[:flash].message =
+          "Only #{@game.state[:manager]} can remove players."
+        redirect "/#{params["game_id"]}/community"
+      end
+
+      if (player = @game.player_by_name(params["player_name"]))
+        if @game.has_cards?(player.name)
+          @game.deck.discard(player.fold)
+        end
+        @game.remove_player(params["player_name"])
+        RbPkr.write_state(@game.to_hash)
+      end
+      redirect "/#{params["game_id"]}/community"
+    end
+
+    ##################
+    ## User Actions ##
+    ##################
+    post "/poll" do
+      return unless (data = JSON.parse(request.body.read))
+
+      state = RbPkr.load_state_for_game(data["game_id"])
+      if data["step_color"] != state[:step_color]
+        RbPkr.debug "Step color mismatch"
+        return { in_sync: false }.to_json
+      end
+      { in_sync: true }.to_json
+    end
+
+    get "/fold" do
+      set_game
+      slim :fold
+    end
+
+    post "/fold" do
+      set_game
+      if (player = @game.player_by_name(session[:user]))
+        break unless @game.has_cards?(player.name)
+        @game.deck.discard(player.fold)
+        @game.change_color
+        RbPkr.write_state(@game.to_hash)
+      end
+      redirect "/#{@game.state[:id]}"
+    end
   end
 end

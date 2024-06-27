@@ -6,7 +6,7 @@ javascript:
 
   setInterval(function() {
     var http = new XMLHttpRequest();
-    http.open("POST", `/games/${gameId}/poll`, true);
+    http.open("POST", `/${gameId}/poll`, true);
     http.setRequestHeader("Content-type",
       "application/json; charset=utf-8");
 
