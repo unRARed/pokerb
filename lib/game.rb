@@ -200,9 +200,7 @@ module Poker
       @button_index = players.index(winner)
     end
 
-    # def deal(hand = Poker::Hand.new)
     def deal
-      # TODO: deal only 1 card to each player, but twice
       2.times do
         players_in_turn_order.each do |player|
           player.draw(@deck.draw)

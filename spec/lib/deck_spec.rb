@@ -17,7 +17,7 @@ RSpec.describe "Deck" do
     end
 
     it ".burn" do
-      burn_card = subject.state[:stack].first
+      burn_card = subject.state[:stack].last
 
       subject.burn
 
@@ -26,7 +26,7 @@ RSpec.describe "Deck" do
       expect(subject.to_hash[:discarded]).
         to include(burn_card.tuple)
 
-      next_burn = subject.state[:stack].first
+      next_burn = subject.state[:stack].last
 
       subject.burn
 

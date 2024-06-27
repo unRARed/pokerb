@@ -78,7 +78,8 @@ module Poker
     end
 
     def burn
-      target = @stack[0]
+      # take card from top of deck
+      target = @stack[@stack.length - 1]
       @stack = @stack - [target]
       @discarded << target
     end
@@ -90,7 +91,8 @@ module Poker
 
     def draw
       puts "Drawing card"
-      target = @stack[0]
+      # take card from top of deck
+      target = @stack[@stack.length - 1]
       @stack = @stack - [target]
       target
     end
