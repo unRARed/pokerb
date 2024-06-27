@@ -28,7 +28,7 @@ end
 ENV['RACK_ENV'] = "test"
 ENV['SERVER_PORT'] = "4568"
 
-require "./pokerb.rb"
+require "./rbpkr.rb"
 
 require 'rack/test' # it is needed to run rspec
 require "./config/environment"
@@ -36,10 +36,10 @@ require "capybara/rspec"
 require 'webdrivers/chromedriver'
 
 def app
-  PokeRb
+  RbPkr
 end
 
-Capybara.app = PokeRb
+Capybara.app = RbPkr
 
 IS_DEBUG_MODE = -> { !ENV['DEBUG'].nil? ? :chrome : :headless_chrome }
 

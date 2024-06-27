@@ -1,7 +1,7 @@
 doctype html
 html
   head
-    title PokeRb
+    title RbPkr
     meta name="viewport" content="width=device-width,
     initial-scale=1"
     meta charset="UTF-8"
@@ -169,14 +169,14 @@ html
         - if session["user"]
           a> href="/logout" Logout #{session["user"]}
           span> |
-        a< href="/" PokeRb
+        a< href="/" RbPkr
     main
       == slim :"/_game_indicator",
         locals: { game: @game || \
-          Poker::Game.new(id: "PokeRb",
+          Poker::Game.new(id: "RbPkr",
           is_fresh: true) }
       .flash == session[:flash].read
       == yield
     div style="text-align: center;"
       p.title
-        small &copy; #{Time.now.year} PokeRb
+        small &copy; #{Time.now.year} RbPkr

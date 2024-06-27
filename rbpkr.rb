@@ -39,7 +39,7 @@ class Flash
   end
 end
 
-class PokeRb < Sinatra::Base
+class RbPkr < Sinatra::Base
   configure :development do
     register Sinatra::Reloader
     also_reload Dir.pwd + '/lib/*.rb'
@@ -82,7 +82,7 @@ class PokeRb < Sinatra::Base
   #
   def self.load_state_for_game(game_id)
     YAML.load(
-      File.open("#{PokeRb.game_root(game_id)}/state.yml")
+      File.open("#{RbPkr.game_root(game_id)}/state.yml")
     )
   end
 
@@ -90,11 +90,11 @@ class PokeRb < Sinatra::Base
   # from errors and prevent having redundant requests.
   #
   def self.write_state(state)
-    unless Dir.exist?(PokeRb.game_root(state[:id]))
-      Dir.mkdir(PokeRb.game_root(state[:id]))
+    unless Dir.exist?(RbPkr.game_root(state[:id]))
+      Dir.mkdir(RbPkr.game_root(state[:id]))
     end
     File.write(
-      "#{PokeRb.game_root(state[:id])}/state.yml",
+      "#{RbPkr.game_root(state[:id])}/state.yml",
       state.to_yaml
     )
     state
@@ -103,8 +103,8 @@ class PokeRb < Sinatra::Base
   def self.server_url(request)
     env = request.env
     parts = ["http://"]
-    if !ENV["POKERB_HOSTNAME"].nil?
-      parts << ENV["POKERB_HOSTNAME"]
+    if !ENV["RBPKR_HOSTNAME"].nil?
+      parts << ENV["RBPKR_HOSTNAME"]
     else
       parts << env["SERVER_NAME"]
     end
@@ -119,7 +119,7 @@ class PokeRb < Sinatra::Base
   end
 
   def set_game
-    state = PokeRb.load_state_for_game(params["game_id"])
+    state = RbPkr.load_state_for_game(params["game_id"])
     @game = Poker::Game.new(state)
     join_path = "/games/#{@game.state[:id]}/join"
     unless session[:user]
@@ -154,7 +154,7 @@ class PokeRb < Sinatra::Base
     if params["user"]
       session[:user] = params["user"]
       cookies["user"] = params["user"]
-      PokeRb.debug "User logged in: #{session[:user]}"
+      RbPkr.debug "User logged in: #{session[:user]}"
       redirect "/"
     else
       slim :login
@@ -167,24 +167,24 @@ class PokeRb < Sinatra::Base
     end
 
     post "/new" do
-      PokeRb.debug "Creating new game"
+      RbPkr.debug "Creating new game"
       # TODO: check if game id is already taken
       @game = Poker::Game.new(
         manager: session[:user],
         password: params["password"],
         card_back: params["card_back"],
-        url: PokeRb.server_url(request),
+        url: RbPkr.server_url(request),
         is_fresh: true
       )
       @game.deck.reset
       @game.deck.wash
       @game.deck.shuffle
-      PokeRb.write_state(@game.to_hash)
+      RbPkr.write_state(@game.to_hash)
 
       # only set the password for the
       # manager's session if we set one
       if @game.has_password?
-        PokeRb.debug "Setting password for manager"
+        RbPkr.debug "Setting password for manager"
         session["#{@game.state[:id]}_password"] =
           params["password"]
       end
@@ -196,7 +196,7 @@ class PokeRb < Sinatra::Base
         begin
           game_id = file.split('/').last
           puts "Deleting #{game_id}"
-          game = Poker::Game.new(PokeRb.load_state_for_game(game_id))
+          game = Poker::Game.new(RbPkr.load_state_for_game(game_id))
           if game.is_stale?
             puts "Deleting #{game_id}"
             FileUtils.rm_rf(file)
@@ -217,13 +217,13 @@ class PokeRb < Sinatra::Base
       end
 
       get "/join" do
-        state = PokeRb.load_state_for_game(params["game_id"])
+        state = RbPkr.load_state_for_game(params["game_id"])
         @game = Poker::Game.new(state)
         slim :join
       end
 
       post "/join" do
-        state = PokeRb.load_state_for_game(params["game_id"])
+        state = RbPkr.load_state_for_game(params["game_id"])
         @game = Poker::Game.new(state)
 
         session[:user] = params["user"] if params["user"]
@@ -236,7 +236,7 @@ class PokeRb < Sinatra::Base
           password_key = "#{@game.state[:id]}_password"
           session[password_key] = params["password"]
         end
-        PokeRb.write_state(@game.to_hash)
+        RbPkr.write_state(@game.to_hash)
         redirect "/games/#{@game.state[:id]}"
       rescue ArgumentError => e
         session[:flash].message = e.message
@@ -245,7 +245,7 @@ class PokeRb < Sinatra::Base
 
       get "/community" do
         set_game
-        PokeRb.debug "Loading community cards for #{@game.state[:id]}"
+        RbPkr.debug "Loading community cards for #{@game.state[:id]}"
         slim :community
       end
 
@@ -257,7 +257,7 @@ class PokeRb < Sinatra::Base
         set_game
         if session[:user] == @game.state[:manager]
           @game.determine_button
-          PokeRb.write_state(@game.to_hash)
+          RbPkr.write_state(@game.to_hash)
         else
           session[:flash].message =
             "Only the manager can determine the button"
@@ -269,8 +269,8 @@ class PokeRb < Sinatra::Base
         set_game
         if session[:user] == @game.state[:manager]
           @game.advance
-          PokeRb.debug "Advanced to #{@game.deck.phase}"
-          PokeRb.write_state(@game.to_hash)
+          RbPkr.debug "Advanced to #{@game.deck.phase}"
+          RbPkr.write_state(@game.to_hash)
         else
           session[:flash].message =
             "Only the manager can advance the game"
@@ -294,7 +294,7 @@ class PokeRb < Sinatra::Base
             @game.deck.discard(player.fold)
           end
           @game.remove_player(params["player_name"])
-          PokeRb.write_state(@game.to_hash)
+          RbPkr.write_state(@game.to_hash)
         end
         redirect "/games/#{params["game_id"]}/community"
       end
@@ -305,9 +305,9 @@ class PokeRb < Sinatra::Base
       post "/poll" do
         return unless (data = JSON.parse(request.body.read))
 
-        state = PokeRb.load_state_for_game(data["game_id"])
+        state = RbPkr.load_state_for_game(data["game_id"])
         if data["step_color"] != state[:step_color]
-          PokeRb.debug "Step color mismatch"
+          RbPkr.debug "Step color mismatch"
           return { in_sync: false }.to_json
         end
         { in_sync: true }.to_json
@@ -324,7 +324,7 @@ class PokeRb < Sinatra::Base
           break unless @game.has_cards?(player.name)
           @game.deck.discard(player.fold)
           @game.change_color
-          PokeRb.write_state(@game.to_hash)
+          RbPkr.write_state(@game.to_hash)
         end
         redirect "/games/#{@game.state[:id]}"
       end

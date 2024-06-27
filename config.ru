@@ -1,6 +1,6 @@
 require 'bundler/setup'
 Bundler.require(:default)
-require './pokerb'
+require './rbpkr'
 require 'socket'
 
 IP_ADDRESS =
@@ -14,12 +14,12 @@ IP_ADDRESS =
     end.
     first
 
-class PokeRb < Sinatra::Base
+class RbPkr < Sinatra::Base
   configure :production do
     set :bind, IP_ADDRESS
   end
 end
 
 map "/" do
-  run PokeRb
+  run RbPkr
 end
