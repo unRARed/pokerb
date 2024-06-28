@@ -188,9 +188,15 @@ class RbPkr < Sinatra::Base
     redirect "/#{@game.state[:id]}/community"
   end
 
-  get "/#{ENV['RBPKR_SECRET']}/?" do
+  get "/cleanup/?" do
     begin
-      Dir.glob('./games/*').each do |file|
+      # will have to do until we move to a real database
+      raise ArgumentError, "Not authorized" unless request.
+        env["HTTP_USER_AGENT"] == "Consul Health Check"
+      (
+        Dir.glob('./games/*').
+          reject{|g| g.include? "lost+found" }
+      ).each do |file|
         game_id = file.split('/').last
         Debug.this "Deleting #{game_id}"
         game = Poker::Game.new(RbPkr.load_state_for_game(game_id))
@@ -200,7 +206,8 @@ class RbPkr < Sinatra::Base
         end
       end
     rescue ArgumentError => e
-      status(400)
+      e.message.include?("Not authorized") ?
+        status(401) : status(400)
       return body('')
     end
     status 200
