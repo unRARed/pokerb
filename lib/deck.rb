@@ -41,6 +41,7 @@ module Poker
       @stack = all_cards
       @discarded = []
       @community = []
+      @phase = :deal
       shuffle
     end
 

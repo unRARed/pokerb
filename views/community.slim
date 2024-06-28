@@ -58,10 +58,15 @@
           .player__cards
           .player__name = player.name
     div style="text-align: center; width: 100%;"
-      - if !@game.players.empty? && !@game.ready? && @game.deck.phase == :deal
+      - if !@game.players.empty? && !@game.is_ready? && @game.deck.phase == :deal
         a.small(
           href="/#{@game.state[:id]}/determine_button"
         ) Draw for Button
+    div style="text-align: center; width: 100%;"
+      - if @game.is_ready? && !@game.is_contested?
+        a.small(
+          href="/#{@game.state[:id]}/new_hand"
+        ) Start a New Hand
   - if !ENV["DEBUG"].nil?
     = @game.to_hash
     p = @game.deck.all_cards.count

@@ -84,6 +84,10 @@ module Poker
       player_by_name(player_name).state[:hole_cards].size > 0
     end
 
+    def is_contested?
+      players.count{ |p| p.state[:hole_cards].size > 0 } > 1
+    end
+
     def player_by_name(player_name)
       @players.find{ |p| p.state[:name] == player_name }
     end
@@ -113,12 +117,16 @@ module Poker
         deal
         @deck.advance
       when :river
-        reset
-        @deck.advance
-        move_button
+        new_hand
       else
         @deck.advance
       end
+      change_color
+    end
+
+    def new_hand
+      reset
+      move_button
       change_color
     end
 
@@ -163,8 +171,8 @@ module Poker
       player
     end
 
-    def ready?
-      @players.size > 1 && !@button_index.nil?
+    def is_ready?
+      @players.size > 0 && !@button_index.nil?
     end
 
     def players_in_turn_order

@@ -271,6 +271,18 @@ class RbPkr < Sinatra::Base
       redirect "/#{params["game_id"]}/community"
     end
 
+    get "/new_hand/?" do
+      set_game
+      if session[:user] == @game.state[:manager]
+        @game.new_hand
+        RbPkr.write_state(@game.to_hash)
+      else
+        session[:notice].message =
+          "Only the manager can advance the game"
+      end
+      redirect "/#{params["game_id"]}/community"
+    end
+
     post "/advance/?" do
       set_game
       if session[:user] == @game.state[:manager]
