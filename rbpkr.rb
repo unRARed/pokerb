@@ -13,6 +13,7 @@ require "byebug"
 require 'socket'
 
 require "./poker"
+require "./debug"
 
 IP_ADDRESS =
   Socket.
@@ -56,17 +57,6 @@ class RbPkr < Sinatra::Base
   set :session_secret,
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
   set :public_folder, "assets"
-
-  def self.debug(msg)
-    return unless !ENV["DEBUG"].nil?
-
-    count = msg.length
-    divider = []
-    [msg.length, 79].min.times{ divider << "-" }
-    puts divider.join
-    puts "DEBUG: #{msg}"
-    puts divider.join
-  end
 
   # Returns the full path to the root folder for
   # the :game_id value given
@@ -139,42 +129,42 @@ class RbPkr < Sinatra::Base
     end
   end
 
-  get '/' do
+  get '/assets/:asset_filename' do
+    path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"
+    send_file path, :type => :png
+  end
+
+  get '//?' do
     slim :index
   end
 
-  get "/login" do
+  get "/login/?" do
     slim :login
   end
 
-  get "/logout" do
+  get "/logout/?" do
     session[:user] = nil
     cookies["user"] = nil
     redirect "/"
   end
 
-  post "/login" do
+  post "/login/?" do
     if params["user"]
       session[:user] = params["user"]
       cookies["user"] = params["user"]
-      RbPkr.debug "User logged in: #{session[:user]}"
+      Debug.this "User logged in: #{session[:user]}"
       redirect "/"
     else
       slim :login
     end
   end
 
-  get '/assets/:asset_filename' do
-    path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"
-    send_file path, :type => :png
-  end
-
-  get '/new' do
+  get '/new/?' do
     slim :new
   end
 
-  post "/new" do
-    RbPkr.debug "Creating new game"
+  post "/new/?" do
+    Debug.this "Creating new game"
     # TODO: check if game id is already taken
     @game = Poker::Game.new(
       manager: session[:user],
@@ -191,45 +181,50 @@ class RbPkr < Sinatra::Base
     # only set the password for the
     # manager's session if we set one
     if @game.has_password?
-      RbPkr.debug "Setting password for manager"
+      Debug.this "Setting password for manager"
       session["#{@game.state[:id]}_password"] =
         params["password"]
     end
     redirect "/#{@game.state[:id]}/community"
   end
 
-  get "/cleanup" do
-    Dir.glob('./games/*').each do |file|
-      begin
+  get "/cleanup/?" do
+    begin
+      if !ENV["RBPKR_SECRET"].nil?
+        unless params["secret"] == ENV["RBPKR_SECRET"]
+          raise(ArgumentError, "Not authorized")
+        end
+      end
+      Dir.glob('./games/*').each do |file|
         game_id = file.split('/').last
-        puts "Deleting #{game_id}"
+        Debug.this "Deleting #{game_id}"
         game = Poker::Game.new(RbPkr.load_state_for_game(game_id))
         if game.is_stale?
-          puts "Deleting #{game_id}"
+          Debug.this "Deleting #{game_id}"
           FileUtils.rm_rf(file)
         end
-      rescue ArgumentError => e
-        puts e.message
-        next
       end
+    rescue ArgumentError => e
+      e.message.include?("Not authorized") ?
+        status(401) : status(400)
+      return body('')
     end
-    session[:flash].message = "Cleaned up stale games"
-    redirect "/"
+    status 200
   end
 
   namespace '/:game_id' do
-    get "" do
+    get "/?" do
       set_game
       slim :game
     end
 
-    get "/join" do
+    get "/join/?" do
       state = RbPkr.load_state_for_game(params["game_id"])
       @game = Poker::Game.new(state)
       slim :join
     end
 
-    post "/join" do
+    post "/join/?" do
       state = RbPkr.load_state_for_game(params["game_id"])
       @game = Poker::Game.new(state)
 
@@ -250,9 +245,9 @@ class RbPkr < Sinatra::Base
       return redirect "/#{params["game_id"]}/join"
     end
 
-    get "/community" do
+    get "/community/?" do
       set_game
-      RbPkr.debug "Loading community cards for #{@game.state[:id]}"
+      Debug.this "Loading community cards for #{@game.state[:id]}"
       slim :community
     end
 
@@ -260,7 +255,7 @@ class RbPkr < Sinatra::Base
     ## Manager Actions ##
     #####################
 
-    get "/determine_button" do
+    get "/determine_button/?" do
       set_game
       if session[:user] == @game.state[:manager]
         @game.determine_button
@@ -272,11 +267,11 @@ class RbPkr < Sinatra::Base
       redirect "/#{params["game_id"]}/community"
     end
 
-    post "/advance" do
+    post "/advance/?" do
       set_game
       if session[:user] == @game.state[:manager]
         @game.advance
-        RbPkr.debug "Advanced to #{@game.deck.phase}"
+        Debug.this "Advanced to #{@game.deck.phase}"
         RbPkr.write_state(@game.to_hash)
       else
         session[:flash].message =
@@ -288,7 +283,7 @@ class RbPkr < Sinatra::Base
       return redirect "/#{params["game_id"]}/community"
     end
 
-    post "/remove_player" do
+    post "/remove_player/?" do
       set_game
       if session[:user] != @game.state[:manager]
         session[:flash].message =
@@ -309,23 +304,23 @@ class RbPkr < Sinatra::Base
     ##################
     ## User Actions ##
     ##################
-    post "/poll" do
+    post "/poll/?" do
       return unless (data = JSON.parse(request.body.read))
 
       state = RbPkr.load_state_for_game(data["game_id"])
       if data["step_color"] != state[:step_color]
-        RbPkr.debug "Step color mismatch"
+        Debug.this "Step color mismatch"
         return { in_sync: false }.to_json
       end
       { in_sync: true }.to_json
     end
 
-    get "/fold" do
+    get "/fold/?" do
       set_game
       slim :fold
     end
 
-    post "/fold" do
+    post "/fold/?" do
       set_game
       if (player = @game.player_by_name(session[:user]))
         break unless @game.has_cards?(player.name)

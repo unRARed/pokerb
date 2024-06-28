@@ -3,6 +3,7 @@ require_relative 'deck'
 require_relative 'hand'
 require 'securerandom'
 require 'rqrcode'
+require_relative '../debug'
 
 module Poker
   class Game
@@ -40,8 +41,8 @@ module Poker
       @players = @state[:players].map{ |p| Poker::Player.new p }
       @button_index = @state[:button_index]
 
-      puts "Game #{@state[:id]} initialized"
-      puts "Players: #{players.map(&:state).map{ |p| p[:name] }}"
+      Debug.this "Game #{@state[:id]} initialized"
+      Debug.this "Players: #{players.map(&:state).map{ |p| p[:name] }}"
 
       unless @state[:is_fresh]
         raise ArgumentError, "Incomplete Deck" if all_cards.size != 52
@@ -100,7 +101,7 @@ module Poker
     end
 
     def advance
-      puts "Advancing game"
+      Debug.this "Advancing game"
       if @players.size < 1
         raise ArgumentError, "Please add at least one player to deal"
       end
@@ -144,7 +145,7 @@ module Poker
     # end
 
     def add_player(player = Poker::Player.new({}))
-      puts "Adding player #{player.state[:name]}"
+      Debug.this "Adding player #{player.state[:name]}"
       raise ArgumentError, 'Game is full' if @players.size >= 10
       if @players.any?{|p| p.state[:name] == player.state[:name] }
         raise ArgumentError,
@@ -195,8 +196,8 @@ module Poker
           hole_cards.sum(&:absolute_value)
       end
       reset
-      puts "Winner: #{winner.state[:name]}"
-      puts "Button index: #{players.index(winner)}"
+      Debug.this "Winner: #{winner.state[:name]} \n" \
+        "Button index: #{players.index(winner)}"
       @button_index = players.index(winner)
     end
 

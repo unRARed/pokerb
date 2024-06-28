@@ -1,5 +1,6 @@
 require_relative 'card'
 require_relative 'player'
+require_relative "../debug"
 
 module Poker
   class Deck
@@ -36,7 +37,7 @@ module Poker
     end
 
     def reset
-      puts "Resetting deck"
+      Debug.this "Resetting deck"
       @stack = all_cards
       @discarded = []
       @community = []
@@ -90,7 +91,7 @@ module Poker
     end
 
     def draw
-      puts "Drawing card"
+      Debug.this "Drawing card"
       # take card from top of deck
       target = @stack[@stack.length - 1]
       @stack = @stack - [target]

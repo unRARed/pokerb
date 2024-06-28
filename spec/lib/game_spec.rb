@@ -74,7 +74,6 @@ RSpec.describe "Game" do
     subject.add_player(Poker::Player.new(name: "Baz"))
 
     subject.determine_button
-
-    puts ''
+    pending "Need to implement"
   end
 end

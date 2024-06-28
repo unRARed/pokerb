@@ -1,65 +1,73 @@
-.community_body
-  .board
-    - if @game.is_common_phase?
-      form(
-        id="advance"
-        action="/#{@game.state[:id]}/advance"
-        method="POST"
-        class="card card--back"
-      )
-        a(
-          onclick="this.parentNode.submit();"
-          style="display: block; cursor: pointer;"
-        )
-          img src="/assets/#{@game.state[:card_back]}" alt="Deal the Hand"
-      - @game.deck.community.each do |card|
-        .card.card--face == card.image
-    - else
-      div style="align-self: center; text-align: center; width: 100%;"
-        == slim :"streets/_#{@game.deck.phase}",
-          locals: { game: @game }
-        div style="text-align: center;"
-          - value = @game.deck.phase == :deal ? \
-              "Deal Cards" : "Head to the #{@game.deck.next_phase.capitalize}"
-          - value = "Next Hand" if @game.deck.phase == :river
-          p
-            form(
-              id="advance"
-              action="/#{@game.state[:id]}/advance"
-              method="POST"
+.community
+  .community__header
+  .community__body
+    .board
+      - if @game.is_common_phase?
+        ruby:
+          #.card.card--back.card--animated
+          #  img src="/assets/#{@game.state[:card_back]}"
+        .deck
+          form(
+            id="advance"
+            action="/#{@game.state[:id]}/advance"
+            method="POST"
+            class="card card--back"
+            style="--bg-image: url('/assets/#{@game.state[:card_back]}');"
+          )
+            a(
+              onclick="this.parentNode.submit();"
+              style="display: block; cursor: pointer;"
             )
-              input type="submit" value="#{value}" style="margin: 0;"
-        - if !@game.players.empty? && !@game.ready?
-          a(
-            href="/#{@game.state[:id]}/determine_button"
-          ) Determine Button
-.community_footer
-  - @game.players.each_with_index do |player|
-    - player_class = []
-    - unless @game.has_cards?(player.name)
-      - player_class << 'player--out'
-    - if @game.dealer == player
-      - player_class << 'player--dealer'
-    form.player(
-      method="POST"
-      action="/#{@game.state[:id]}/remove_player"
-      class="#{player_class.join(' ')}"
-    )
-      input(
-        type="hidden" name="player_name"
-        value="#{player.name}"
+              img src="/assets/#{@game.state[:card_back]}" alt="Deal the Hand"
+        .community-cards
+          - @game.deck.community.each do |card|
+            .card.card--face == card.image
+      - else
+        div style="align-self: center; text-align: center; width: 100%;"
+          == slim :"streets/_#{@game.deck.phase}",
+            locals: { game: @game }
+          div style="text-align: center;"
+            - value = @game.deck.phase == :deal ? \
+                "Deal Cards" : "Head to the #{@game.deck.next_phase.capitalize}"
+            - value = "Next Hand" if @game.deck.phase == :river
+            p
+              form(
+                id="advance"
+                action="/#{@game.state[:id]}/advance"
+                method="POST"
+              )
+                input type="submit" value="#{value}" style="margin: 0;"
+          - if !@game.players.empty? && !@game.ready?
+            a(
+              href="/#{@game.state[:id]}/determine_button"
+            ) Determine Button
+  .community_footer
+    - @game.players.each_with_index do |player|
+      - player_class = []
+      - unless @game.has_cards?(player.name)
+        - player_class << 'player--out'
+      - if @game.dealer == player
+        - player_class << 'player--dealer'
+      form.player(
+        method="POST"
+        action="/#{@game.state[:id]}/remove_player"
+        class="#{player_class.join(' ')}"
       )
-      .player__cards
-      .player__name = player.name
+        input(
+          type="hidden" name="player_name"
+          value="#{player.name}"
+        )
+        .player__cards
+        .player__name = player.name
 
-  div
-    - # TODO: put something here
-  div
-    - # TODO: put something here
-  div
-- if !ENV["DEBUG"].nil?
-  = @game.to_hash
-  p = @game.deck.all_cards.count
+    div
+      - # TODO: put something here
+    div
+      - # TODO: put something here
+    div
+  - if !ENV["DEBUG"].nil?
+    = @game.to_hash
+    p = @game.deck.all_cards.count
 
 == slim :"/_poll",
   locals: { game: @game, interval: 10000 }
@@ -74,4 +82,20 @@ javascript:
         }
       });
     });
+
+    /* let communityCards = document. */
+    /*   querySelector(".community-cards"); */
+    /* let communityWidth = communityCards.offsetWidth; */
+    /* let anim = document.querySelector(".card--animated"); */
+    /* let animWidth = anim.offsetWidth; */
+    /* let distance = communityWidth + animWidth; */
+    /* anim.animate([ */
+    /*   { left: distance + "px" }, */
+    /* ], { */
+    /*   duration: 2000, */
+    /*   iterations: 1 */
+    /* }); */
+    /* anim.addEventListener("animationend", function() { */
+    /*   anim.style.left = distance + "px"; */
+    /* }); */
   });
