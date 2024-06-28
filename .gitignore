@@ -1,7 +1,13 @@
-.byebug*
-coverage
-
+# junk
 .DS_Store
 
+# game data
 games/*
 !games/.keep
+
+# testing
+coverage
+spec/examples.txt
+
+# debugging
+.byebug*

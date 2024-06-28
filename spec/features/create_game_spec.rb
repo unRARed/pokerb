@@ -13,27 +13,19 @@ RSpec.describe "Creating a Game", type: :feature do
     click_on "Start the Game"
     expect(page).to have_content("Scan QR to Join")
 
-    click_on "Deal Cards"
-    expect(page).not_to have_selector(".card")
-
-    # No players have been added yet
-    expect(page).to have_content(
-      "Please add at least one player to deal"
-    )
-
-    # So dealer adds himself
+    # Dealer adds himself
     community_url = current_url
     visit community_url.split("/community").first
     click_on "Want to join"
     click_on "Join"
     visit community_url
 
-    # Ok, now we can deal
+    # Now we can deal
     click_on "Deal Cards"
     # Or not, because we haven't determined the button yet
     expect(page).to have_content("Determine the button first")
 
-    click_on "Determine Button"
+    click_on "Draw for Button"
     # Ok, now we can really deal
     click_on "Deal Cards"
 

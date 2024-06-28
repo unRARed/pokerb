@@ -38,17 +38,17 @@ RSpec.describe "Game" do
     expect(subject.button_index).to be_a(Integer)
   end
 
-  it ".ready?" do
-    expect(subject.ready?).to eq(false)
+  it ".is_ready?" do
+    expect(subject.is_ready?).to eq(false)
 
     subject.add_player(Poker::Player.new(name: "Foo"))
-    expect(subject.ready?).to eq(false)
+    expect(subject.is_ready?).to eq(false)
 
     subject.add_player(Poker::Player.new(name: "Bar"))
-    expect(subject.ready?).to eq(false)
+    expect(subject.is_ready?).to eq(false)
 
     subject.determine_button
-    expect(subject.ready?).to eq(true)
+    expect(subject.is_ready?).to eq(true)
   end
 
   it ".move_button" do
@@ -75,5 +75,6 @@ RSpec.describe "Game" do
 
     subject.determine_button
     pending "Need to implement"
+    fail
   end
 end

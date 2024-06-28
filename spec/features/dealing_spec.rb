@@ -25,7 +25,7 @@ RSpec.describe "Dealing", type: :feature do
     expect(page).to have_selector(".player", count: 3)
 
     # No one is the dealer yet... make it so
-    click_on "Determine Button"
+    click_on "Draw for Button"
 
     dealers = []
 
