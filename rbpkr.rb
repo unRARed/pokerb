@@ -26,12 +26,13 @@ IP_ADDRESS =
     end.
     first
 
-class Flash
+class Notifier
   attr_reader :is_read
-  attr_accessor :message
+  attr_accessor :message, :color
 
-  def initalize(is_read: false, message: "")
+  def initialize(is_read: false, message: "", color: "red")
     @is_read = is_read
+    @color = color
   end
 
   def read
@@ -106,8 +107,8 @@ class RbPkr < Sinatra::Base
   end
 
   before do
-    if session[:flash].nil? || session[:flash]&.is_read
-      session[:flash] = Flash.new
+    if session[:notice].nil? || session[:notice]&.is_read
+      session[:notice] = Notifier.new
     end
   end
 
@@ -116,13 +117,13 @@ class RbPkr < Sinatra::Base
     @game = Poker::Game.new(state)
     join_path = "/#{@game.state[:id]}/join"
     unless session[:user]
-      session[:flash].message =
+      session[:notice].message =
         "You must be logged in to access this game."
       return redirect join_path
     end
     if @game.has_password?
       if @game.state[:password] != session["#{@game.state[:id]}_password"]
-        session[:flash].message =
+        session[:notice].message =
           "You must enter the correct password to access this game."
         return redirect join_path
       end
@@ -134,7 +135,7 @@ class RbPkr < Sinatra::Base
     send_file path, :type => :png
   end
 
-  get '//?' do
+  get '/?' do
     slim :index
   end
 
@@ -242,7 +243,7 @@ class RbPkr < Sinatra::Base
       RbPkr.write_state(@game.to_hash)
       redirect "/#{@game.state[:id]}"
     rescue ArgumentError => e
-      session[:flash].message = e.message
+      session[:notice].message = e.message
       return redirect "/#{params["game_id"]}/join"
     end
 
@@ -261,8 +262,10 @@ class RbPkr < Sinatra::Base
       if session[:user] == @game.state[:manager]
         @game.determine_button
         RbPkr.write_state(@game.to_hash)
+        session[:notice].color = "green"
+        session[:notice].message = "Button has been assigned."
       else
-        session[:flash].message =
+        session[:notice].message =
           "Only the manager can determine the button"
       end
       redirect "/#{params["game_id"]}/community"
@@ -275,19 +278,19 @@ class RbPkr < Sinatra::Base
         Debug.this "Advanced to #{@game.deck.phase}"
         RbPkr.write_state(@game.to_hash)
       else
-        session[:flash].message =
+        session[:notice].message =
           "Only the manager can advance the game"
       end
       redirect "/#{@game.state[:id]}/community"
     rescue ArgumentError => e
-      session[:flash].message = e.message
+      session[:notice].message = e.message
       return redirect "/#{params["game_id"]}/community"
     end
 
     post "/remove_player/?" do
       set_game
       if session[:user] != @game.state[:manager]
-        session[:flash].message =
+        session[:notice].message =
           "Only #{@game.state[:manager]} can remove players."
         redirect "/#{params["game_id"]}/community"
       end

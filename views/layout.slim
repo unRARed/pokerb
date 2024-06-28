@@ -28,6 +28,7 @@ html
         grid-template-columns: 1fr min(72rem, 90%) 1fr;
       }
       main { padding: 0; }
+      .small { font-size: 0.7rem; }
       .button {
         border: 1px solid var(--accent);
         background-color: var(--accent);
@@ -46,17 +47,18 @@ html
         border-color: #42b6c4 !important;
       }
       .title { font-size: 0.6rem; }
-      .flash { color: red; }
       .community_header {}
       .community_body {
         padding: 16px 0;
       }
       .community_footer {
-        display: flex;
-        justify-content: center;
+      }
+      .players {
         height: 88px;
         padding: 8px 4px 2px;
         margin-top: 12px;
+        display: flex;
+        justify-content: center;
       }
       .player {
         position: relative;
@@ -228,7 +230,9 @@ html
         locals: { game: @game || \
           Poker::Game.new(id: "RbPkr",
           is_fresh: true) }
-      .flash == session[:flash].read
+      - if session[:notice].message
+        .notice style="color: #{session[:notice].color}"
+          == session[:notice].read
       == yield
     div style="text-align: center;"
       p.title

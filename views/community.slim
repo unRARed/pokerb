@@ -27,44 +27,41 @@
           == slim :"streets/_#{@game.deck.phase}",
             locals: { game: @game }
           div style="text-align: center;"
-            - value = @game.deck.phase == :deal ? \
-                "Deal Cards" : "Head to the #{@game.deck.next_phase.capitalize}"
-            - value = "Next Hand" if @game.deck.phase == :river
-            p
-              form(
-                id="advance"
-                action="/#{@game.state[:id]}/advance"
-                method="POST"
-              )
-                input type="submit" value="#{value}" style="margin: 0;"
-          - if !@game.players.empty? && !@game.ready?
-            a(
-              href="/#{@game.state[:id]}/determine_button"
-            ) Determine Button
+            - if !@game.players.empty?
+              - value = @game.deck.phase == :deal ? \
+                  "Deal Cards" : "Head to the #{@game.deck.next_phase.capitalize}"
+              - value = "Next Hand" if @game.deck.phase == :river
+              p
+                form(
+                  id="advance"
+                  action="/#{@game.state[:id]}/advance"
+                  method="POST"
+                )
+                  input type="submit" value="#{value}" style="margin: 0;"
   .community_footer
-    - @game.players.each_with_index do |player|
-      - player_class = []
-      - unless @game.has_cards?(player.name)
-        - player_class << 'player--out'
-      - if @game.dealer == player
-        - player_class << 'player--dealer'
-      form.player(
-        method="POST"
-        action="/#{@game.state[:id]}/remove_player"
-        class="#{player_class.join(' ')}"
-      )
-        input(
-          type="hidden" name="player_name"
-          value="#{player.name}"
+    .players
+      - @game.players.each_with_index do |player|
+        - player_class = []
+        - unless @game.has_cards?(player.name)
+          - player_class << 'player--out'
+        - if @game.dealer == player
+          - player_class << 'player--dealer'
+        form.player(
+          method="POST"
+          action="/#{@game.state[:id]}/remove_player"
+          class="#{player_class.join(' ')}"
         )
-        .player__cards
-        .player__name = player.name
-
-    div
-      - # TODO: put something here
-    div
-      - # TODO: put something here
-    div
+          input(
+            type="hidden" name="player_name"
+            value="#{player.name}"
+          )
+          .player__cards
+          .player__name = player.name
+    div style="text-align: center; width: 100%;"
+      - if !@game.players.empty? && !@game.ready? && @game.deck.phase == :deal
+        a.small(
+          href="/#{@game.state[:id]}/determine_button"
+        ) Draw for Button
   - if !ENV["DEBUG"].nil?
     = @game.to_hash
     p = @game.deck.all_cards.count
