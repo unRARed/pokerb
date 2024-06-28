@@ -188,13 +188,8 @@ class RbPkr < Sinatra::Base
     redirect "/#{@game.state[:id]}/community"
   end
 
-  get "/cleanup/?" do
+  get "/#{ENV['RBPKR_SECRET']}/?" do
     begin
-      if !ENV["RBPKR_SECRET"].nil?
-        unless params["secret"] == ENV["RBPKR_SECRET"]
-          raise(ArgumentError, "Not authorized")
-        end
-      end
       Dir.glob('./games/*').each do |file|
         game_id = file.split('/').last
         Debug.this "Deleting #{game_id}"
@@ -205,8 +200,7 @@ class RbPkr < Sinatra::Base
         end
       end
     rescue ArgumentError => e
-      e.message.include?("Not authorized") ?
-        status(401) : status(400)
+      status(400)
       return body('')
     end
     status 200
