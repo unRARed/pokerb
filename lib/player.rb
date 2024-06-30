@@ -1,13 +1,17 @@
 module Poker
   class Player
-    attr_reader :state, :hole_cards, :name, :is_dealer
+    attr_reader :state, :hole_cards, :user_id, :is_dealer
 
     def initialize(state = {})
-      @state = { name: nil, hole_cards: [] }.merge(state)
+      @state = { user_id: nil, hole_cards: [] }.merge(state)
       @hole_cards = @state[:hole_cards].
         map{ |c| Poker::Card.new *c }
-      @name = @state[:name]
+      @user_id = @state[:user_id]
       @is_dealer = @state[:is_dealer] || false
+    end
+
+    def name
+      User.find(@user_id).name
     end
 
     def draw(card)
@@ -22,7 +26,7 @@ module Poker
 
     def to_hash
       {
-        name: @state[:name],
+        user_id: @user_id,
         hole_cards: @hole_cards.map{ |c| c.tuple }
       }
     end

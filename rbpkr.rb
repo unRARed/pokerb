@@ -5,6 +5,7 @@ require "sinatra/base"
 require "sinatra/reloader"
 require "sinatra/namespace"
 require "sinatra/cookies"
+require "sinatra/activerecord"
 
 require "slim"
 require "yaml"
@@ -12,6 +13,7 @@ require "securerandom"
 require "byebug"
 require 'socket'
 
+require "./models/user"
 require "./poker"
 require "./debug"
 
@@ -58,6 +60,9 @@ class RbPkr < Sinatra::Base
   set :session_secret,
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
   set :public_folder, "assets"
+
+  register Sinatra::ActiveRecordExtension
+  # set :database, {adapter: "sqlite3", database: "games/foo.sqlite3"}
 
   # Returns the full path to the root folder for
   # the :game_id value given
@@ -116,7 +121,7 @@ class RbPkr < Sinatra::Base
     state = RbPkr.load_state_for_game(params["game_id"])
     @game = Poker::Game.new(state)
     join_path = "/#{@game.state[:id]}/join"
-    unless session[:user]
+    unless logged_in?
       session[:notice].message =
         "You must be logged in to access this game."
       return redirect join_path
@@ -130,6 +135,19 @@ class RbPkr < Sinatra::Base
     end
   end
 
+  def current_user
+    return nil unless !session["user_id"].nil?
+
+    if (user = User.find(session["user_id"]))
+      return user
+    end
+    nil
+  end
+
+  def logged_in?
+    !current_user.nil? && current_user != ""
+  end
+
   get '/assets/:asset_filename' do
     path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"
     send_file path, :type => :png
@@ -139,25 +157,63 @@ class RbPkr < Sinatra::Base
     slim :index
   end
 
+  get "/signup/?" do
+    @user = User.new
+    slim :signup
+  end
+
+  post "/signup/?" do
+    raise ArgumentError, "What are you doing?" unless params["user"]
+
+    @user = User.create!(
+      name: params["user"]["name"],
+      password: params["user"]["password"],
+      email: params["user"]["email"],
+      created_at: Time.now,
+      updated_at: Time.now,
+    )
+    # "Validation failed: Password can't be blank"
+    #   without reloading...
+    @user.reload
+
+    session[:user_id] = @user.id
+    cookies["user_id"] = @user.id
+    session[:notice].message = "Welcome, #{@user[:name]}"
+    session[:notice].color = "green"
+    Debug.this "User logged in: #{current_user.name}"
+    redirect "/"
+  rescue ArgumentError => e
+    session[:notice].message = e.message
+    slim :login
+  end
+
   get "/login/?" do
     slim :login
   end
 
   get "/logout/?" do
-    session[:user] = nil
-    cookies["user"] = nil
+    session[:user_id] = nil
+    cookies[:user_id] = nil
     redirect "/"
   end
 
   post "/login/?" do
-    if params["user"]
-      session[:user] = params["user"]
-      cookies["user"] = params["user"]
-      Debug.this "User logged in: #{session[:user]}"
-      redirect "/"
-    else
-      slim :login
-    end
+    @user = User.find_by(email: params["user"]["email"])
+    raise ArgumentError, "Try again" unless @user
+    raise ArgumentError, "Try again" unless
+      @user.authenticate(params["user"]["password"])
+
+    @user.validate!
+
+    session[:user_id] = @user.id
+    cookies["user_id"] = @user.id
+    session[:notice].message = "Welcome back, #{@user[:name]}"
+    session[:notice].color = "green"
+    Debug.this "User logged in: #{current_user.name}"
+    redirect "/"
+  rescue ArgumentError => e
+    session[:notice].message = e.message
+    slim :login
   end
 
   get '/new/?' do
@@ -168,7 +224,7 @@ class RbPkr < Sinatra::Base
     Debug.this "Creating new game"
     # TODO: check if game id is already taken
     @game = Poker::Game.new(
-      manager: session[:user],
+      manager_id: current_user.id,
       password: params["password"],
       card_back: params["card_back"],
       url: RbPkr.server_url(request),
@@ -183,8 +239,7 @@ class RbPkr < Sinatra::Base
     # manager's session if we set one
     if @game.has_password?
       Debug.this "Setting password for manager"
-      session["#{@game.state[:id]}_password"] =
-        params["password"]
+      session["#{@game.state[:id]}_password"] = params["password"]
     end
     redirect "/#{@game.state[:id]}/community"
   end
@@ -223,17 +278,13 @@ class RbPkr < Sinatra::Base
     get "/join/?" do
       state = RbPkr.load_state_for_game(params["game_id"])
       @game = Poker::Game.new(state)
-      slim :join
-    end
 
-    post "/join/?" do
-      state = RbPkr.load_state_for_game(params["game_id"])
-      @game = Poker::Game.new(state)
-
-      session[:user] = params["user"] if params["user"]
+      if @game.player_by_user_id(current_user.id)
+        raise ArgumentError, "You're already in this game"
+      end
 
       @game.add_player Poker::Player.new(
-        { name: session[:user] }
+        { user_id: current_user.id }
       )
 
       if @game.has_password?
@@ -241,10 +292,10 @@ class RbPkr < Sinatra::Base
         session[password_key] = params["password"]
       end
       RbPkr.write_state(@game.to_hash)
-      redirect "/#{@game.state[:id]}"
     rescue ArgumentError => e
       session[:notice].message = e.message
-      return redirect "/#{params["game_id"]}/join"
+    ensure
+      redirect "/#{params["game_id"]}"
     end
 
     get "/community/?" do
@@ -259,7 +310,7 @@ class RbPkr < Sinatra::Base
 
     get "/determine_button/?" do
       set_game
-      if session[:user] == @game.state[:manager]
+      if current_user.id == @game.state[:manager_id]
         @game.determine_button
         RbPkr.write_state(@game.to_hash)
         session[:notice].color = "green"
@@ -273,7 +324,7 @@ class RbPkr < Sinatra::Base
 
     get "/new_hand/?" do
       set_game
-      if session[:user] == @game.state[:manager]
+      if current_user.id == @game.state[:manager_id]
         @game.new_hand
         RbPkr.write_state(@game.to_hash)
       else
@@ -285,7 +336,7 @@ class RbPkr < Sinatra::Base
 
     post "/advance/?" do
       set_game
-      if session[:user] == @game.state[:manager]
+      if current_user.id == @game.state[:manager_id]
         @game.advance
         Debug.this "Advanced to #{@game.deck.phase}"
         RbPkr.write_state(@game.to_hash)
@@ -301,17 +352,17 @@ class RbPkr < Sinatra::Base
 
     post "/remove_player/?" do
       set_game
-      if session[:user] != @game.state[:manager]
+      if current_user.id != @game.state[:manager_id]
         session[:notice].message =
-          "Only #{@game.state[:manager]} can remove players."
+          "Only #{@game.manager.name} can remove players."
         redirect "/#{params["game_id"]}/community"
       end
 
-      if (player = @game.player_by_name(params["player_name"]))
-        if @game.has_cards?(player.name)
+      if (player = @game.player_by_user_id(params["player_user_id"]))
+        if @game.has_cards?(player.user_id)
           @game.deck.discard(player.fold)
         end
-        @game.remove_player(params["player_name"])
+        @game.remove_player(params["player_user_id"])
         RbPkr.write_state(@game.to_hash)
       end
       redirect "/#{params["game_id"]}/community"
@@ -338,8 +389,8 @@ class RbPkr < Sinatra::Base
 
     post "/fold/?" do
       set_game
-      if (player = @game.player_by_name(session[:user]))
-        break unless @game.has_cards?(player.name)
+      if (player = @game.player_by_user_id(current_user.id))
+        break unless @game.has_cards?(player.user_id)
         @game.deck.discard(player.fold)
         @game.change_color
         RbPkr.write_state(@game.to_hash)

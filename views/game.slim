@@ -1,12 +1,12 @@
 div style="text-align: center;"
-  - if @game.is_playing?(session["user"])
-    - if @game.has_cards?(session["user"])
+  - if @game.is_playing?(current_user.id)
+    - if @game.has_cards?(current_user.id)
       p
         a(
           class="button button-primary"
           href="/#{@game.state[:id]}/fold"
         ) Fold my Hand
-      - player = @game.player_by_name(session["user"])
+      - player = @game.player_by_user_id(current_user.id)
       - if !params["peek"].nil?
         p
           span You have
@@ -29,8 +29,8 @@ div style="text-align: center;"
       h2 Waiting for Cards.
   - else
     p You are not in this game right now.
-    a(
+    a.button.button-primary(
       href="/#{@game.state[:id]}/join"
-    ) Want to join?
+    ) Join now
 == slim :"/_poll",
   locals: { game: @game, interval: 5000 }

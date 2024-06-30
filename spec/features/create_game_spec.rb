@@ -2,11 +2,15 @@ require "spec_helper"
 
 RSpec.describe "Creating a Game", type: :feature do
   it "creates a new game" do
-    visit "/"
-    click_on "Tell me your name"
-
-    fill_in "user", with: "Me"
-    click_on "That's me"
+    User.create(
+      name: "Some User",
+      password: "password",
+      email: "some@email.com"
+    )
+    visit "/login"
+    fill_in "user[email]", with: "some@email.com"
+    fill_in "user[password]", with: "password"
+    click_on "Sign in"
 
     click_on "Let's go"
 
@@ -16,8 +20,7 @@ RSpec.describe "Creating a Game", type: :feature do
     # Dealer adds himself
     community_url = current_url
     visit community_url.split("/community").first
-    click_on "Want to join"
-    click_on "Join"
+    click_on "Join now"
     visit community_url
 
     # Now we can deal

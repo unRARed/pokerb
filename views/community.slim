@@ -42,7 +42,7 @@
     .players
       - @game.players.each_with_index do |player|
         - player_class = []
-        - unless @game.has_cards?(player.name)
+        - unless @game.has_cards?(player.user_id)
           - player_class << 'player--out'
         - if @game.dealer == player
           - player_class << 'player--dealer'
@@ -52,8 +52,8 @@
           class="#{player_class.join(' ')}"
         )
           input(
-            type="hidden" name="player_name"
-            value="#{player.name}"
+            type="hidden" name="player_user_id"
+            value="#{player.user_id}"
           )
           .player__cards
           .player__name = player.name

@@ -2,18 +2,25 @@ require "spec_helper"
 
 RSpec.describe "Dealing", type: :feature do
   it "is relative to the button" do
-    visit "/"
-    click_on "Tell me your name"
-
-    fill_in "user", with: "Foo"
-    click_on "That's me"
+    User.create(
+      name: "Foo", password: "password", email: "foo@rbpkr.com"
+    )
+    User.create(
+      name: "Bar", password: "password", email: "bar@rbpkr.com"
+    )
+    User.create(
+      name: "Baz", password: "password", email: "baz@rbpkr.com"
+    )
+    visit "/login"
+    fill_in "user[email]", with: "foo@rbpkr.com"
+    fill_in "user[password]", with: "password"
+    click_on "Sign in"
 
     click_on "Let's go"
     click_on "Start the Game"
     community_url = current_url
     visit community_url.split("/community").first
-    click_on "Want to join"
-    click_on "Join"
+    click_on "Join now"
 
     ["Bar", "Baz"].each do |name|
       using_session(name) do
@@ -59,8 +66,12 @@ RSpec.describe "Dealing", type: :feature do
   end
 
   def join_game(url, player_name)
-    visit url
-    fill_in "user", with: player_name
+    visit "/login"
+    fill_in "user[email]", with: "#{player_name}@rbpkr.com"
+    fill_in "user[password]", with: "password"
+    click_on "Sign in"
+
+    visit url.split("/community").first
     click_on "Join"
   end
 

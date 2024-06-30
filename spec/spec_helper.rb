@@ -30,6 +30,7 @@ ENV['SERVER_PORT'] = "4568"
 
 require "./rbpkr.rb"
 
+require 'database_cleaner'
 require 'rack/test' # it is needed to run rspec
 require "./config/environment"
 require "capybara/rspec"
@@ -72,6 +73,23 @@ RSpec.configure do |config|
 
   config.before(:each, type: :feature) do
     Capybara.current_driver = Capybara.javascript_driver
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.strategy = :transaction
+  end
+
+  config.before(:each, :type => :feature) do
+    DatabaseCleaner.strategy = :truncation
+  end
+
+  config.before(:each, :database) do
+    # open transaction
+    DatabaseCleaner.start
+  end
+
+  config.after(:each, :database) do
+    DatabaseCleaner.clean
   end
 
   config.expect_with :rspec do |expectations|

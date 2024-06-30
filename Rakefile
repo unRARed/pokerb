@@ -1,4 +1,7 @@
-task :default => :test
-task :test do
-  Dir.glob('./test/*_test.rb').each { |file| require file}
+require "sinatra/activerecord/rake"
+
+namespace :db do
+  task :load_config do
+    require "./rbpkr"
+  end
 end

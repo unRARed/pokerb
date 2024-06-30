@@ -1,8 +1,11 @@
 div style="text-align: center;"
-  h3 What's your name?
+  h3 Login to RbPkr
   form action="/login" method="POST"
-    label for="user" User Name
-    input type="text" required="required" name="user"
+    label for="name" Email
+    input type="text" required="required" name="user[email]"
+    value=@user&.email || ""
+    label for="name" Password
+    input type="text" required="required" name="user[password]"
     p
       button.button.button-primary type="submit"
-        span That's me!
+        span Sign in

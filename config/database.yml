@@ -1,0 +1,11 @@
+development:
+  adapter: sqlite3
+  database: games/rbpkr_development.sqlite3
+
+test:
+  adapter: sqlite3
+  database: games/rbpkr_test.sqlite3
+
+production:
+  adapter: sqlite3
+  database: games/rbpkr_production.sqlite3

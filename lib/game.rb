@@ -12,13 +12,14 @@ module Poker
       :players,
       :all_cards,
       :dealer,
-      :button_index
+      :button_index,
+      :manager
 
     def initialize(state = {})
       @state = {
         id: SecureRandom.
           base64.gsub(/[^a-zA-Z]/, '')[0..3].upcase,
-        manager: "",
+        manager_id: nil,
         password: "",
         step_color: "#ffffff",
         url: "https://example.com",
@@ -50,6 +51,10 @@ module Poker
       end
     end
 
+    def manager
+      User.find(@state[:manager_id])
+    end
+
     # Games older than a day are considered stale
     def is_stale?
       @state[:created_at].nil? ||
@@ -68,28 +73,29 @@ module Poker
       "##{SecureRandom.hex(3)}"
     end
 
-    def is_manager?(player_name)
-      @state[:manager] == player_name
+    def is_manager?(user_id)
+      @state[:manager_id] == user_id
     end
 
     def is_common_phase?
       [:flop, :turn, :river].include? @deck.phase
     end
 
-    def is_playing?(player_name)
-      @state[:players].any?{ |p| p[:name] == player_name }
+    def is_playing?(user_id)
+      players.any?{ |p| p.user_id == user_id&.to_i }
     end
 
-    def has_cards?(player_name)
-      player_by_name(player_name).state[:hole_cards].size > 0
+    def has_cards?(user_id)
+      return false unless is_playing? user_id
+      player_by_user_id(user_id).hole_cards.size > 0
     end
 
     def is_contested?
-      players.count{ |p| p.state[:hole_cards].size > 0 } > 1
+      players.count{ |p| p.hole_cards.size > 0 } > 1
     end
 
-    def player_by_name(player_name)
-      @players.find{ |p| p.state[:name] == player_name }
+    def player_by_user_id(user_id)
+      @players.find{ |p| p.user_id == user_id&.to_i }
     end
 
     def to_hash
@@ -155,16 +161,16 @@ module Poker
     def add_player(player = Poker::Player.new({}))
       Debug.this "Adding player #{player.state[:name]}"
       raise ArgumentError, 'Game is full' if @players.size >= 10
-      if @players.any?{|p| p.state[:name] == player.state[:name] }
+      if @players.any?{|p| p.user_id == player.user_id }
         raise ArgumentError,
           "The User Name '#{player.state[:name]}' is taken."
       end
       @players << player
     end
 
-    def remove_player(player_name)
+    def remove_player(user_id)
       if (player = @players.
-        find{|p| p.state[:name] == player_name }
+        find{|p| p.user_id == user_id&.to_i }
       )
         @players.delete(player)
       end

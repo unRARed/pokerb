@@ -12,26 +12,26 @@ RSpec.describe "Game" do
   end
 
   it ".add_player" do
-    subject.add_player(Poker::Player.new(name: "Foo"))
+    subject.add_player(Poker::Player.new(user_id: 1))
     expect(subject.players.size).to eq(1)
 
-    subject.add_player(Poker::Player.new(name: "Bar"))
+    subject.add_player(Poker::Player.new(user_id: 2))
     expect(subject.players.size).to eq(2)
   end
 
   it ".remove_player" do
-    subject.add_player(Poker::Player.new(name: "Foo"))
+    subject.add_player(Poker::Player.new(user_id: 3))
     expect(subject.players.size).to eq(1)
 
-    subject.remove_player("Foo")
+    subject.remove_player(3)
     expect(subject.players.size).to eq(0)
   end
 
   it ".determine_button" do
     expect(subject.button_index).to eq(nil)
 
-    subject.add_player(Poker::Player.new(name: "Foo"))
-    subject.add_player(Poker::Player.new(name: "Bar"))
+    subject.add_player(Poker::Player.new(user_id: 1))
+    subject.add_player(Poker::Player.new(user_id: 2))
 
     subject.determine_button
 
@@ -41,10 +41,10 @@ RSpec.describe "Game" do
   it ".is_ready?" do
     expect(subject.is_ready?).to eq(false)
 
-    subject.add_player(Poker::Player.new(name: "Foo"))
+    subject.add_player(Poker::Player.new(user_id: 1))
     expect(subject.is_ready?).to eq(false)
 
-    subject.add_player(Poker::Player.new(name: "Bar"))
+    subject.add_player(Poker::Player.new(user_id: 2))
     expect(subject.is_ready?).to eq(false)
 
     subject.determine_button
@@ -54,9 +54,9 @@ RSpec.describe "Game" do
   it ".move_button" do
     subject = Poker::Game.new(is_fresh: true, button_index: 0)
 
-    subject.add_player(Poker::Player.new(name: "Foo"))
-    subject.add_player(Poker::Player.new(name: "Bar"))
-    subject.add_player(Poker::Player.new(name: "Baz"))
+    subject.add_player(Poker::Player.new(user_id: 1))
+    subject.add_player(Poker::Player.new(user_id: 2))
+    subject.add_player(Poker::Player.new(user_id: 3))
 
     subject.move_button
     expect(subject.button_index).to eq(1)
@@ -69,9 +69,9 @@ RSpec.describe "Game" do
   end
 
   it ".players_in_turn_order" do
-    subject.add_player(Poker::Player.new(name: "Foo"))
-    subject.add_player(Poker::Player.new(name: "Bar"))
-    subject.add_player(Poker::Player.new(name: "Baz"))
+    subject.add_player(Poker::Player.new(user_id: 1))
+    subject.add_player(Poker::Player.new(user_id: 2))
+    subject.add_player(Poker::Player.new(user_id: 3))
 
     subject.determine_button
     pending "Need to implement"

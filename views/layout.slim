@@ -221,8 +221,8 @@ html
     - color = @game.nil? ? "white" : @game.state[:step_color]
     div style="text-align: right;"
       h1.title
-        - if session["user"]
-          a> href="/logout" Logout #{session["user"]}
+        - if logged_in?
+          a> href="/logout" Logout #{current_user.name}
           span> |
         a< href="/" RbPkr
     main
