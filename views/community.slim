@@ -1,103 +1,30 @@
 .community
-  .community__header
   .community__body
-    .board
-      - if @game.is_common_phase?
-        ruby:
-          #.card.card--back.card--animated
-          #  img src="/assets/#{@game.state[:card_back]}"
-        .deck
-          form(
-            id="advance"
-            action="/#{@game.state[:id]}/advance"
-            method="POST"
-            class="card card--back"
-            style="--bg-image: url('/assets/#{@game.state[:card_back]}');"
-          )
-            a(
-              onclick="this.parentNode.submit();"
-              style="display: block; cursor: pointer;"
-            )
-              img src="/assets/#{@game.state[:card_back]}" alt="Deal the Hand"
-        .community-cards
-          - @game.deck.community.each do |card|
-            .card.card--face == card.image
-      - else
-        div style="align-self: center; text-align: center; width: 100%;"
-          == slim :"streets/_#{@game.deck.phase}",
-            locals: { game: @game }
-          div style="text-align: center;"
-            - if !@game.players.empty?
-              - value = @game.deck.phase == :deal ? \
-                  "Deal Cards" : "Head to the #{@game.deck.next_phase.capitalize}"
-              - value = "Next Hand" if @game.deck.phase == :river
-              p
-                form(
-                  id="advance"
-                  action="/#{@game.state[:id]}/advance"
-                  method="POST"
-                )
-                  input type="submit" value="#{value}" style="margin: 0;"
+    == slim :"/community/_cards", locals: { game: @game }
+    == slim :"/_game_indicator",
+      locals: { game: @game || \
+        Poker::Game.new(id: "RbPkr",
+        is_fresh: true) }
   .community_footer
-    .players
-      - @game.players.each_with_index do |player|
-        - player_class = []
-        - unless @game.has_cards?(player.user_id)
-          - player_class << 'player--out'
-        - if @game.dealer == player
-          - player_class << 'player--dealer'
-        form.player(
-          method="POST"
-          action="/#{@game.state[:id]}/remove_player"
-          class="#{player_class.join(' ')}"
-        )
-          input(
-            type="hidden" name="player_user_id"
-            value="#{player.user_id}"
-          )
-          .player__cards
-          .player__name = player.name
-    div style="text-align: center; width: 100%;"
-      - if !@game.players.empty? && !@game.is_ready? && @game.deck.phase == :deal
-        a.small(
-          href="/#{@game.state[:id]}/determine_button"
-        ) Draw for Button
-    div style="text-align: center; width: 100%;"
-      - if @game.is_ready? && !@game.is_contested?
-        a.small(
-          href="/#{@game.state[:id]}/new_hand"
-        ) Start a New Hand
+    - if @game.players.any?
+      == slim :"/community/_players", locals: { game: @game }
+    - else
+      p
+        span> No players have joined, yet. Scan the QR code or visit
+        a(
+          href="#{@game.state[:url]}/#{@game.state[:id]}"
+        ) #{@game.state[:url]}/#{@game.state[:id]}
+        span .
+    - if @game.menu.any?
+      == slim :"/community/_menu", locals: { game: @game }
+    .qrcode
+      .hidden-dark == @game.qr_code. \
+        as_svg module_size: @game.qr_code_size
+      .hidden-light == @game.qr_code. \
+        as_svg module_size: @game.qr_code_size, color: "FFF"
   - if !ENV["DEBUG"].nil?
     = @game.to_hash
     p = @game.deck.all_cards.count
 
 == slim :"/_poll",
   locals: { game: @game, interval: 10000 }
-javascript:
-  document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll("form.player").forEach(function(player) {
-      player.addEventListener("click", function(e) {
-        const formData = new FormData(this);
-        e.preventDefault();
-        if (confirm(`Are you sure you want to remove ${formData.get('player_name')}?`)) {
-          this.submit();
-        }
-      });
-    });
-
-    /* let communityCards = document. */
-    /*   querySelector(".community-cards"); */
-    /* let communityWidth = communityCards.offsetWidth; */
-    /* let anim = document.querySelector(".card--animated"); */
-    /* let animWidth = anim.offsetWidth; */
-    /* let distance = communityWidth + animWidth; */
-    /* anim.animate([ */
-    /*   { left: distance + "px" }, */
-    /* ], { */
-    /*   duration: 2000, */
-    /*   iterations: 1 */
-    /* }); */
-    /* anim.addEventListener("animationend", function() { */
-    /*   anim.style.left = distance + "px"; */
-    /* }); */
-  });

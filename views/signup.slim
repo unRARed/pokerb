@@ -1,12 +1,14 @@
-div style="text-align: center;"
-  h3 What's your name?
-  form action="/signup" method="POST"
-    label for="user_name" User Name
-    input type="text" required="required" id="user_name" name="user[name]" value=@user.name
-    label for="user_email" Email
-    input type="text" required="required" id="user_email" name="user[email]" value=@user.email
-    label for="user_password" Password
-    input type="password" required="required" id="user_password" name="user[password]"
-    p
-      button.button.button-primary type="submit"
-        span Sign up
+h2.text-center Create your account
+form.form action="/signup" method="POST"
+  label for="user_name" User Name
+  input type="text" required="required" id="user_name" name="user[name]" value=@user.name
+  label for="user_email" Email
+  input type="text" required="required" id="user_email" name="user[email]" value=@user.email
+  label for="user_password" Password
+  input type="password" required="required" id="user_password" name="user[password]"
+  p.text-center
+    button.button.button-primary type="submit"
+      span Sign up
+p.small.text-center
+  span> Already have an account?
+  a href="/login" Sign in

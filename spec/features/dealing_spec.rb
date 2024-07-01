@@ -3,16 +3,16 @@ require "spec_helper"
 RSpec.describe "Dealing", type: :feature do
   it "is relative to the button" do
     User.create(
-      name: "Foo", password: "password", email: "foo@rbpkr.com"
+      name: "Foo", password: "password", email: "Foo@rbpkr.com"
     )
     User.create(
-      name: "Bar", password: "password", email: "bar@rbpkr.com"
+      name: "Bar", password: "password", email: "Bar@rbpkr.com"
     )
     User.create(
-      name: "Baz", password: "password", email: "baz@rbpkr.com"
+      name: "Baz", password: "password", email: "Baz@rbpkr.com"
     )
     visit "/login"
-    fill_in "user[email]", with: "foo@rbpkr.com"
+    fill_in "user[email]", with: "Foo@rbpkr.com"
     fill_in "user[password]", with: "password"
     click_on "Sign in"
 
@@ -32,7 +32,7 @@ RSpec.describe "Dealing", type: :feature do
     expect(page).to have_selector(".player", count: 3)
 
     # No one is the dealer yet... make it so
-    click_on "Draw for Button"
+    click_on "Draw for the Button"
 
     dealers = []
 
@@ -76,8 +76,6 @@ RSpec.describe "Dealing", type: :feature do
   end
 
   def advance_game
-    click_on "Deal Cards"
-    click_on "Head to the Flop"
-    3.times{ find(id: "advance").find("a").click }
+    5.times{ find(id: "advance").find("a").click }
   end
 end

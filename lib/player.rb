@@ -11,7 +11,7 @@ module Poker
     end
 
     def name
-      User.find(@user_id).name
+      User.find(@user_id)&.name || "Player #{@user_id}"
     end
 
     def draw(card)

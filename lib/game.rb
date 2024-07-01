@@ -7,11 +7,13 @@ require_relative '../debug'
 
 module Poker
   class Game
-    attr_reader :state,
+    attr_reader :id,
+      :state,
       :deck,
       :players,
       :all_cards,
       :dealer,
+      :password,
       :button_index,
       :manager
 
@@ -31,6 +33,8 @@ module Poker
         is_fresh: false
       }.merge(state)
 
+      @id = @state[:id]
+      @password = @state[:password]
       if @state[:is_fresh]
         @deck = Poker::Deck.
           new stack: Deck.fresh.map{ |c| c.tuple }
@@ -77,6 +81,26 @@ module Poker
       @state[:manager_id] == user_id
     end
 
+    def menu
+      items = []
+      items << {
+        path: "/#{@id}/determine_button",
+        text: "Draw for the Button",
+        is_primary: true
+      } if @players.size > 0 && @button_index.nil?
+      items << {
+        path: "/#{@id}/determine_button",
+        text: "Re-Draw the Button",
+        is_primary: false
+      } if @players.size > 0 && !@button_index.nil?
+      items << {
+        path: "/#{@id}/new_hand",
+        text: "Start new hand",
+        is_primary: true
+      } if is_ready? && !is_contested?
+      items
+    end
+
     def is_common_phase?
       [:flop, :turn, :river].include? @deck.phase
     end
@@ -110,13 +134,24 @@ module Poker
       RQRCode::QRCode.new @state[:url] + "/#{@state[:id]}"
     end
 
+    def qr_code_size
+      case menu.size
+      when 2
+        4
+      when 3
+        5
+      else
+        3
+      end
+    end
+
     def advance
       Debug.this "Advancing game"
       if @players.size < 1
         raise ArgumentError, "Please add at least one player to deal"
       end
       if @button_index.nil?
-        raise ArgumentError, "Determine the button first"
+        raise ArgumentError, "Draw for the button first"
       end
       case @deck.phase
       when :deal
@@ -210,7 +245,7 @@ module Poker
           hole_cards.sum(&:absolute_value)
       end
       reset
-      Debug.this "Winner: #{winner.state[:name]} \n" \
+      Debug.this "Winner: #{winner.name} \n" \
         "Button index: #{players.index(winner)}"
       @button_index = players.index(winner)
     end

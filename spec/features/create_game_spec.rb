@@ -15,7 +15,7 @@ RSpec.describe "Creating a Game", type: :feature do
     click_on "Let's go"
 
     click_on "Start the Game"
-    expect(page).to have_content("Scan QR to Join")
+    expect(page).to have_content("Ready for Cards?")
 
     # Dealer adds himself
     community_url = current_url
@@ -24,16 +24,18 @@ RSpec.describe "Creating a Game", type: :feature do
     visit community_url
 
     # Now we can deal
-    click_on "Deal Cards"
+    find(id: "advance").find("a").click
     # Or not, because we haven't determined the button yet
-    expect(page).to have_content("Determine the button first")
+    expect(page).to have_content("Draw for the button first")
 
-    click_on "Draw for Button"
+    click_on "Draw for the Button"
     # Ok, now we can really deal
-    click_on "Deal Cards"
+    find(id: "advance").find("a").click
+
+    expect(page).to have_content("Pre-Flop Phase")
 
     # Show the flop
-    click_on "Head to the Flop"
+    find(id: "advance").find("a").click
     expect(page).to have_selector(".card--back", count: 1)
     expect(page).to have_selector(".card--face", count: 3)
 
@@ -47,6 +49,6 @@ RSpec.describe "Creating a Game", type: :feature do
 
     # Return to the pre-deal state
     find(id: "advance").find("a").click
-    expect(page).to have_content("Scan QR to Join")
+    expect(page).to have_content("Ready for Cards?")
   end
 end

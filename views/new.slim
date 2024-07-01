@@ -1,27 +1,32 @@
-div style="text-align: center;"
-  form action="/new" method="POST"
-    div style="display: flex; justify-content: space-evenly;"
-      div
-        h4 Choose a Deck
-        - Poker::Card::BACKS.each_with_index do |back, i|
-          .card.card--inline(
-            class="#{'hidden' unless i == 0}" id="card_#{i}"
-            data-back=back
-            style="cursor: pointer;"
-          )
-            img src="/assets/#{back}"
-        input(
-          type="hidden" id="card_back"
-          name="card_back" value="DefaultBack.png"
+h2.text-center Start a New Game
+
+form.form action="/new" method="POST"
+  div style="display: flex; justify-content: space-evenly;"
+    div
+      h4 Choose a Deck
+      - Poker::Card::BACKS.each_with_index do |back, i|
+        .card.card--inline(
+          class="#{'hidden' unless i == 0}" id="card_#{i}"
+          data-back=back
+          style="cursor: pointer;"
         )
-      div
-        h4 Set a Password?
-        input(
-          type="password" name="password"
-          placeholder="Set a password?"
-        )
-        p
-          button.button.button-primary type="submit" Start the Game
+          img src="/assets/#{back}"
+      input(
+        type="hidden" id="card_back"
+        name="card_back" value="DefaultBack.png"
+      )
+    div
+      h4 style="margin-bottom: 0;" Set a Password?
+      em.small
+        span Passwords are optional. Use them to
+        br prevent random folks from trolling your games.
+      br
+      input(
+        type="password" name="password"
+        placeholder="Set a password?"
+      )
+      p
+        button.button.button-primary type="submit" Start the Game
 javascript:
   // Show the first card back and when clicked, cycle through the rest
   //

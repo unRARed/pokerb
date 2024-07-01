@@ -69,12 +69,12 @@ RSpec.describe "Game" do
   end
 
   it ".players_in_turn_order" do
+    pending "Need to implement"
+    fail
     subject.add_player(Poker::Player.new(user_id: 1))
     subject.add_player(Poker::Player.new(user_id: 2))
     subject.add_player(Poker::Player.new(user_id: 3))
 
     subject.determine_button
-    pending "Need to implement"
-    fail
   end
 end

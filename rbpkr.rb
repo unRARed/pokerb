@@ -120,17 +120,16 @@ class RbPkr < Sinatra::Base
   def set_game
     state = RbPkr.load_state_for_game(params["game_id"])
     @game = Poker::Game.new(state)
-    join_path = "/#{@game.state[:id]}/join"
     unless logged_in?
       session[:notice].message =
         "You must be logged in to access this game."
-      return redirect join_path
+      return redirect "/login"
     end
     if @game.has_password?
-      if @game.state[:password] != session["#{@game.state[:id]}_password"]
+      if @game.password != session["#{@game.id}_password"]
         session[:notice].message =
           "You must enter the correct password to access this game."
-        return redirect join_path
+        return redirect "/#{@game.id}/password"
       end
     end
   end
@@ -194,6 +193,8 @@ class RbPkr < Sinatra::Base
   get "/logout/?" do
     session[:user_id] = nil
     cookies[:user_id] = nil
+    session[:notice].message = "You have been logged out."
+    session[:notice].color = "green"
     redirect "/"
   end
 
@@ -288,14 +289,42 @@ class RbPkr < Sinatra::Base
       )
 
       if @game.has_password?
-        password_key = "#{@game.state[:id]}_password"
-        session[password_key] = params["password"]
       end
       RbPkr.write_state(@game.to_hash)
     rescue ArgumentError => e
       session[:notice].message = e.message
     ensure
       redirect "/#{params["game_id"]}"
+    end
+
+    get "/password/?" do
+      state = RbPkr.load_state_for_game(params["game_id"])
+      @game = Poker::Game.new(state)
+      unless @game.has_password?
+        raise ArgumentError, "This is not a password-protected game."
+      end
+      if @game.password == session["#{@game.id}_password"]
+        raise ArgumentError, "You're already in this game."
+      end
+      slim :password
+    rescue ArgumentError => e
+      session[:notice].message = e
+      redirect "/#{params["game_id"]}"
+    end
+
+    post "/password/?" do
+      state = RbPkr.load_state_for_game(params["game_id"])
+      @game = Poker::Game.new(state)
+      unless @game.password == params["password"]
+        raise ArgumentError, "Password incorrect"
+      end
+      session["#{@game.id}_password"] = params["password"]
+      session[:notice].message = "Password accepted"
+      session[:notice].color = "green"
+      redirect "/#{@game.id}"
+    rescue ArgumentError => e
+      session[:notice].message = e
+      redirect "/#{params["game_id"]}/password"
     end
 
     get "/community/?" do
