@@ -252,7 +252,8 @@ class RbPkr < Sinatra::Base
         env["HTTP_USER_AGENT"] == "Consul Health Check"
       (
         Dir.glob('./games/*').
-          reject{|g| g.include? "lost+found" }
+          reject{|g| g.include? "lost+found" }.
+          reject{|g| g.include? "sqlite3" }
       ).each do |file|
         game_id = file.split('/').last
         Debug.this "Deleting #{game_id}"
