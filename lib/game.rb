@@ -7,18 +7,21 @@ require_relative '../debug'
 
 module Poker
   class Game
-    attr_reader :state,
+    attr_reader :id,
+      :state,
       :deck,
       :players,
       :all_cards,
       :dealer,
-      :button_index
+      :password,
+      :button_index,
+      :manager
 
     def initialize(state = {})
       @state = {
         id: SecureRandom.
           base64.gsub(/[^a-zA-Z]/, '')[0..3].upcase,
-        manager: "",
+        manager_id: nil,
         password: "",
         step_color: "#ffffff",
         url: "https://example.com",
@@ -30,6 +33,8 @@ module Poker
         is_fresh: false
       }.merge(state)
 
+      @id = @state[:id]
+      @password = @state[:password]
       if @state[:is_fresh]
         @deck = Poker::Deck.
           new stack: Deck.fresh.map{ |c| c.tuple }
@@ -50,6 +55,10 @@ module Poker
       end
     end
 
+    def manager
+      User.find(@state[:manager_id])
+    end
+
     # Games older than a day are considered stale
     def is_stale?
       @state[:created_at].nil? ||
@@ -68,28 +77,49 @@ module Poker
       "##{SecureRandom.hex(3)}"
     end
 
-    def is_manager?(player_name)
-      @state[:manager] == player_name
+    def is_manager?(user_id)
+      @state[:manager_id] == user_id
+    end
+
+    def menu
+      items = []
+      items << {
+        path: "/#{@id}/determine_button",
+        text: "Draw for the Button",
+        is_primary: true
+      } if @players.size > 0 && @button_index.nil?
+      items << {
+        path: "/#{@id}/determine_button",
+        text: "Re-Draw the Button",
+        is_primary: false
+      } if @players.size > 0 && !@button_index.nil?
+      items << {
+        path: "/#{@id}/new_hand",
+        text: "Start new hand",
+        is_primary: true
+      } if is_ready? && !is_contested?
+      items
     end
 
     def is_common_phase?
       [:flop, :turn, :river].include? @deck.phase
     end
 
-    def is_playing?(player_name)
-      @state[:players].any?{ |p| p[:name] == player_name }
+    def is_playing?(user_id)
+      players.any?{ |p| p.user_id == user_id&.to_i }
     end
 
-    def has_cards?(player_name)
-      player_by_name(player_name).state[:hole_cards].size > 0
+    def has_cards?(user_id)
+      return false unless is_playing? user_id
+      player_by_user_id(user_id).hole_cards.size > 0
     end
 
     def is_contested?
-      players.count{ |p| p.state[:hole_cards].size > 0 } > 1
+      players.count{ |p| p.hole_cards.size > 0 } > 1
     end
 
-    def player_by_name(player_name)
-      @players.find{ |p| p.state[:name] == player_name }
+    def player_by_user_id(user_id)
+      @players.find{ |p| p.user_id == user_id&.to_i }
     end
 
     def to_hash
@@ -104,13 +134,24 @@ module Poker
       RQRCode::QRCode.new @state[:url] + "/#{@state[:id]}"
     end
 
+    def qr_code_size
+      case menu.size
+      when 2
+        4
+      when 3
+        5
+      else
+        3
+      end
+    end
+
     def advance
       Debug.this "Advancing game"
       if @players.size < 1
         raise ArgumentError, "Please add at least one player to deal"
       end
       if @button_index.nil?
-        raise ArgumentError, "Determine the button first"
+        raise ArgumentError, "Draw for the button first"
       end
       case @deck.phase
       when :deal
@@ -155,16 +196,16 @@ module Poker
     def add_player(player = Poker::Player.new({}))
       Debug.this "Adding player #{player.state[:name]}"
       raise ArgumentError, 'Game is full' if @players.size >= 10
-      if @players.any?{|p| p.state[:name] == player.state[:name] }
+      if @players.any?{|p| p.user_id == player.user_id }
         raise ArgumentError,
           "The User Name '#{player.state[:name]}' is taken."
       end
       @players << player
     end
 
-    def remove_player(player_name)
+    def remove_player(user_id)
       if (player = @players.
-        find{|p| p.state[:name] == player_name }
+        find{|p| p.user_id == user_id&.to_i }
       )
         @players.delete(player)
       end
@@ -204,7 +245,7 @@ module Poker
           hole_cards.sum(&:absolute_value)
       end
       reset
-      Debug.this "Winner: #{winner.state[:name]} \n" \
+      Debug.this "Winner: #{winner.name} \n" \
         "Button index: #{players.index(winner)}"
       @button_index = players.index(winner)
     end

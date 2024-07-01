@@ -1,8 +1,11 @@
-div style="text-align: center;"
-  - if session["user"]
-    p Hi, #{session["user"]}. Ready to play?
+.text-center
+  h2 style="margin: 24px 0 0;" Play Texas Holdem Poker
+  h3 style="margin-top: 8px;" With your friends, on your device.
+  - if logged_in?
+    p Hi, #{current_user.name}. Ready to play?
     a.button.button-primary href="/new" Let's go
   - else
     div style="text-align: center;"
-      p Hi, stranger. I want to play a game.
-      a.button.button-primary href="/login" Tell me your name
+      a.button.button-primary href="/login" Sign in
+      span<> or
+      a.button href="/signup" Sign up

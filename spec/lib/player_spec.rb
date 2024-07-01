@@ -5,7 +5,7 @@ RSpec.describe "Player" do
 
   it "initialize" do
     expect(subject.hole_cards.size).to eq(0)
-    expect(subject.name).to eq(nil)
+    expect(subject.user_id).to eq(nil)
     expect(subject.is_dealer).to eq(false)
   end
 

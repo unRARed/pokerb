@@ -11,3 +11,4 @@ spec/examples.txt
 
 # debugging
 .byebug*
+capybara-*.html
