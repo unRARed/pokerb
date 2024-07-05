@@ -4,7 +4,7 @@ div style="text-align: center;"
       p
         a(
           class="button button-primary"
-          href="/#{@game.state[:id]}/fold"
+          href="/#{@game.slug}/fold"
         ) Fold my Hand
       - player = @game.player_by_user_id(current_user.id)
       - if !params["peek"].nil?
@@ -15,7 +15,7 @@ div style="text-align: center;"
       - else
         p Click your cards to peek.
       .hole_cards
-        a href="/#{@game.state[:id]}#{'?peek=true' if
+        a href="/#{@game.slug}#{'?peek=true' if
         params["peek"].nil?}"
           - if !params["peek"].nil?
             - player.hole_cards.each do |card|
@@ -30,7 +30,7 @@ div style="text-align: center;"
   - else
     p You are not in this game, yet.
     a.button.button-primary(
-      href="/#{@game.state[:id]}/join"
+      href="/#{@game.slug}/join"
     ) Join now
 == slim :"/_poll",
   locals: { game: @game, interval: 5000 }

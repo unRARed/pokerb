@@ -7,7 +7,7 @@
       - player_class << 'player--dealer'
     form.player(
       method="POST"
-      action="/#{game.state[:id]}/remove_player"
+      action="/#{game.slug}/remove_player"
       class="#{player_class.join(' ')}"
       data-player-name="#{player.name}"
     )

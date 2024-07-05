@@ -1,7 +1,13 @@
 require "spec_helper"
 
 RSpec.describe "Game" do
-  let(:subject) { Poker::Game.new(is_fresh: true) }
+  let(:subject) do
+    Poker::Game.new(
+      Poker::Deck.new(
+        stack: Poker::Deck.fresh.map{ |c| c.tuple }
+      ).to_hash.merge(is_fresh: true)
+    )
+  end
 
   it ".initialize" do
     expect(subject.players.size).to eq(0)

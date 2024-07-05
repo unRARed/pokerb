@@ -2,12 +2,11 @@ require_relative 'player'
 require_relative 'deck'
 require_relative 'hand'
 require 'securerandom'
-require 'rqrcode'
 require_relative '../debug'
 
 module Poker
   class Game
-    attr_reader :id,
+    attr_reader :slug,
       :state,
       :deck,
       :players,
@@ -19,44 +18,49 @@ module Poker
 
     def initialize(state = {})
       @state = {
-        id: SecureRandom.
+        slug: SecureRandom.
           base64.gsub(/[^a-zA-Z]/, '')[0..3].upcase,
-        manager_id: nil,
+        user_id: nil,
         password: "",
         step_color: "#ffffff",
-        url: "https://example.com",
         players: [],
-        hands: [],
-        deck: {},
+        deck_stack: [],
+        deck_discarded: [],
+        deck_community: [],
+        deck_phase: :deal,
         card_back: "DefaultBack.png",
-        button_index: nil,
-        is_fresh: false
+        button_index: nil
       }.merge(state)
 
-      @id = @state[:id]
+      @step_color = @state[:step_color]
+      @slug = @state[:slug]
+      @deck = Poker::Deck.new(
+        stack: @state[:deck_stack],
+        discarded: @state[:deck_discarded],
+        community: @state[:deck_community],
+        phase: @state[:deck_phase]
+      )
       @password = @state[:password]
-      if @state[:is_fresh]
-        @deck = Poker::Deck.
-          new stack: Deck.fresh.map{ |c| c.tuple }
-        @state[:is_fresh] = false
-        @state[:created_at] = Time.now.to_i
-      else
-        @deck = Poker::Deck.new @state[:deck]
-      end
       @players = @state[:players].map{ |p| Poker::Player.new p }
       @button_index = @state[:button_index]
 
-      Debug.this "Game #{@state[:id]} initialized"
+      Debug.this "Game #{@slug} initialized"
       Debug.this "Players: #{players.map(&:state).map{ |p| p[:name] }}"
 
-      unless @state[:is_fresh]
-        raise ArgumentError, "Incomplete Deck" if all_cards.size != 52
-        raise ArgumentError, "Card Discrepancy" if all_cards.uniq.length != all_cards.length
-      end
+      # if all_cards.size != 52 
+      #   raise ArgumentError, "Incomplete Deck"
+      # end
+      # if all_cards.uniq.length != all_cards.length
+      #   raise ArgumentError, "Card Discrepancy"
+      # end
     end
 
     def manager
-      User.find(@state[:manager_id])
+      User.find(@state[:user_id])
+    end
+
+    def phase
+      @deck.phase
     end
 
     # Games older than a day are considered stale
@@ -77,24 +81,24 @@ module Poker
       "##{SecureRandom.hex(3)}"
     end
 
-    def is_manager?(user_id)
-      @state[:manager_id] == user_id
+    def is_manager?(target_id)
+      @state[:user_id] == target_id
     end
 
     def menu
       items = []
       items << {
-        path: "/#{@id}/determine_button",
+        path: "/#{@slug}/determine_button",
         text: "Draw for the Button",
         is_primary: true
       } if @players.size > 0 && @button_index.nil?
       items << {
-        path: "/#{@id}/determine_button",
+        path: "/#{@slug}/determine_button",
         text: "Re-Draw the Button",
         is_primary: false
       } if @players.size > 0 && !@button_index.nil?
       items << {
-        path: "/#{@id}/new_hand",
+        path: "/#{@slug}/new_hand",
         text: "Start new hand",
         is_primary: true
       } if is_ready? && !is_contested?
@@ -123,15 +127,16 @@ module Poker
     end
 
     def to_hash
-      @state.merge(
-        deck: deck.to_hash,
-        players: @players.map(&:to_hash),
-        button_index: @button_index
-      )
-    end
-
-    def qr_code
-      RQRCode::QRCode.new @state[:url] + "/#{@state[:id]}"
+      {
+        slug: @slug,
+        user_id: @state[:user_id],
+        password: @state[:password],
+        card_back: @state[:card_back],
+        # things that change after creation
+        step_color: @step_color,
+        button_index: @button_index,
+        players: @players.map(&:to_hash)
+      }.merge(deck.to_hash)
     end
 
     def qr_code_size

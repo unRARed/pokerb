@@ -1,6 +1,6 @@
 div style="text-align: center;"
   h3 Get in the Game
-  form action="/#{@game.state[:id]}/join" method="POST"
+  form action="/#{@game.slug}/join" method="POST"
     - if @game.has_password?
       label for="password" Password
       input type="password" placeholder="Enter password" name="password"

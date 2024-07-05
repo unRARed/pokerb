@@ -12,8 +12,10 @@ require "yaml"
 require "securerandom"
 require "byebug"
 require 'socket'
+require 'rqrcode'
 
 require "./models/user"
+require "./models/game"
 require "./poker"
 require "./debug"
 
@@ -65,20 +67,20 @@ class RbPkr < Sinatra::Base
   # set :database, {adapter: "sqlite3", database: "games/foo.sqlite3"}
 
   # Returns the full path to the root folder for
-  # the :game_id value given
+  # the :game_slug value given
   #
   #   Example: /Users/some_user/rbpkr/games/2fgdaf"
   #
-  def self.game_root(game_id)
-    Dir.pwd + "/games/#{game_id}"
+  def self.game_root(game_slug)
+    Dir.pwd + "/games/#{game_slug}"
   end
 
-  # Loads, reads and parses /games/:game_id/state.yml
+  # Loads, reads and parses /games/:game_slug/state.yml
   # for keeping track of game-specific metadata.
   #
-  def self.load_state_for_game(game_id)
+  def self.load_state_for_game(game_slug)
     YAML.load(
-      File.open("#{RbPkr.game_root(game_id)}/state.yml")
+      File.open("#{RbPkr.game_root(game_slug)}/state.yml")
     )
   end
 
@@ -86,18 +88,23 @@ class RbPkr < Sinatra::Base
   # from errors and prevent having redundant requests.
   #
   def self.write_state(state)
-    unless Dir.exist?(RbPkr.game_root(state[:id]))
-      Dir.mkdir(RbPkr.game_root(state[:id]))
+    unless Dir.exist?(RbPkr.game_root(state[:slug]))
+      Dir.mkdir(RbPkr.game_root(state[:slug]))
     end
     File.write(
-      "#{RbPkr.game_root(state[:id])}/state.yml",
+      "#{RbPkr.game_root(state[:slug])}/state.yml",
       state.to_yaml
     )
+    if (game = Game.find_by(slug: state[:slug]))
+      game.update!(state)
+    else
+      Game.new(state).save!
+    end
     state
   end
 
-  def self.server_url(request)
-    env = request.env
+  def self.server_url(req)
+    env = req.env
     parts = ENV["RACK_ENV"] == "production" ?
       ["https://"] : ["http://"]
     if !ENV["RBPKR_HOSTNAME"].nil?
@@ -111,6 +118,10 @@ class RbPkr < Sinatra::Base
     parts.join
   end
 
+  def self.qr_code(game_slug)
+    RQRCode::QRCode.new "#{RbPkr.server_url}/#{game_slug}"
+  end
+
   before do
     if session[:notice].nil? || session[:notice]&.is_read
       session[:notice] = Notifier.new
@@ -118,7 +129,7 @@ class RbPkr < Sinatra::Base
   end
 
   def set_game
-    state = RbPkr.load_state_for_game(params["game_id"])
+    state = RbPkr.load_state_for_game(params["game_slug"])
     @game = Poker::Game.new(state)
     unless logged_in?
       session[:notice].message =
@@ -126,10 +137,10 @@ class RbPkr < Sinatra::Base
       return redirect "/login"
     end
     if @game.has_password?
-      if @game.password != session["#{@game.id}_password"]
+      if @game.password != session["#{@game.slug}_password"]
         session[:notice].message =
           "You must enter the correct password to access this game."
-        return redirect "/#{@game.id}/password"
+        return redirect "/#{@game.slug}/password"
       end
     end
   end
@@ -225,24 +236,29 @@ class RbPkr < Sinatra::Base
     Debug.this "Creating new game"
     # TODO: check if game id is already taken
     @game = Poker::Game.new(
-      manager_id: current_user.id,
-      password: params["password"],
-      card_back: params["card_back"],
-      url: RbPkr.server_url(request),
-      is_fresh: true
+      {
+        user_id: current_user.id,
+        password: params["password"],
+        card_back: params["card_back"]
+      }.merge(
+        Poker::Deck.new(
+          stack: Poker::Deck.fresh.map{ |c| c.tuple }
+        ).to_hash,
+      )
     )
     @game.deck.reset
     @game.deck.wash
     @game.deck.shuffle
+
     RbPkr.write_state(@game.to_hash)
 
     # only set the password for the
     # manager's session if we set one
     if @game.has_password?
       Debug.this "Setting password for manager"
-      session["#{@game.state[:id]}_password"] = params["password"]
+      session["#{@game.slug}_password"] = params["password"]
     end
-    redirect "/#{@game.state[:id]}/community"
+    redirect "/#{@game.slug}/community"
   end
 
   get "/cleanup/?" do
@@ -255,11 +271,11 @@ class RbPkr < Sinatra::Base
           reject{|g| g.include? "lost+found" }.
           reject{|g| g.include? "sqlite3" }
       ).each do |file|
-        game_id = file.split('/').last
-        Debug.this "Deleting #{game_id}"
-        game = Poker::Game.new(RbPkr.load_state_for_game(game_id))
+        game_slug = file.split('/').last
+        Debug.this "Deleting #{game_slug}"
+        game = Poker::Game.new(RbPkr.load_state_for_game(game_slug))
         if game.is_stale?
-          Debug.this "Deleting #{game_id}"
+          Debug.this "Deleting #{game_slug}"
           FileUtils.rm_rf(file)
         end
       end
@@ -271,14 +287,14 @@ class RbPkr < Sinatra::Base
     status 200
   end
 
-  namespace '/:game_id' do
+  namespace '/:game_slug' do
     get "/?" do
       set_game
       slim :game
     end
 
     get "/join/?" do
-      state = RbPkr.load_state_for_game(params["game_id"])
+      state = RbPkr.load_state_for_game(params["game_slug"])
       @game = Poker::Game.new(state)
 
       if @game.player_by_user_id(current_user.id)
@@ -289,48 +305,46 @@ class RbPkr < Sinatra::Base
         { user_id: current_user.id }
       )
 
-      if @game.has_password?
-      end
       RbPkr.write_state(@game.to_hash)
     rescue ArgumentError => e
       session[:notice].message = e.message
     ensure
-      redirect "/#{params["game_id"]}"
+      redirect "/#{params["game_slug"]}"
     end
 
     get "/password/?" do
-      state = RbPkr.load_state_for_game(params["game_id"])
+      state = RbPkr.load_state_for_game(params["game_slug"])
       @game = Poker::Game.new(state)
       unless @game.has_password?
         raise ArgumentError, "This is not a password-protected game."
       end
-      if @game.password == session["#{@game.id}_password"]
+      if @game.password == session["#{@game.slug}_password"]
         raise ArgumentError, "You're already in this game."
       end
       slim :password
     rescue ArgumentError => e
       session[:notice].message = e
-      redirect "/#{params["game_id"]}"
+      redirect "/#{params["game_slug"]}"
     end
 
     post "/password/?" do
-      state = RbPkr.load_state_for_game(params["game_id"])
+      state = RbPkr.load_state_for_game(params["game_slug"])
       @game = Poker::Game.new(state)
       unless @game.password == params["password"]
         raise ArgumentError, "Password incorrect"
       end
-      session["#{@game.id}_password"] = params["password"]
+      session["#{@game.slug}_password"] = params["password"]
       session[:notice].message = "Password accepted"
       session[:notice].color = "green"
-      redirect "/#{@game.id}"
+      redirect "/#{@game.slug}"
     rescue ArgumentError => e
       session[:notice].message = e
-      redirect "/#{params["game_id"]}/password"
+      redirect "/#{params["game_slug"]}/password"
     end
 
     get "/community/?" do
       set_game
-      Debug.this "Loading community cards for #{@game.state[:id]}"
+      Debug.this "Loading community cards for #{@game.slug}"
       slim :community
     end
 
@@ -340,7 +354,7 @@ class RbPkr < Sinatra::Base
 
     get "/determine_button/?" do
       set_game
-      if current_user.id == @game.state[:manager_id]
+      if current_user.id == @game.state[:user_id]
         @game.determine_button
         RbPkr.write_state(@game.to_hash)
         session[:notice].color = "green"
@@ -349,24 +363,24 @@ class RbPkr < Sinatra::Base
         session[:notice].message =
           "Only the manager can determine the button"
       end
-      redirect "/#{params["game_id"]}/community"
+      redirect "/#{params["game_slug"]}/community"
     end
 
     get "/new_hand/?" do
       set_game
-      if current_user.id == @game.state[:manager_id]
+      if current_user.id == @game.state[:user_id]
         @game.new_hand
         RbPkr.write_state(@game.to_hash)
       else
         session[:notice].message =
           "Only the manager can advance the game"
       end
-      redirect "/#{params["game_id"]}/community"
+      redirect "/#{params["game_slug"]}/community"
     end
 
     post "/advance/?" do
       set_game
-      if current_user.id == @game.state[:manager_id]
+      if current_user.id == @game.state[:user_id]
         @game.advance
         Debug.this "Advanced to #{@game.deck.phase}"
         RbPkr.write_state(@game.to_hash)
@@ -374,18 +388,18 @@ class RbPkr < Sinatra::Base
         session[:notice].message =
           "Only the manager can advance the game"
       end
-      redirect "/#{@game.state[:id]}/community"
+      redirect "/#{@game.slug}/community"
     rescue ArgumentError => e
       session[:notice].message = e.message
-      return redirect "/#{params["game_id"]}/community"
+      return redirect "/#{params["game_slug"]}/community"
     end
 
     post "/remove_player/?" do
       set_game
-      if current_user.id != @game.state[:manager_id]
+      if current_user.id != @game.state[:user_id]
         session[:notice].message =
           "Only #{@game.manager.name} can remove players."
-        redirect "/#{params["game_id"]}/community"
+        redirect "/#{params["game_slug"]}/community"
       end
 
       if (player = @game.player_by_user_id(params["player_user_id"]))
@@ -395,7 +409,7 @@ class RbPkr < Sinatra::Base
         @game.remove_player(params["player_user_id"])
         RbPkr.write_state(@game.to_hash)
       end
-      redirect "/#{params["game_id"]}/community"
+      redirect "/#{params["game_slug"]}/community"
     end
 
     ##################
@@ -404,7 +418,7 @@ class RbPkr < Sinatra::Base
     post "/poll/?" do
       return unless (data = JSON.parse(request.body.read))
 
-      state = RbPkr.load_state_for_game(data["game_id"])
+      state = RbPkr.load_state_for_game(data["game_slug"])
       if data["step_color"] != state[:step_color]
         Debug.this "Step color mismatch"
         return { in_sync: false }.to_json
@@ -425,7 +439,7 @@ class RbPkr < Sinatra::Base
         @game.change_color
         RbPkr.write_state(@game.to_hash)
       end
-      redirect "/#{@game.state[:id]}"
+      redirect "/#{@game.slug}"
     end
   end
 end

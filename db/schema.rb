@@ -10,7 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_30_052920) do
+ActiveRecord::Schema[7.1].define(version: 2024_07_02_060240) do
+  create_table "games", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "slug", null: false
+    t.string "password"
+    t.string "step_color"
+    t.string "card_back"
+    t.integer "button_index"
+    t.string "deck_phase", default: "deal", null: false
+    t.json "deck_stack"
+    t.json "deck_discarded"
+    t.json "deck_community"
+    t.json "players"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_games_on_slug"
+    t.index ["user_id"], name: "index_games_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name", null: false
     t.string "password_digest", null: false

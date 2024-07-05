@@ -2,7 +2,7 @@
   .deck
     form(
       id="advance"
-      action="/#{game.state[:id]}/advance"
+      action="/#{game.slug}/advance"
       method="POST"
       class="card card--back"
       style="--bg-image: url('/assets/#{game.state[:card_back]}');"

@@ -152,6 +152,7 @@ h2 { margin: 24px 0; }
 .community-cards .card { max-width: 19.6%; }
 .card.card--inline { display: inline-block; }
 /* TODO: should be card--deck */
+.card.card--face { border-radius: 8px; }
 .card.card--back { position: relative; }
 /* .card.card--back.card--animated { */
 /*   position: absolute; */
@@ -215,7 +216,7 @@ h2 { margin: 24px 0; }
   align-items: center;
   font-size: 2rem;
 }
-.game-indicator__id {
+.game-indicator__slug {
   margin-right: 8px;
 }
 .game-indicator__color { width: 100%; height: 24px; }

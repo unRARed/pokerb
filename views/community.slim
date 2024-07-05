@@ -1,3 +1,5 @@
+- qr_code = RQRCode::QRCode.\
+  new "#{RbPkr.server_url(request)}/#{@game.slug}"
 .community
   .community__body
     == slim :"/community/_cards", locals: { game: @game }
@@ -12,16 +14,15 @@
       p
         span> No players have joined, yet. Scan the QR code or visit
         a(
-          href="#{@game.state[:url]}/#{@game.state[:id]}"
-        ) #{@game.state[:url]}/#{@game.state[:id]}
+          href="#{RbPkr.server_url(request)}/#{@game.slug}"
+        ) #{RbPkr.server_url(request)}/#{@game.slug}
         span .
     - if @game.menu.any?
       == slim :"/community/_menu", locals: { game: @game }
     .qrcode
-      .hidden-dark == @game.qr_code. \
-        as_svg module_size: @game.qr_code_size
-      .hidden-light == @game.qr_code. \
-        as_svg module_size: @game.qr_code_size, color: "FFF"
+      .hidden-dark == qr_code.as_svg module_size: @game.qr_code_size
+      .hidden-light == qr_code.as_svg color: "FFF",
+        module_size: @game.qr_code_size
   - if !ENV["DEBUG"].nil?
     = @game.to_hash
     p = @game.deck.all_cards.count

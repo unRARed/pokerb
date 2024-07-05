@@ -29,6 +29,7 @@ RSpec.describe "Creating a Game", type: :feature do
     expect(page).to have_content("Draw for the button first")
 
     click_on "Draw for the Button"
+    expect(page).to have_content("Touch the deck to Advance")
     # Ok, now we can really deal
     find(id: "advance").find("a").click
 

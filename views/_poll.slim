@@ -1,12 +1,12 @@
 javascript:
-  var gameId = '#{game.state[:id]}';
+  var gameSlug = '#{game.slug}';
   var stepColor = '#{game.state[:step_color]}';
   var params = JSON.
-    stringify({game_id: gameId, step_color: stepColor});
+    stringify({game_slug: gameSlug, step_color: stepColor});
 
   setInterval(function() {
     var http = new XMLHttpRequest();
-    http.open("POST", `/${gameId}/poll`, true);
+    http.open("POST", `/${gameSlug}/poll`, true);
     http.setRequestHeader("Content-type",
       "application/json; charset=utf-8");
 

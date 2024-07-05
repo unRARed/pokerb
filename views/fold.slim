@@ -1,8 +1,8 @@
 div style="text-align: center; width: 100%;"
   h3 Are you sure?
-  form action="/#{@game.state[:id]}/fold" method="POST"
+  form action="/#{@game.slug}/fold" method="POST"
     input(
       class="button button-primary"
       type="submit" value="Yea, I'm out."
     )
-    a class="button" href="/#{@game.state[:id]}" No!
+    a class="button" href="/#{@game.slug}" No!

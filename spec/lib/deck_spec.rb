@@ -21,18 +21,18 @@ RSpec.describe "Deck" do
 
       subject.burn
 
-      expect(subject.to_hash[:stack].size).to eq(51)
-      expect(subject.to_hash[:discarded].size).to eq(1)
-      expect(subject.to_hash[:discarded]).
+      expect(subject.to_hash[:deck_stack].size).to eq(51)
+      expect(subject.to_hash[:deck_discarded].size).to eq(1)
+      expect(subject.to_hash[:deck_discarded]).
         to include(burn_card.tuple)
 
       next_burn = subject.state[:stack].last
 
       subject.burn
 
-      expect(subject.to_hash[:stack].size).to eq(50)
-      expect(subject.to_hash[:discarded].size).to eq(2)
-      expect(subject.to_hash[:discarded]).
+      expect(subject.to_hash[:deck_stack].size).to eq(50)
+      expect(subject.to_hash[:deck_discarded].size).to eq(2)
+      expect(subject.to_hash[:deck_discarded]).
         to include(next_burn.tuple)
     end
 
@@ -41,26 +41,26 @@ RSpec.describe "Deck" do
 
       subject.draw
 
-      expect(subject.to_hash[:stack].size).to eq(51)
-      expect(subject.to_hash[:discarded].size).to eq(0)
-      expect(subject.to_hash[:community].size).to eq(0)
+      expect(subject.to_hash[:deck_stack].size).to eq(51)
+      expect(subject.to_hash[:deck_discarded].size).to eq(0)
+      expect(subject.to_hash[:deck_community].size).to eq(0)
 
       next_draw = subject.state[:stack].first
 
       subject.draw
 
-      expect(subject.to_hash[:stack].size).to eq(50)
-      expect(subject.to_hash[:discarded].size).to eq(0)
-      expect(subject.to_hash[:community].size).to eq(0)
+      expect(subject.to_hash[:deck_stack].size).to eq(50)
+      expect(subject.to_hash[:deck_discarded].size).to eq(0)
+      expect(subject.to_hash[:deck_community].size).to eq(0)
     end
 
     it "shuffle" do
       original_stack = subject.state[:stack]
       subject.shuffle
 
-      expect(subject.to_hash[:stack].size).to eq(52)
-      expect(subject.to_hash[:discarded].size).to eq(0)
-      expect(subject.to_hash[:community].size).to eq(0)
+      expect(subject.to_hash[:deck_stack].size).to eq(52)
+      expect(subject.to_hash[:deck_discarded].size).to eq(0)
+      expect(subject.to_hash[:deck_community].size).to eq(0)
     end
 
     it ".to_s" do
