@@ -179,7 +179,7 @@ module Poker
     # set color for the next step, so folks can know
     # if their client is up to date
     def change_color
-      @state = @state.merge(step_color: rand_color)
+      @step_color = rand_color
     end
 
     def reset
