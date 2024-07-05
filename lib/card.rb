@@ -6,9 +6,7 @@ module Poker
       '2', '3', '4', '5', '6', '7', '8', '9',
       'Ten', 'Jack', 'Queen', 'King', 'Ace'
     ].freeze
-    SUITS = [
-      :clubs, :diamonds, :hearts, :spades
-    ].freeze
+    SUITS = ["clubs", "diamonds", "hearts", "spades"].freeze
 
     BACKS = Dir.glob('./**/*Back.png').map do |path|
       path.split('/').last
@@ -52,13 +50,13 @@ module Poker
 
     def value(v)
       case v
-      when :clubs
+      when "clubs"
         0.1
-      when :diamonds
+      when "diamonds"
         0.2
-      when :hearts
+      when "hearts"
         0.3
-      when :spades
+      when "spades"
         0.4
       when /\d{1}/
         v.to_f

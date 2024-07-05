@@ -11,7 +11,8 @@ module Poker
     end
 
     def name
-      User.find(@user_id)&.name || "Player #{@user_id}"
+      return "" unless (@user_id.present? && @user_id > 0)
+      User.find(@user_id)&.name || "Anonymous"
     end
 
     def draw(card)

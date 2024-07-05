@@ -10,7 +10,7 @@ RSpec.describe "Player" do
   end
 
   it ".draw" do
-    card = Poker::Card.new("Ace", :hearts)
+    card = Poker::Card.new("Ace", "hearts")
     subject.draw(card)
 
     expect(subject.to_hash[:hole_cards].size).to eq(1)
@@ -18,7 +18,7 @@ RSpec.describe "Player" do
   end
 
   it ".fold" do
-    card = Poker::Card.new("Ace", :hearts)
+    card = Poker::Card.new("Ace", "hearts")
     subject.draw(card)
 
     expect(subject.hole_cards.size).to eq(1)
@@ -30,15 +30,15 @@ RSpec.describe "Player" do
 
   it ".holding" do
     board = [
-      Poker::Card.new("2", :hearts),
-      Poker::Card.new("3", :hearts),
-      Poker::Card.new("7", :hearts),
-      Poker::Card.new("5", :clubs),
-      Poker::Card.new("9", :spades)
+      Poker::Card.new("2", "hearts"),
+      Poker::Card.new("3", "hearts"),
+      Poker::Card.new("7", "hearts"),
+      Poker::Card.new("5", "clubs"),
+      Poker::Card.new("9", "spades")
     ]
 
-    subject.draw(Poker::Card.new("Ace", :hearts))
-    subject.draw(Poker::Card.new("King", :hearts))
+    subject.draw(Poker::Card.new("Ace", "hearts"))
+    subject.draw(Poker::Card.new("King", "hearts"))
 
     expect(subject.holding(board).class).to eq(Poker::Holding)
     expect(subject.holding(board).best_hand[0]).to eq("a Flush")

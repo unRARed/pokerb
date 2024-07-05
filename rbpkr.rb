@@ -8,7 +8,6 @@ require "sinatra/cookies"
 require "sinatra/activerecord"
 
 require "slim"
-require "yaml"
 require "securerandom"
 require "byebug"
 require 'socket'
@@ -79,28 +78,26 @@ class RbPkr < Sinatra::Base
   # for keeping track of game-specific metadata.
   #
   def self.load_state_for_game(game_slug)
-    YAML.load(
-      File.open("#{RbPkr.game_root(game_slug)}/state.yml")
-    )
+    if (game = Game.find_by(slug: game_slug))
+      return game.attributes.symbolize_keys
+    end
+    Debug.this "Could not find game: #{game_slug}"
+    Game.new.attributes.symbolize_keys
   end
 
   # Writes the game state to the system so we can resume
   # from errors and prevent having redundant requests.
   #
   def self.write_state(state)
-    unless Dir.exist?(RbPkr.game_root(state[:slug]))
-      Dir.mkdir(RbPkr.game_root(state[:slug]))
-    end
-    File.write(
-      "#{RbPkr.game_root(state[:slug])}/state.yml",
-      state.to_yaml
-    )
+    Debug.this "Writing state: #{state}"
     if (game = Game.find_by(slug: state[:slug]))
       game.update!(state)
     else
-      Game.new(state).save!
+      game = Game.new(state)
+      game.save!
     end
-    state
+    Debug.this state
+    game.attributes.symbolize_keys
   end
 
   def self.server_url(req)
@@ -130,6 +127,7 @@ class RbPkr < Sinatra::Base
 
   def set_game
     state = RbPkr.load_state_for_game(params["game_slug"])
+    Debug.this "Setting game #{params["game_slug"]}: #{state}"
     @game = Poker::Game.new(state)
     unless logged_in?
       session[:notice].message =

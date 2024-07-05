@@ -1,24 +1,26 @@
-javascript:
-  var gameSlug = '#{game.slug}';
-  var stepColor = '#{game.state[:step_color]}';
-  var params = JSON.
-    stringify({game_slug: gameSlug, step_color: stepColor});
+- # don't poll if we're in debug mode
+- unless !ENV["DEBUG"].nil?
+  javascript:
+    var gameSlug = '#{game.slug}';
+    var stepColor = '#{game.state[:step_color]}';
+    var params = JSON.
+      stringify({game_slug: gameSlug, step_color: stepColor});
 
-  setInterval(function() {
-    var http = new XMLHttpRequest();
-    http.open("POST", `/${gameSlug}/poll`, true);
-    http.setRequestHeader("Content-type",
-      "application/json; charset=utf-8");
+    setInterval(function() {
+      var http = new XMLHttpRequest();
+      http.open("POST", `/${gameSlug}/poll`, true);
+      http.setRequestHeader("Content-type",
+        "application/json; charset=utf-8");
 
-    http.onreadystatechange = function() {
-      if(http.readyState == 4 && http.status == 200) {
-        result = http.responseText;
+      http.onreadystatechange = function() {
+        if(http.readyState == 4 && http.status == 200) {
+          result = http.responseText;
 
-        if (!JSON.parse(result).in_sync) {
-          window.location = window.location.pathname;
+          if (!JSON.parse(result).in_sync) {
+            window.location = window.location.pathname;
+          }
         }
       }
-    }
 
-    http.send(params);
-  }, #{interval});
+      http.send(params);
+    }, #{interval});
