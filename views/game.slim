@@ -1,12 +1,12 @@
 div style="text-align: center;"
-  - if @game.is_playing?(session["user"])
-    - if @game.has_cards?(session["user"])
+  - if @game.is_playing?(current_user.id)
+    - if @game.has_cards?(current_user.id)
       p
         a(
           class="button button-primary"
-          href="/games/#{@game.state[:id]}/fold"
+          href="/#{@game.slug}/fold"
         ) Fold my Hand
-      - player = @game.player_by_name(session["user"])
+      - player = @game.player_by_user_id(current_user.id)
       - if !params["peek"].nil?
         p
           span You have
@@ -15,7 +15,7 @@ div style="text-align: center;"
       - else
         p Click your cards to peek.
       .hole_cards
-        a href="/games/#{@game.state[:id]}#{'?peek=true' if
+        a href="/#{@game.slug}#{'?peek=true' if
         params["peek"].nil?}"
           - if !params["peek"].nil?
             - player.hole_cards.each do |card|
@@ -28,32 +28,9 @@ div style="text-align: center;"
     - else
       h2 Waiting for Cards.
   - else
-    p You are not in this game right now.
-    a(
-      href="/games/#{@game.state[:id]}/join"
-    ) Want to join?
-
-javascript:
-  var gameId = '#{@game.state[:id]}';
-  var stepColor = '#{@game.state[:step_color]}';
-  var params = JSON.
-    stringify({game_id: gameId, step_color: stepColor});
-
-  setInterval(function() {
-    var http = new XMLHttpRequest();
-    http.open("POST", `/games/${gameId}/poll`, true);
-    http.setRequestHeader("Content-type",
-      "application/json; charset=utf-8");
-
-    http.onreadystatechange = function() {
-      if(http.readyState == 4 && http.status == 200) {
-        result = http.responseText;
-
-        if (!JSON.parse(result).in_sync) {
-          window.location = window.location.pathname;
-        }
-      }
-    }
-
-    http.send(params);
-  }, 3000);
+    p You are not in this game, yet.
+    a.button.button-primary(
+      href="/#{@game.slug}/join"
+    ) Join now
+== slim :"/_poll",
+  locals: { game: @game, interval: 5000 }

@@ -28,18 +28,19 @@ end
 ENV['RACK_ENV'] = "test"
 ENV['SERVER_PORT'] = "4568"
 
-require "./pokerb.rb"
+require "./rbpkr.rb"
 
+require 'database_cleaner'
 require 'rack/test' # it is needed to run rspec
 require "./config/environment"
 require "capybara/rspec"
 require 'webdrivers/chromedriver'
 
 def app
-  PokeRb
+  RbPkr
 end
 
-Capybara.app = PokeRb
+Capybara.app = RbPkr
 
 IS_DEBUG_MODE = -> { !ENV['DEBUG'].nil? ? :chrome : :headless_chrome }
 
@@ -74,6 +75,23 @@ RSpec.configure do |config|
     Capybara.current_driver = Capybara.javascript_driver
   end
 
+  config.before(:each) do
+    DatabaseCleaner.strategy = :transaction
+  end
+
+  config.before(:each, :type => :feature) do
+    DatabaseCleaner.strategy = :truncation
+  end
+
+  config.before(:each, :database) do
+    # open transaction
+    DatabaseCleaner.start
+  end
+
+  config.after(:each, :database) do
+    DatabaseCleaner.clean
+  end
+
   config.expect_with :rspec do |expectations|
     # This option will default to `true` in RSpec 4. It makes the `description`
     # and `failure_message` of custom matchers include text for helper methods
@@ -101,9 +119,6 @@ RSpec.configure do |config|
   # triggering implicit auto-inclusion in groups with matching metadata.
   config.shared_context_metadata_behavior = :apply_to_host_groups
 
-# The settings below are suggested to provide a good initial experience
-# with RSpec, but feel free to customize to your heart's content.
-=begin
   # This allows you to limit a spec run to individual examples or groups
   # you care about by tagging them with `:focus` metadata. When nothing
   # is tagged with `:focus`, all examples get run. RSpec also provides
@@ -151,5 +166,4 @@ RSpec.configure do |config|
   # test failures related to randomization by passing the same `--seed` value
   # as the one that triggered the failure.
   Kernel.srand config.seed
-=end
 end

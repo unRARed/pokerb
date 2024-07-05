@@ -4,7 +4,7 @@ module Poker
 
     # cards is hole_cards + the board
     def initialize(cards)
-      @cards = cards.sort_by(&:full_value)&.reverse || []
+      @cards = cards.sort_by(&:absolute_value)&.reverse || []
     end
 
     def best_hand
@@ -12,8 +12,8 @@ module Poker
       return ['a Straight Flush', result] if check
       check, result = quads?
       return ['Quads', result] if check
-      check, result = boat?
-      return ['a Boat', result] if check
+      check, result = full_house?
+      return ['a Full House', result] if check
       check, result = flush?
       return ['a Flush', result] if check
       check, result = straight?
@@ -45,7 +45,7 @@ module Poker
       [true, result[1]]
     end
 
-    def boat?
+    def full_house?
       return [false, []] unless @cards.size > 4
       return [false, []] unless (
         set = cards.
@@ -114,7 +114,7 @@ module Poker
       cards.each_with_index do |card, i|
         next if i == 0
         if (
-          last.full_value.floor - card.full_value.floor
+          last.absolute_value.floor - card.absolute_value.floor
         ) == 1
           straight = straight + [card]
         else

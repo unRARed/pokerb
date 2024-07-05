@@ -1,7 +1,7 @@
 doctype html
 html
   head
-    title PokeRb
+    title RbPkr
     meta name="viewport" content="width=device-width,
     initial-scale=1"
     meta charset="UTF-8"
@@ -16,155 +16,24 @@ html
       rel="stylesheet"
       href="https://cdn.simplecss.org/simple.min.css"
     )
-    script type="text/javascript" src="/cable.js"
-    css:
-      .clearfix::after {
-        content: "";
-        display: table;
-        clear: both;
-      }
-      body {
-        max-width: 100%;
-        overflow-x: hidden;
-        grid-template-columns: 1fr min(72rem, 90%) 1fr;
-      }
-      main { padding: 0; }
-      .button {
-        border: 1px solid var(--accent);
-        background-color: var(--accent);
-        color: var(--accent-text);
-        padding: .5rem .9rem;
-        line-height: normal;
-        text-decoration: none;
-      }
-      .button + .button { margin-left: 1rem; }
-      .button.button-primary {
-        background-color: #72f5ff;
-        border-color: #42b6c4;
-      }
-      .button.button-primary:hover {
-        background-color: #42b6c4 !important;
-        border-color: #42b6c4 !important;
-      }
-      .title { font-size: 0.6rem; }
-      .flash { color: red; }
-      .community_footer {
-        display: flex;
-        justify-content: center;
-        height: 88px;
-        padding: 8px 4px 2px;
-        margin-top: 12px;
-      }
-      .player {
-        position: relative;
-        min-width: 72px;
-        text-align: center;
-        margin-left: 20px;
-      }
-      .player:first-child { margin-left: 0; }
-      .player__name {
-        position: absolute;
-        bottom: 0;
-        color: #72f5ff;
-        width: 100%;
-        text-align: center;
-      }
-      .player__cards {
-        position: relative;
-        background-color: #72f5ff;
-        width: 100%;
-        height: 64%;
-      }
-
-      /* black bar separator */
-      .player__cards:before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin: auto;
-        height: 100%;
-        width: 3px;
-        background-color: var(--bg);
-      }
-      .player.player--out { opacity: 0.4; }
-      .player.player--out .player__cards {
-        background: #999;
-      }
-      .player.player--out .player__name {
-        color: #999
-      }
-      .board {
-        padding: 16px 0;
-        display: flex;
-        justify-content: start;
-        align-items: center;
-      }
-      .card { max-width: 300px; }
-      .card.card--inline { display: inline-block; }
-      .card img { width: 100%; display: block; }
-      .board .card + .card { margin-left: 4px; }
-      .board .card img { max-width: 189px; }
-      .hole_cards {
-        position: relative;
-        left: 4%;
-        right: 0;
-        max-width: 300px;
-        margin: 16px auto 0;
-      }
-      .hole_cards .card {
-        position: absolute;
-        top: 0;
-        left: 0;
-        max-width: 80%;
-      }
-      .hole_cards .card + .card {
-        top: 12px;
-        left: 12%;
-        transform: rotate(10deg);
-      }
-      .game-indicator {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 2rem;
-      }
-      .game-indicator__id {
-        margin-right: 8px;
-      }
-      .game-indicator__color { width: 100%; height: 24px; }
-
-      .hidden { display: none !important; }
-
-      @media (prefers-color-scheme: dark) {
-        .hidden-dark { display: none; }
-        img, video { opacity: 1; }
-      }
-      @media (prefers-color-scheme: light) {
-        .hidden-light { display: none; }
-        img, video { opacity: 1; }
-      }
-      @media only screen and (width <= 720px) {
-        .button { width: 100%; }
-        .button + .button { margin-left: 0; }
-      }
+    link rel="stylesheet" href="/style.css"
   body
     - color = @game.nil? ? "white" : @game.state[:step_color]
     div style="text-align: right;"
       h1.title
-        - if session["user"]
-          a> href="/logout" Logout #{session["user"]}
+        - if logged_in?
+          a> href="/logout" Logout #{current_user.name}
           span> |
-        a< href="/" PokeRb
+        a< href="/" RbPkr
     main
       == slim :"/_game_indicator",
         locals: { game: @game || \
-          Poker::Game.new(id: "PokeRb",
+          Poker::Game.new(id: "RbPkr",
           is_fresh: true) }
-      .flash == session[:flash].read
+      - if session[:notice].message.present?
+        .notice style="color: #{session[:notice].color}"
+          == session[:notice].read
       == yield
     div style="text-align: center;"
       p.title
-        small &copy; #{Time.now.year} PokeRb
+        small &copy; #{Time.now.year} RbPkr

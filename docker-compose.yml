@@ -1,0 +1,24 @@
+version: '3'
+services:
+  web:
+    image: ruby:latest
+    restart: unless-stopped
+    network_mode: "host"
+    command:
+      - bash
+      - -c
+      - >
+        git clone https://github.com/unRARed/rbpkr.git;
+        cd rbpkr;
+        git pull;
+        bundle install;
+        rackup -o 0.0.0.0 -p 5000
+    ports:
+      - 0.0.0.0:5000:5000
+    volumes:
+      - container_storage:/rbpkr
+    environment:
+      - DEBUG=1
+      - RBPKR_HOSTNAME=some.domain.com
+volumes:
+    container_storage:

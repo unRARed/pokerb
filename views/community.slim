@@ -1,66 +1,31 @@
-.community_body
-  .board
-    - if @game.is_common_phase?
-      form(
-        id="advance"
-        action="/games/#{@game.state[:id]}/advance"
-        method="POST"
-        class="card card--back"
-      )
-        a(
-          onclick="this.parentNode.submit();"
-          style="display: block; cursor: pointer;"
-        )
-          img src="/assets/#{@game.state[:card_back]}" alt="Deal the Hand"
-      - @game.deck.community.each do |card|
-        .card.card--face == card.image
+- qr_code = RQRCode::QRCode.\
+  new "#{RbPkr.server_url(request)}/#{@game.slug}"
+.community
+  .community__body
+    == slim :"/community/_cards", locals: { game: @game }
+    == slim :"/_game_indicator",
+      locals: { game: @game || \
+        Poker::Game.new(id: "RbPkr",
+        is_fresh: true) }
+  .community_footer
+    - if @game.players.any?
+      == slim :"/community/_players", locals: { game: @game }
     - else
-      div style="align-self: center; text-align: center; width: 100%;"
-        == slim :"streets/_#{@game.deck.phase}",
-          locals: { game: @game }
-        div style="text-align: center;"
-          - value = @game.deck.phase == :deal ? \
-              "Deal Cards" : "Head to the #{@game.deck.next_phase.capitalize}"
-          - value = "Next Hand" if @game.deck.phase == :river
-          p
-            form(
-              id="advance"
-              action="/games/#{@game.state[:id]}/advance"
-              method="POST"
-            )
-              input type="submit" value="#{value}" style="margin: 0;"
-.community_footer
-  - @game.players.each do |player|
-    form.player(
-      method="POST"
-      action="/games/#{@game.state[:id]}/remove_player"
-      class="#{@game.has_cards?(player.name) ? \
-        '' : 'player--out'}"
-    )
-      input(
-        type="hidden" name="player_name"
-        value="#{player.name}"
-      )
-      .player__cards
-      .player__name = player.name
-  div
-    - # TODO: put something here
-  div
-    - # TODO: put something here
-  div
-- if !ENV["DEBUG"].nil?
-  = @game.to_hash
-  p = @game.deck.all_cards.count
+      p
+        span> No players have joined, yet. Scan the QR code or visit
+        a(
+          href="#{RbPkr.server_url(request)}/#{@game.slug}"
+        ) #{RbPkr.server_url(request)}/#{@game.slug}
+        span .
+    - if @game.menu.any?
+      == slim :"/community/_menu", locals: { game: @game }
+    .qrcode
+      .hidden-dark == qr_code.as_svg module_size: @game.qr_code_size
+      .hidden-light == qr_code.as_svg color: "FFF",
+        module_size: @game.qr_code_size
+  - if !ENV["DEBUG"].nil?
+    = @game.to_hash
+    p = @game.deck.all_cards.count
 
-javascript:
-  document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll("form.player").forEach(function(player) {
-      player.addEventListener("click", function(e) {
-        const formData = new FormData(this);
-        e.preventDefault();
-        if (confirm(`Are you sure you want to remove ${formData.get('player_name')}?`)) {
-          this.submit();
-        }
-      });
-    });
-  });
+== slim :"/_poll",
+  locals: { game: @game, interval: 10000 }

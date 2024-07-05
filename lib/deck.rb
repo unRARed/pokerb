@@ -1,5 +1,6 @@
 require_relative 'card'
 require_relative 'player'
+require_relative "../debug"
 
 module Poker
   class Deck
@@ -36,10 +37,11 @@ module Poker
     end
 
     def reset
-      puts "Resetting deck"
+      Debug.this "Resetting deck"
       @stack = all_cards
       @discarded = []
       @community = []
+      @phase = :deal
       shuffle
     end
 
@@ -78,7 +80,10 @@ module Poker
     end
 
     def burn
-      target = @stack[0]
+      raise ArgumentError, "Deck is empty" if @stack.empty?
+
+      # take card from top of deck
+      target = @stack[@stack.length - 1]
       @stack = @stack - [target]
       @discarded << target
     end
@@ -89,8 +94,11 @@ module Poker
     end
 
     def draw
-      puts "Drawing card"
-      target = @stack[0]
+      raise ArgumentError, "Deck is empty" if @stack.empty?
+
+      Debug.this "Drawing card"
+      # take card from top of deck
+      target = @stack[@stack.length - 1]
       @stack = @stack - [target]
       target
     end
@@ -100,9 +108,9 @@ module Poker
     end
 
     def wash
-      unless all_cards.count == 52
-        raise ArgumentError, 'Incomplete Deck'
-      end
+      # unless all_cards.count == 52
+      #   raise ArgumentError, 'Incomplete Deck'
+      # end
       old_stack = all_cards
       new_stack = []
 
@@ -133,10 +141,10 @@ module Poker
 
     def to_hash
       {
-        stack: @stack.map{ |c| c.tuple },
-        discarded: @discarded.map{ |c| c.tuple },
-        community: @community.map{ |c| c.tuple },
-        phase: @phase
+        deck_stack: @stack.map{ |c| c.tuple },
+        deck_discarded: @discarded.map{ |c| c.tuple },
+        deck_community: @community.map{ |c| c.tuple },
+        deck_phase: @phase
       }
     end
 

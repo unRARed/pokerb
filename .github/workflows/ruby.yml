@@ -40,4 +40,6 @@ jobs:
         # gems automatically
         bundler-cache: true
     - name: Run tests
-      run: bundle exec rspec spec
+      run: |
+        bundle exec rake db:test:prepare
+        bundle exec rspec spec

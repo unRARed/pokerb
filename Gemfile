@@ -12,6 +12,10 @@ gem "slim"
 gem 'yaml'
 gem 'puma'
 gem "activesupport"
+gem "sinatra-activerecord"
+gem "sqlite3", "~> 1.5"
+gem "rake"
+gem "bcrypt"
 
 group :development do
   gem 'byebug'
@@ -23,4 +27,5 @@ group :test do
   gem "capybara"
   gem "rack-test"
   gem 'simplecov'
+  gem "database_cleaner"
 end
