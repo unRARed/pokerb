@@ -46,13 +46,6 @@ module Poker
 
       Debug.this "Game #{@slug} initialized"
       Debug.this "Players: #{players.map(&:state).map{ |p| p[:name] }}"
-
-      # if all_cards.size != 52 
-      #   raise ArgumentError, "Incomplete Deck"
-      # end
-      # if all_cards.uniq.length != all_cards.length
-      #   raise ArgumentError, "Card Discrepancy"
-      # end
     end
 
     def manager
@@ -63,10 +56,10 @@ module Poker
       @deck.phase
     end
 
-    # Games older than a day are considered stale
+    # Games which haven't been updated in 24 hours are stale
+    #
     def is_stale?
-      @state[:created_at].nil? ||
-        (Time.now - Time.at(@state[:created_at])) > 86400
+        (Time.now - Time.at(@state[:updated_at])) > 86400
     end
 
     def has_password?

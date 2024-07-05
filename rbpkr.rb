@@ -65,17 +65,10 @@ class RbPkr < Sinatra::Base
   register Sinatra::ActiveRecordExtension
   # set :database, {adapter: "sqlite3", database: "games/foo.sqlite3"}
 
-  # Returns the full path to the root folder for
-  # the :game_slug value given
+  # Returns hash of the game state for the given :game_slug
   #
-  #   Example: /Users/some_user/rbpkr/games/2fgdaf"
-  #
-  def self.game_root(game_slug)
-    Dir.pwd + "/games/#{game_slug}"
-  end
-
-  # Loads, reads and parses /games/:game_slug/state.yml
-  # for keeping track of game-specific metadata.
+  #   @param game_slug [String] the game slug identifier
+  #   @return [Hash] the game state
   #
   def self.load_state_for_game(game_slug)
     if (game = Game.find_by(slug: game_slug))
@@ -85,8 +78,11 @@ class RbPkr < Sinatra::Base
     Game.new.attributes.symbolize_keys
   end
 
-  # Writes the game state to the system so we can resume
-  # from errors and prevent having redundant requests.
+  # Finds or initializes a game model instance
+  # and writes the given state to the database
+  #
+  #  @param state [Hash] the game state
+  #  @return [Hash] the new game state from the database
   #
   def self.write_state(state)
     Debug.this "Writing state: #{state}"
@@ -100,6 +96,11 @@ class RbPkr < Sinatra::Base
     game.attributes.symbolize_keys
   end
 
+  # Returns the server URL for creating dynamic URLs
+  #
+  #   @param req [Sinatra::Request] the request object
+  #   @return [String] the base url for the server
+  #
   def self.server_url(req)
     env = req.env
     parts = ENV["RACK_ENV"] == "production" ?
@@ -115,16 +116,30 @@ class RbPkr < Sinatra::Base
     parts.join
   end
 
+  # Returns a QR code for the given game slug
+  #
+  #   @param game_slug [String] the game slug identifier
+  #   @return [RQRCode::QRCode] the QR code object
+  #
   def self.qr_code(game_slug)
     RQRCode::QRCode.new "#{RbPkr.server_url}/#{game_slug}"
   end
 
+  # Akin to Rails Flash messages, for setting and
+  # displaying simple notices in views
+  #
   before do
     if session[:notice].nil? || session[:notice]&.is_read
       session[:notice] = Notifier.new
     end
   end
 
+  # A helper method for getting the game instance and
+  # marrying the game state to the Poker::Game object.
+  # Sets the @game instance variable.
+  #
+  #  @return [Poker::Game] the game instance
+  #
   def set_game
     state = RbPkr.load_state_for_game(params["game_slug"])
     Debug.this "Setting game #{params["game_slug"]}: #{state}"
@@ -143,6 +158,10 @@ class RbPkr < Sinatra::Base
     end
   end
 
+  # Helper method for getting the current user
+  #
+  #  @return [User] the logged in user
+  #
   def current_user
     return nil unless !session["user_id"].nil?
 
@@ -152,24 +171,40 @@ class RbPkr < Sinatra::Base
     nil
   end
 
+  # Helper method for checking if a user is logged in
+  #
+  #   @return [Boolean] whether the user is logged in
+  #
   def logged_in?
     !current_user.nil? && current_user != ""
   end
 
+  # Route for responding with system images
+  #
+  #   @param asset_filename [String] the filename of the image
+  #   @return [File] the image file
+  #
   get '/assets/:asset_filename' do
     path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"
     send_file path, :type => :png
   end
 
+  # Route for the home landing page
+  #
   get '/?' do
     slim :index
   end
 
+  # Route for signing up a new user
+  #
   get "/signup/?" do
     @user = User.new
     slim :signup
   end
 
+  # Route for creating a new user per the contents
+  # submitted in the signup form
+  #
   post "/signup/?" do
     raise ArgumentError, "What are you doing?" unless params["user"]
 
@@ -180,8 +215,6 @@ class RbPkr < Sinatra::Base
       created_at: Time.now,
       updated_at: Time.now,
     )
-    # "Validation failed: Password can't be blank"
-    #   without reloading...
     @user.reload
 
     session[:user_id] = @user.id
@@ -195,10 +228,14 @@ class RbPkr < Sinatra::Base
     slim :login
   end
 
+  # Route for logging in a user
+  #
   get "/login/?" do
     slim :login
   end
 
+  # Route for logging out a user
+  #
   get "/logout/?" do
     session[:user_id] = nil
     cookies[:user_id] = nil
@@ -207,6 +244,9 @@ class RbPkr < Sinatra::Base
     redirect "/"
   end
 
+  # Route for authenticating a user given the
+  # contents of the login form
+  #
   post "/login/?" do
     @user = User.find_by(email: params["user"]["email"])
     raise ArgumentError, "Try again" unless @user
@@ -226,10 +266,15 @@ class RbPkr < Sinatra::Base
     slim :login
   end
 
+  # Route for customizing a potential game
+  #
   get '/new/?' do
     slim :new
   end
 
+  # Route for creating a new game based on the
+  # contents of the new game form
+  #
   post "/new/?" do
     Debug.this "Creating new game"
     # TODO: check if game id is already taken
@@ -259,22 +304,18 @@ class RbPkr < Sinatra::Base
     redirect "/#{@game.slug}/community"
   end
 
+  # Route for cleaning up stale games to free up
+  # slug values and keep the database snappy
+  #
   get "/cleanup/?" do
     begin
       # will have to do until we move to a real database
       raise ArgumentError, "Not authorized" unless request.
         env["HTTP_USER_AGENT"] == "Consul Health Check"
-      (
-        Dir.glob('./games/*').
-          reject{|g| g.include? "lost+found" }.
-          reject{|g| g.include? "sqlite3" }
-      ).each do |file|
-        game_slug = file.split('/').last
-        Debug.this "Deleting #{game_slug}"
-        game = Poker::Game.new(RbPkr.load_state_for_game(game_slug))
-        if game.is_stale?
-          Debug.this "Deleting #{game_slug}"
-          FileUtils.rm_rf(file)
+      Game.all.each do |game|
+        if Poker::Game.new(game.attributes.symbolize_keys).is_stale?
+          Debug.this "Destroying stale game: #{game.slug}"
+          game.destroy
         end
       end
     rescue ArgumentError => e
@@ -285,12 +326,21 @@ class RbPkr < Sinatra::Base
     status 200
   end
 
+  ####################
+  ## Game Namespace ##
+  ####################
+
   namespace '/:game_slug' do
+    # Route for displaying the hole cards for the
+    # logged in user for the current game
+    #
     get "/?" do
       set_game
       slim :game
     end
 
+    # Route for joining a new user to the game
+    #
     get "/join/?" do
       state = RbPkr.load_state_for_game(params["game_slug"])
       @game = Poker::Game.new(state)
@@ -310,6 +360,9 @@ class RbPkr < Sinatra::Base
       redirect "/#{params["game_slug"]}"
     end
 
+    # Route for prompting the user for a password
+    # when the game is password-protected
+    #
     get "/password/?" do
       state = RbPkr.load_state_for_game(params["game_slug"])
       @game = Poker::Game.new(state)
@@ -325,6 +378,8 @@ class RbPkr < Sinatra::Base
       redirect "/#{params["game_slug"]}"
     end
 
+    # Route for authenticating the game password
+    #
     post "/password/?" do
       state = RbPkr.load_state_for_game(params["game_slug"])
       @game = Poker::Game.new(state)
@@ -340,6 +395,8 @@ class RbPkr < Sinatra::Base
       redirect "/#{params["game_slug"]}/password"
     end
 
+    # Route for displaying the shared view of community cards
+    #
     get "/community/?" do
       set_game
       Debug.this "Loading community cards for #{@game.slug}"
@@ -350,6 +407,8 @@ class RbPkr < Sinatra::Base
     ## Manager Actions ##
     #####################
 
+    # Route for determining who is the dealer
+    #
     get "/determine_button/?" do
       set_game
       if current_user.id == @game.state[:user_id]
@@ -364,6 +423,9 @@ class RbPkr < Sinatra::Base
       redirect "/#{params["game_slug"]}/community"
     end
 
+    # Route for immediately advancing the game to the next
+    # deal phase without seeing the remaining streets
+    #
     get "/new_hand/?" do
       set_game
       if current_user.id == @game.state[:user_id]
@@ -376,6 +438,9 @@ class RbPkr < Sinatra::Base
       redirect "/#{params["game_slug"]}/community"
     end
 
+    # Route for advancing the game to the next phase
+    # of the deck, e.g. from pre-flop to flop
+    #
     post "/advance/?" do
       set_game
       if current_user.id == @game.state[:user_id]
@@ -392,6 +457,8 @@ class RbPkr < Sinatra::Base
       return redirect "/#{params["game_slug"]}/community"
     end
 
+    # Route for removing a player from the game
+    #
     post "/remove_player/?" do
       set_game
       if current_user.id != @game.state[:user_id]
@@ -413,6 +480,10 @@ class RbPkr < Sinatra::Base
     ##################
     ## User Actions ##
     ##################
+
+    # Route for periodically checking the current game
+    # state for synchronization
+    #
     post "/poll/?" do
       return unless (data = JSON.parse(request.body.read))
 
@@ -424,11 +495,15 @@ class RbPkr < Sinatra::Base
       { in_sync: true }.to_json
     end
 
+    # Route for confirming the user's intention to fold
+    #
     get "/fold/?" do
       set_game
       slim :fold
     end
 
+    # Route for emptying the user's hole cards
+    #
     post "/fold/?" do
       set_game
       if (player = @game.player_by_user_id(current_user.id))
