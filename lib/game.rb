@@ -22,7 +22,7 @@ module Poker
           base64.gsub(/[^a-zA-Z]/, '')[0..3].upcase,
         user_id: nil,
         password: "",
-        step_color: "#ffffff",
+        step_color: nil,
         players: [],
         deck_stack: [],
         deck_discarded: [],
@@ -32,7 +32,8 @@ module Poker
         button_index: nil
       }.merge(state)
 
-      @step_color = @state[:step_color]
+      @step_color = @state[:step_color].nil? ?
+        rand_color : @state[:step_color]
       @slug = @state[:slug]
       @deck = Poker::Deck.new(
         stack: @state[:deck_stack],
@@ -243,6 +244,7 @@ module Poker
           hole_cards.sum(&:absolute_value)
       end
       reset
+      change_color
       Debug.this "Winner: #{winner.name} \n" \
         "Button index: #{players.index(winner)}"
       @button_index = players.index(winner)
