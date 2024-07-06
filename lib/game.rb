@@ -36,9 +36,9 @@ module Poker
         rand_color : @state[:step_color]
       @slug = @state[:slug]
       @deck = Poker::Deck.new(
-        stack: @state[:deck_stack],
-        discarded: @state[:deck_discarded],
-        community: @state[:deck_community],
+        stack: @state[:deck_stack] || [],
+        discarded: @state[:deck_discarded] || [],
+        community: @state[:deck_community] || [],
         phase: @state[:deck_phase].to_sym,
       )
       @password = @state[:password]
