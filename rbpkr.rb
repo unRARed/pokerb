@@ -29,6 +29,11 @@ IP_ADDRESS =
     end.
     first
 
+class NotFoundError < StandardError; end
+
+# A simple class for storing and displaying
+# simple notifications in the UI
+#
 class Notifier
   attr_reader :is_read
   attr_accessor :message, :color
@@ -62,6 +67,8 @@ class RbPkr < Sinatra::Base
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
   set :public_folder, "assets"
 
+  set :game_slug, capture: { slug: /[A-Z]{4}/ }
+
   register Sinatra::ActiveRecordExtension
   # set :database, {adapter: "sqlite3", database: "games/foo.sqlite3"}
 
@@ -75,7 +82,7 @@ class RbPkr < Sinatra::Base
       return game.attributes.symbolize_keys
     end
     Debug.this "Could not find game: #{game_slug}"
-    Game.new.attributes.symbolize_keys
+    raise NotFoundError, "Could not find game: #{game_slug}"
   end
 
   # Finds or initializes a game model instance
@@ -330,13 +337,27 @@ class RbPkr < Sinatra::Base
   ## Game Namespace ##
   ####################
 
+  # Namespace for game-specific routes. For some reason, this
+  # overrides all the root routes even with them defined above.
+  # As a workaround, we match on the game slug pattern.
   namespace '/:game_slug' do
+    before do
+      pass unless params["game_slug"].match? /[A-Z]{4}/
+      state = RbPkr.load_state_for_game(params["game_slug"])
+    rescue NotFoundError => e
+      session[:notice].message = e.message
+      redirect "/"
+    end
     # Route for displaying the hole cards for the
     # logged in user for the current game
     #
     get "/?" do
+      RbPkr.load_state_for_game(params["game_slug"])
       set_game
       slim :game
+    rescue NotFoundError, ArgumentError => e
+      session[:notice].message = e.message
+      redirect "/"
     end
 
     # Route for joining a new user to the game
@@ -376,6 +397,9 @@ class RbPkr < Sinatra::Base
     rescue ArgumentError => e
       session[:notice].message = e
       redirect "/#{params["game_slug"]}"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     # Route for authenticating the game password
@@ -393,6 +417,9 @@ class RbPkr < Sinatra::Base
     rescue ArgumentError => e
       session[:notice].message = e
       redirect "/#{params["game_slug"]}/password"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     # Route for displaying the shared view of community cards
@@ -401,6 +428,12 @@ class RbPkr < Sinatra::Base
       set_game
       Debug.this "Loading community cards for #{@game.slug}"
       slim :community
+    rescue ArgumentError => e
+      session[:notice].message = e
+      redirect "/#{params["game_slug"]}"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     #####################
@@ -421,6 +454,9 @@ class RbPkr < Sinatra::Base
           "Only the manager can determine the button"
       end
       redirect "/#{params["game_slug"]}/community"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     # Route for immediately advancing the game to the next
@@ -436,6 +472,9 @@ class RbPkr < Sinatra::Base
           "Only the manager can advance the game"
       end
       redirect "/#{params["game_slug"]}/community"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     # Route for advancing the game to the next phase
@@ -455,6 +494,9 @@ class RbPkr < Sinatra::Base
     rescue ArgumentError => e
       session[:notice].message = e.message
       return redirect "/#{params["game_slug"]}/community"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     # Route for removing a player from the game
@@ -475,6 +517,9 @@ class RbPkr < Sinatra::Base
         RbPkr.write_state(@game.to_hash)
       end
       redirect "/#{params["game_slug"]}/community"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     ##################
@@ -493,6 +538,9 @@ class RbPkr < Sinatra::Base
         return { in_sync: false }.to_json
       end
       { in_sync: true }.to_json
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     # Route for confirming the user's intention to fold
@@ -500,6 +548,9 @@ class RbPkr < Sinatra::Base
     get "/fold/?" do
       set_game
       slim :fold
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
 
     # Route for emptying the user's hole cards
@@ -513,6 +564,9 @@ class RbPkr < Sinatra::Base
         RbPkr.write_state(@game.to_hash)
       end
       redirect "/#{@game.slug}"
+    rescue NotFoundError => e
+      session[:notice].message = e
+      redirect "/"
     end
   end
 end

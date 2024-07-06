@@ -28,7 +28,7 @@ html
     main
       == slim :"/_game_indicator",
         locals: { game: @game || \
-          Poker::Game.new(id: "RbPkr",
+          Poker::Game.new(slug: "RbPkr", step_color: "#f7214d",
           is_fresh: true) }
       - if session[:notice].message.present?
         .notice style="color: #{session[:notice].color}"
