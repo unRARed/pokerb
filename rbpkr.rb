@@ -38,7 +38,7 @@ class Notifier
   attr_reader :is_read
   attr_accessor :message, :color
 
-  def initialize(is_read: false, message: "", color: "red")
+  def initialize(is_read: false, message: "", color: "orange")
     @is_read = is_read
     @color = color
   end
@@ -54,6 +54,10 @@ class RbPkr < Sinatra::Base
     register Sinatra::Reloader
     also_reload Dir.pwd + '/lib/*.rb'
     also_reload Dir.pwd + '/lib/**/*.rb'
+
+    get '/test/?' do
+      slim :test, layout: :layout
+    end
   end
 
   configure :production do
@@ -65,7 +69,6 @@ class RbPkr < Sinatra::Base
   enable :sessions
   set :session_secret,
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
-  set :public_folder, "assets"
 
   set :game_slug, capture: { slug: /[A-Z]{4}/ }
 

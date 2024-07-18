@@ -1,0 +1,19 @@
+@layer components {
+  .notice {
+    border: 1px solid var(--gray);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 12px;
+
+    &.notice--orange {
+      border: 1px solid var(--orange);
+      background-color: var(--orange);
+      color: white;
+    }
+    &.notice--green {
+      border: 1px solid var(--green);
+      background-color: var(--green);
+      color: white;
+    }
+  }
+}

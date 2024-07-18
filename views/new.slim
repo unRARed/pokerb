@@ -1,11 +1,11 @@
 h2.text-center Start a New Game
 
 form.form action="/new" method="POST"
-  div style="display: flex; justify-content: space-evenly;"
+  div.flex style="display: flex; justify-content: space-evenly;"
     div
       h4 Choose a Deck
       - Poker::Card::BACKS.each_with_index do |back, i|
-        .card.card--inline(
+        .playing-card.playing-card--inline(
           class="#{'hidden' unless i == 0}" id="card_#{i}"
           data-back=back
           style="cursor: pointer;"
@@ -24,14 +24,15 @@ form.form action="/new" method="POST"
       input(
         type="password" name="password"
         placeholder="Set a password?"
+        autocomplete="new-password"
       )
       p
-        button.button.button-primary type="submit" Start the Game
+        button.button.button--primary type="submit" Start the Game
 javascript:
   // Show the first card back and when clicked, cycle through the rest
   //
   document.addEventListener("DOMContentLoaded", () => {
-    const cardBacks = document.querySelectorAll(".card");
+    const cardBacks = document.querySelectorAll(".playing-card");
     let index = 0;
 
     cardBacks[index].classList.remove("hidden");

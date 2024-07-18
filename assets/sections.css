@@ -1,0 +1,10 @@
+@layer components {
+  .section {
+    padding: 2rem 0;
+
+    &.section--red {
+      background-color: var(--red1);
+      color: white;
+    }
+  }
+}

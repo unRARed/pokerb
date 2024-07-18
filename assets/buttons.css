@@ -1,0 +1,26 @@
+@layer components {
+  .button,
+  a.button,
+  a.button:visited,
+  input.button[type="submit"] {
+    display: inline-block;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.25rem;
+    background-color: var(--red2);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    &.button--hero {
+      padding: 0.7rem 1.3rem;
+      font-size: 2rem;
+    }
+    &.button--large {
+      padding: 0.5rem 1rem;
+      font-size: 1.4rem;
+    }
+  }
+  a.button:hover {
+    background-color: var(--red1);
+    @apply brightness-100;
+  }
+}

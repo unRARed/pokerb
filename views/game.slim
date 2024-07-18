@@ -3,7 +3,7 @@ div style="text-align: center;"
     - if @game.has_cards?(current_user.id)
       p
         a(
-          class="button button-primary"
+          class="button button--primary"
           href="/#{@game.slug}/fold"
         ) Fold my Hand
       - player = @game.player_by_user_id(current_user.id)
@@ -19,18 +19,19 @@ div style="text-align: center;"
         params["peek"].nil?}"
           - if !params["peek"].nil?
             - player.hole_cards.each do |card|
-              .card == card.image
+              .player-card == card.image
           - else
             - 2.times do
-              .card
+              .player-card
                 img src="/assets/#{@game.state[:card_back]}" alt="Back of card" width="140"
       .clearfix
     - else
       h2 Waiting for Cards.
   - else
-    p You are not in this game, yet.
-    a.button.button-primary(
-      href="/#{@game.slug}/join"
-    ) Join now
+    h3 You are not in this game, yet.
+    p
+      a.button.button--large(
+        href="/#{@game.slug}/join"
+      ) Join now
 == slim :"/_poll",
   locals: { game: @game, interval: 5000 }

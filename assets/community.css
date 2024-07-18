@@ -1,0 +1,97 @@
+@layer components {
+  .board {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+  }
+  .deck {
+    position: relative;
+    margin-right: 1%;
+    z-index: 1;
+    width: 15.7%
+  }
+  .community-cards {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    width: 83%;
+  }
+  .community_body {
+    padding: 16px 0;
+  }
+  .community_footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+  .player-info {
+    width: 70%;
+  }
+  .players {
+    height: 66px;
+    padding: 0 4px 2px;
+    display: flex;
+    justify-content: center;
+  }
+  .player {
+    position: relative;
+    min-width: 56px;
+    text-align: center;
+    margin-left: 20px;
+    cursor: pointer;
+  }
+  .player:first-child { margin-left: 0; }
+  .player__name {
+    position: absolute;
+    bottom: 0;
+    color: #72f5ff;
+    width: 100%;
+    text-align: center;
+  }
+  .player__cards {
+    position: relative;
+    background-color: #72f5ff;
+    width: 100%;
+    height: 64%;
+  }
+
+  .player:hover .player__name {
+    color: pink !important;
+  }
+  .player:hover .player__cards {
+    background: pink !important;
+  }
+
+  /* black bar separator */
+  .player__cards:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    height: 100%;
+    width: 3px;
+    background-color: var(--bg);
+  }
+  .player.player--dealer .player__cards {
+    background: #76c209;
+  }
+  .player.player--dealer .player__name {
+    color: #76c209;
+  }
+  .player.player--out { opacity: 0.4; }
+  .player.player--out .player__cards {
+    background: #999;
+  }
+  .player.player--out .player__name {
+    color: #999
+  }
+  .player.player--dealer.player--out .player__cards {
+    background: #4d944c;
+  }
+  .player.player--dealer.player--out .player__name {
+    color: #4d944c;
+  }
+}

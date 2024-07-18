@@ -19,6 +19,7 @@ gem "bcrypt"
 
 group :development do
   gem 'byebug'
+  gem 'foreman'
 end
 
 group :test do

@@ -1,0 +1,25 @@
+@layer base {
+  body {
+    /* font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif; */
+    @apply josefin-slab;
+    color: var(--gray);
+  }
+
+  h1,h2,h3,h4,h5,h6 {
+    @apply bebas-neue;
+  }
+  h1 { font-size: 3.4rem; font-weight: 800; }
+  h2 { font-size: 2.7rem; font-weight: 600; }
+  h3 { font-size: 2.3rem; font-weight: 800; }
+  h4 { font-size: 2.0rem; font-weight: 600; }
+  h5 { font-size: 1.4rem; font-weight: 600; }
+  h6 { font-weight: 800; }
+
+  a, a:visited {
+    color: var(--red1);
+    text-decoration: none;
+  }
+  a:hover {
+    @apply brightness-125;
+  }
+}

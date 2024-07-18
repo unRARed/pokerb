@@ -1,0 +1,32 @@
+@layer components {
+  .menu {
+    width: 30%;
+    border-radius: 4px;
+    border: 1px solid #999;
+    background-color: var(--gray);
+    color: white;
+  }
+  .menu__item {
+    padding: 8px 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.1em;
+
+    &.menu__item--header {
+      @apply bebas-neue;
+      font-size: 1.4rem;
+      padding: 0.25rem;
+    }
+  }
+  a.menu__item {
+    color: var(--yellow);
+    background-color: var(--red2);
+    &:hover {
+      background-color: var(--red1);
+      cursor: pointer;
+    }
+  }
+  .menu__item + .menu__item { border-top: 1px solid #999; }
+  .menu__item--primary { font-weight: bold; color: #72f5ff; }
+}

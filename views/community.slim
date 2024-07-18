@@ -4,19 +4,24 @@
   .community__body
     == slim :"/community/_cards", locals: { game: @game }
     == slim :"/_game_indicator",
-      locals: { game: @game || \
+      locals: { modifier: "bottom", game: @game || \
         Poker::Game.new(id: "RbPkr",
         is_fresh: true) }
   .community_footer
     - if @game.players.any?
       == slim :"/community/_players", locals: { game: @game }
     - else
-      p
-        span> No players have joined, yet. Scan the QR code or visit
-        a(
-          href="#{RbPkr.server_url(request)}/#{@game.slug}"
-        ) #{RbPkr.server_url(request)}/#{@game.slug}
-        span .
+      div.text-center style="width: 30%;"
+        h4
+          span> No players have joined, yet.
+        p
+          strong
+            span Scan the QR code or visit
+            br
+            a(
+              href="#{RbPkr.server_url(request)}/#{@game.slug}"
+            ) #{RbPkr.server_url(request)}/#{@game.slug}
+            span .
     - if @game.menu.any?
       == slim :"/community/_menu", locals: { game: @game }
     .qrcode

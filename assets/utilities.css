@@ -1,0 +1,12 @@
+@layer utilities {
+  .hidden { display: none !important; }
+
+  @media (prefers-color-scheme: dark) {
+    .hidden-dark { display: none; }
+    img, video { opacity: 1; }
+  }
+  @media (prefers-color-scheme: light) {
+    .hidden-light { display: none; }
+    img, video { opacity: 1; }
+  }
+}

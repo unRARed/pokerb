@@ -1,0 +1,16 @@
+{
+  "name": "rbpkr",
+  "version": "0.2.1",
+  "description": "Online dealing, real life poker.",
+  "main": "config.ru",
+  "repository": "git@github.com:unRARed/pokerb.git",
+  "author": "Ryan <ryananthonyrichardson@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.39",
+    "postcss-import": "^16.1.0",
+    "tailwindcss": "^3.4.4"
+  }
+}

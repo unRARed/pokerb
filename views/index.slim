@@ -1,11 +1,10 @@
 .text-center
-  h2 style="margin: 24px 0 0;" Play Texas Holdem Poker
-  h3 style="margin-top: 8px;" With your friends, on your device.
-  - if logged_in?
-    p Hi, #{current_user.name}. Ready to play?
-    a.button.button-primary href="/new" Let's go
-  - else
-    div style="text-align: center;"
-      a.button.button-primary href="/login" Sign in
+  h2 Play Texas Holdem Poker
+  p With your friends, on your device.
+  .section
+    - if logged_in?
+      a.button.button--hero href="/new" Let's go
+    - else
+      a.button.button--hero href="/login" Sign in
       span<> or
       a.button href="/signup" Sign up

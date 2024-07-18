@@ -1,34 +1,39 @@
-.players
-  - game.players.each_with_index do |player|
-    - player_class = []
-    - unless game.has_cards?(player.user_id)
-      - player_class << 'player--out'
-    - if game.dealer == player
-      - player_class << 'player--dealer'
-    form.player(
-      method="POST"
-      action="/#{game.slug}/remove_player"
-      class="#{player_class.join(' ')}"
-      data-player-name="#{player.name}"
-    )
-      input(
-        type="hidden" name="player_user_id"
-        value="#{player.user_id}"
+.player-info
+  .text-center
+    h5.text-center style="line-height: 1;" Seated Players
+    p style="margin-bottom: 12px;"
+      small Touch player to remove them from the game.
+  .players
+    - game.players.each_with_index do |player|
+      - player_class = []
+      - unless game.has_cards?(player.user_id)
+        - player_class << 'player--out'
+      - if game.dealer == player
+        - player_class << 'player--dealer'
+      form.player(
+        method="POST"
+        action="/#{game.slug}/remove_player"
+        class="#{player_class.join(' ')}"
+        data-player-name="#{player.name}"
       )
-      .player__cards
-      .player__name = player.name
-javascript:
-  document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll("form.player").forEach(function(player) {
-      player.addEventListener("click", function(e) {
-        const formData = new FormData(this);
-        e.preventDefault();
-        if (
-          confirm(
-            'Are you sure you want to remove ' +
-            this.dataset.playerName + '?'
-          )
-        ) { this.submit(); }
+        input(
+          type="hidden" name="player_user_id"
+          value="#{player.user_id}"
+        )
+        .player__cards
+        .player__name = player.name
+    javascript:
+      document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll("form.player").forEach(function(player) {
+          player.addEventListener("click", function(e) {
+            const formData = new FormData(this);
+            e.preventDefault();
+            if (
+              confirm(
+                'Are you sure you want to remove ' +
+                this.dataset.playerName + '?'
+              )
+            ) { this.submit(); }
+          });
+        });
       });
-    });
-  });
