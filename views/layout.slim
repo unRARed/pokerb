@@ -19,6 +19,9 @@ html
     - color = @game.nil? ? "white" : @game.state[:step_color]
     header.layout.layout--header
       .container.container--fluid
+        .logo
+          a href="/"
+            img src="/images/rbpkr.png" alt="RbPkr Logo"
         - if logged_in?
           a> href="/logout" Logout #{current_user.name}
           span> |

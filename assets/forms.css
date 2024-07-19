@@ -1,0 +1,10 @@
+@layer components {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #8e8e8e;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+}

@@ -8,6 +8,7 @@
 
 @import "tailwindcss/components";
 @import "./layout.css";
+@import "./forms.css";
 @import "./sections.css";
 @import "./notices.css";
 @import "./playing-cards.css";

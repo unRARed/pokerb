@@ -76,7 +76,7 @@ module Poker
     end
 
     def image
-      "<img src='/assets/#{id}.png' alt='#{name}' width='140'>"
+      "<img src='/images/cards/#{id}.png' alt='#{name}' width='140'>"
     end
 
   private

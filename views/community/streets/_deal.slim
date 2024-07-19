@@ -1,4 +1,15 @@
-h2 Ready for Cards?
-h3 style="margin-top: 0;" Touch the deck to Advance
-p
-  small Thank you for allowing RbPkr to deal your game.
+.logo
+  img src="/images/rbpkr.png" alt="RbPkr Logo"
+- if game.dealer
+  h2 #{game.dealer.name} is dealer
+  p Touch the deck to Advance
+- else
+  h2 Join the Game!
+  p
+    strong
+      span Scan the QR code or visit
+      br
+      a(
+        href="#{RbPkr.server_url(request)}/#{@game.slug}"
+      ) #{RbPkr.server_url(request)}/#{@game.slug}
+      span .

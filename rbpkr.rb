@@ -194,8 +194,8 @@ class RbPkr < Sinatra::Base
   #   @param asset_filename [String] the filename of the image
   #   @return [File] the image file
   #
-  get '/assets/:asset_filename' do
-    path = "#{Dir.pwd}/images/cards/#{params["asset_filename"]}"
+  get '/images/*image_path' do
+    path = "#{Dir.pwd}/images/#{params["image_path"]}"
     send_file path, :type => :png
   end
 

@@ -850,6 +850,12 @@ a:hover{
   padding: 0 1rem;
 }
 
+@media (max-width: 768px) {
+  body {
+    font-size: 0.5rem;
+  }
+}
+
 /* sticky footer */
 
 html, body {
@@ -887,9 +893,20 @@ footer.layout--footer {
 }
 
 .layout--header {
-  padding: 0.25rem;
+  padding: 0.75rem;
   margin-bottom: 1rem;
   text-align: right;
+  .logo {
+    position: relative;
+  }
+  .logo img {
+    cursor: pointer;
+    position: absolute;
+    top: -9px;
+    left: -28px;
+    max-width: 120px;
+    transform: rotate(-10deg);
+  }
 }
 
 .layout--main {
@@ -935,6 +952,15 @@ footer.layout--footer {
   height: 28px;
 }
 
+input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #8e8e8e;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
 .section {
   padding: 2rem 0;
   &.section--red {
@@ -958,6 +984,10 @@ footer.layout--footer {
     background-color: var(--green);
     color: white;
   }
+}
+
+.deck img {
+  border-radius: 4px;
 }
 
 .playing-card {
@@ -987,6 +1017,7 @@ footer.layout--footer {
 
 .playing-card.playing-card--back {
   position: relative;
+  box-shadow: unset;
 }
 
 /* .playing-card.playing-card--back.playing-card--animated { */
@@ -1004,21 +1035,6 @@ footer.layout--footer {
 .playing-card.playing-card--back:before {
   content: "";
   position: absolute;
-  top: 1px;
-  left: 1px;
-  display: inline-block;
-  background-image: var(--bg-image);
-  background-size: cover;
-  width: 100%;
-  height: 100%;
-  border-radius: 4px;
-  rotate: 0.3deg;
-  z-index: -1;
-}
-
-.playing-card.playing-card--back:after {
-  content: "";
-  position: absolute;
   top: 2px;
   left: 2px;
   display: inline-block;
@@ -1027,7 +1043,22 @@ footer.layout--footer {
   width: 100%;
   height: 100%;
   border-radius: 4px;
-  rotate: 0.6deg;
+  rotate: 0.2deg;
+  z-index: -1;
+}
+
+.playing-card.playing-card--back:after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  display: inline-block;
+  background-image: var(--bg-image);
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  rotate: 0.7deg;
   z-index: -1;
 }
 
@@ -1116,6 +1147,10 @@ a.menu__item {
   display: flex;
   justify-content: start;
   align-items: center;
+  .logo {
+    max-width: 240px;
+    margin: 0 auto 8px;
+  }
 }
 
 .deck {
@@ -1130,6 +1165,18 @@ a.menu__item {
   justify-content: start;
   align-items: center;
   width: 83%;
+  h3 {
+    margin-left: 16px;
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .community-cards {
+    .phase-prefix {
+      display: none;
+    }
+  }
 }
 
 .community_footer {

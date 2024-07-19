@@ -12,16 +12,6 @@
       == slim :"/community/_players", locals: { game: @game }
     - else
       div.text-center style="width: 30%;"
-        h4
-          span> No players have joined, yet.
-        p
-          strong
-            span Scan the QR code or visit
-            br
-            a(
-              href="#{RbPkr.server_url(request)}/#{@game.slug}"
-            ) #{RbPkr.server_url(request)}/#{@game.slug}
-            span .
     - if @game.menu.any?
       == slim :"/community/_menu", locals: { game: @game }
     .qrcode

@@ -3,6 +3,11 @@
     display: flex;
     justify-content: start;
     align-items: center;
+
+    .logo {
+      max-width: 240px;
+      margin: 0 auto 8px;
+    }
   }
   .deck {
     position: relative;
@@ -15,6 +20,13 @@
     justify-content: start;
     align-items: center;
     width: 83%;
+
+    h3 { margin-left: 16px; font-size: 1.6rem; }
+  }
+  @media (max-width: 768px) {
+    .community-cards {
+      .phase-prefix { display: none; }
+    }
   }
   .community_body {
     padding: 16px 0;
