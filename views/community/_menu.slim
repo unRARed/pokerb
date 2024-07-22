@@ -1,5 +1,9 @@
 .menu
-  .menu__item Scan QR Code to Join ►
+  - if game.password.present?
+    .menu__item.menu__item--header
+      span Password:
+      span style="color: var(--yellow);"
+        |  &nbsp;#{game.password}
   - game.menu.each do |menu_item|
     a.menu__item(
       class="#{'menu__item--primary' if menu_item[:is_primary]}"

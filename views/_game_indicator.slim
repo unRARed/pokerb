@@ -1,5 +1,5 @@
 - color = game.nil? ? "white" : game.state[:step_color]
-.game-indicator
+.game-indicator class="game-indicator--#{modifier}"
   .game-indicator__slug style="color: #{color};"
     = game.slug || ""
   .game-indicator__color style="background-color: #{color};"

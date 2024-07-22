@@ -12,28 +12,30 @@ html
     link rel="mask-icon" href="/safari-pinned-tab.svg" color="#d90d32"
     meta name="msapplication-TileColor" content="#b91d47"
     meta name="theme-color" content="#ff0000"
-    link(
-      rel="stylesheet"
-      href="https://cdn.simplecss.org/simple.min.css"
-    )
+    link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Josefin+Slab:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet"
+
     link rel="stylesheet" href="/style.css"
   body
     - color = @game.nil? ? "white" : @game.state[:step_color]
-    div style="text-align: right;"
-      h1.title
+    header.layout.layout--header
+      .container.container--fluid
+        .logo
+          a href="/"
+            img src="/images/rbpkr.png" alt="RbPkr Logo"
         - if logged_in?
           a> href="/logout" Logout #{current_user.name}
           span> |
         a< href="/" RbPkr
-    main
-      == slim :"/_game_indicator",
-        locals: { game: @game || \
-          Poker::Game.new(slug: "RbPkr", step_color: "#f7214d",
-          is_fresh: true) }
-      - if session[:notice].message.present?
-        .notice style="color: #{session[:notice].color}"
-          == session[:notice].read
-      == yield
-    div style="text-align: center;"
+    main.layout.layout--main
+      .container.container--fluid
+        == slim :"/_game_indicator",
+          locals: { modifier: 'top', game: @game || \
+            Poker::Game.new(slug: "RbPkr", step_color: "#f7214d",
+            is_fresh: true) }
+        - if session[:notice].message.present?
+          .notice class="notice--#{session[:notice].color}"
+            == session[:notice].read
+        == yield
+    footer.layout.layout--footer
       p.title
         small &copy; #{Time.now.year} RbPkr

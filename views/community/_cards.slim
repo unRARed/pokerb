@@ -4,21 +4,28 @@
       id="advance"
       action="/#{game.slug}/advance"
       method="POST"
-      class="card card--back"
-      style="--bg-image: url('/assets/#{game.state[:card_back]}');"
+      class="playing-card playing-card--back"
+      style="--bg-image: url('/images/cards/#{game.state[:card_back]}');"
     )
       a(
         onclick="this.parentNode.submit();"
         style="display: block; cursor: pointer;"
       )
-        img src="/assets/#{game.state[:card_back]}" alt="Deal the Hand"
+        img src="/images/cards/#{game.state[:card_back]}" alt="Deal the Hand"
   .community-cards
     - if game.is_common_phase?
       ruby:
-        #.card.card--back.card--animated
-        #  img src="/assets/#{game.state[:card_back]}"
+        #.playing-card.playing-card--back.playing-card--animated
+        #  img src="/images/cards/#{game.state[:card_back]}"
       - game.deck.community.each do |card|
-        .card.card--face == card.image
+        .playing-card.playing-card--face == card.image
+      - unless game.deck.phase == :river
+        div
+          .phase
+            h3
+              span.phase-prefix> The
+              span.phase-value = game.deck.phase
+            span.phase-info Touch the deck to advance.
     - else
       div style="align-self: center; text-align: center; width: 100%;"
         == slim :"/community/streets/_#{game.deck.phase}",

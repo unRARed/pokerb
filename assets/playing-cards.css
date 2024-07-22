@@ -1,0 +1,98 @@
+@layer components {
+  .deck img {
+    border-radius: 4px;
+  }
+  .playing-card {
+    max-width: 240px;
+    border-radius: 4px;
+    box-shadow: 1px 0.5px 0 2px #00000010;
+
+    &.playing-card--red {
+      background-color: var(--red1);
+      color: white;
+    }
+
+    /* reset the default anchor hover */
+    a:hover {
+      @apply brightness-100;
+    }
+  }
+  .playing-card.playing-card--inline { display: inline-block; }
+  /* TODO: should be card--deck */
+  .playing-card.playing-card--face { border-radius: 8px; }
+  .playing-card.playing-card--back {
+    position: relative;
+    box-shadow: unset;
+  }
+  /* .playing-card.playing-card--back.playing-card--animated { */
+  /*   position: absolute; */
+  /*   top: 3px; */
+  /*   left: 3px; */
+  /*   max-width: 280px; */
+  /* } */
+  .playing-card.playing-card--back:before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    display: inline-block;
+    background-image: var(--bg-image);
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    rotate: 0.2deg;
+    z-index: -1;
+  }
+  .playing-card.playing-card--back:after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    display: inline-block;
+    background-image: var(--bg-image);
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    rotate: 0.7deg;
+    z-index: -1;
+  }
+  .playing-card img { width: 100%; display: block; }
+
+  .community-cards .playing-card { max-width: 19%; margin-left: 1%; }
+
+  /* the individual player's cards */
+  .hole_cards {
+    position: relative;
+    left: -2%;
+    right: 0;
+    max-width: 300px;
+    min-height: 380px;
+    margin: 16px auto 0;
+
+    a { display: block; }
+  }
+  .hole_cards .player-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 90%;
+
+    /* reset the default anchor hover */
+    a:hover {
+      @apply brightness-100;
+    }
+
+    img { width: 100%; }
+  }
+  .hole_cards .player-card + .player-card {
+    top: 12px;
+    left: 12%;
+    transform: rotate(10deg);
+  }
+
+  @media (max-width: 768px) {
+    .community-cards .playing-card {  }
+  }
+}

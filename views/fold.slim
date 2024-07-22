@@ -1,8 +1,8 @@
-div style="text-align: center; width: 100%;"
-  h3 Are you sure?
+h2.text-center Are you sure?
+.container.max-w-xl.text-center
   form action="/#{@game.slug}/fold" method="POST"
     input(
-      class="button button-primary"
+      class="button button--success"
       type="submit" value="Yea, I'm out."
     )
-    a class="button" href="/#{@game.slug}" No!
+    a< class="button button--secondary" href="/#{@game.slug}" No!

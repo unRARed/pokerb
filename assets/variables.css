@@ -1,0 +1,28 @@
+@layer base {
+  :root {
+    --gray: #333;
+    --blue1: #2D728F;
+    --blue2: #3B8EA5;
+    --yellow: #F5EE9E;
+    --orange: #F49E4C;
+    --red1: #FF605C;
+    --red2: #991f1f;
+    --bg: white;
+    --orange: #f66c0d;
+    --green: #237e35;
+  }
+
+  .bebas-neue {
+    font-family: "Bebas Neue", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    text-transform: uppercase;
+  }
+
+  .josefin-slab {
+    font-family: "Josefin Slab", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+  }
+}

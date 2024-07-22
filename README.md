@@ -3,6 +3,8 @@ RbPkr
 
 [![Ruby](https://github.com/unRARed/rbpkr/actions/workflows/ruby.yml/badge.svg)](https://github.com/unRARed/rbpkr/actions/workflows/ruby.yml)
 
+<img src="https://raw.githubusercontent.com/unRARed/rbpkr/main/rbpkr-slogan.png">
+
 ![Community Cards](https://raw.githubusercontent.com/unRARed/rbpkr/main/community-cards.jpg)
 
 Play Texas Holdem' Poker with your friends... even if they can't
