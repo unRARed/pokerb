@@ -21,7 +21,10 @@
     align-items: center;
     width: 83%;
 
-    h3 { margin-left: 16px; font-size: 1.6rem; }
+    .phase {
+      margin-left: 16px; font-size: 1.1em; line-height: 1;
+    }
+    .phase-info { font-size: 1em; }
   }
   @media (max-width: 768px) {
     .community-cards {
@@ -40,16 +43,16 @@
     width: 70%;
   }
   .players {
-    height: 66px;
+    height: 60px;
     padding: 0 4px 2px;
     display: flex;
     justify-content: center;
   }
   .player {
     position: relative;
-    min-width: 56px;
+    min-width: 36px;
     text-align: center;
-    margin-left: 20px;
+    margin-left: 16px;
     cursor: pointer;
   }
   .player:first-child { margin-left: 0; }
@@ -64,7 +67,7 @@
     position: relative;
     background-color: #72f5ff;
     width: 100%;
-    height: 64%;
+    height: 50%;
   }
 
   .player:hover .player__name {

@@ -12,8 +12,10 @@
       == slim :"/community/_players", locals: { game: @game }
     - else
       div.text-center style="width: 30%;"
-    - if @game.menu.any?
-      == slim :"/community/_menu", locals: { game: @game }
+    div style="margin-right: 2%; min-width: 30%;"
+      h5.text-right Scan QR Code to Join ►
+      - if @game.menu.any? || @game.password.present?
+        == slim :"/community/_menu", locals: { game: @game }
     .qrcode
       .hidden-dark == qr_code.as_svg module_size: @game.qr_code_size
       .hidden-light == qr_code.as_svg color: "FFF",

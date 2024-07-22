@@ -28,20 +28,20 @@ RSpec.describe "Password protection", type: :feature do
       visit community_url.split("/community").first
       expect(page).
         to have_content("You must enter the correct password")
-      expect(page).to have_content("Enter Password")
+      expect(page).to have_content("ENTER PASSWORD")
 
       fill_in "password", with: "wrong password"
       click_on "Let me in"
       # why is the Flash not working here?
       #expect(page).to have_content("Password incorrect")
-      expect(page).to have_content("Enter Password")
+      expect(page).to have_content("ENTER PASSWORD")
 
       fill_in "password", with: "mypassword"
       click_on "Let me in"
       # why is the Flash not working here?
       expect(page).to have_content("Password accepted")
       click_on "Join"
-      expect(page).to have_content("Waiting for Cards")
+      expect(page).to have_content("WAITING FOR CARDS")
     end
   end
 end

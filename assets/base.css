@@ -79,24 +79,6 @@
 /* .board { position: relative; } */
 /* .board .card + .card { margin-left: 0.5%; } */
 /* .board .card img { width: 100%; } */
-/* .hole_cards { */
-/*   position: relative; */
-/*   left: 4%; */
-/*   right: 0; */
-/*   max-width: 300px; */
-/*   margin: 16px auto 0; */
-/* } */
-/* .hole_cards .card { */
-/*   position: absolute; */
-/*   top: 0; */
-/*   left: 0; */
-/*   max-width: 80%; */
-/* } */
-/* .hole_cards .card + .card { */
-/*   top: 12px; */
-/*   left: 12%; */
-/*   transform: rotate(10deg); */
-/* } */
 /* .game-indicator { */
 /*   display: flex; */
 /*   justify-content: space-between; */

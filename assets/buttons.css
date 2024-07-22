@@ -12,15 +12,20 @@
     transition: background-color 0.3s;
     &.button--hero {
       padding: 0.7rem 1.3rem;
-      font-size: 2rem;
+      font-size: 2em;
     }
     &.button--large {
       padding: 0.5rem 1rem;
-      font-size: 1.4rem;
+      font-size: 1.4em;
     }
-  }
-  a.button:hover {
-    background-color: var(--red1);
-    @apply brightness-100;
+    &.button--success {
+      background-color: var(--green);
+    }
+    &.button--secondary {
+      background-color: var(--orange);
+    }
+    &:hover {
+      @apply brightness-125;
+    }
   }
 }

@@ -20,9 +20,12 @@
       - game.deck.community.each do |card|
         .playing-card.playing-card--face == card.image
       - unless game.deck.phase == :river
-        h3.phase
-          span.phase-prefix> ⬅ The
-          span.phase-value = game.deck.phase
+        div
+          .phase
+            h3
+              span.phase-prefix> The
+              span.phase-value = game.deck.phase
+            span.phase-info Touch the deck to advance.
     - else
       div style="align-self: center; text-align: center; width: 100%;"
         == slim :"/community/streets/_#{game.deck.phase}",

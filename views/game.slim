@@ -1,4 +1,4 @@
-div style="text-align: center;"
+.text-center
   - if @game.is_playing?(current_user.id)
     - if @game.has_cards?(current_user.id)
       p
@@ -8,12 +8,12 @@ div style="text-align: center;"
         ) Fold my Hand
       - player = @game.player_by_user_id(current_user.id)
       - if !params["peek"].nil?
-        p
+        p.mt-4
           span You have
           span< = player. \
             holding(@game.deck.community).best_hand[0]
       - else
-        p Click your cards to peek.
+        p.mt-4 Click your cards to peek.
       .hole_cards
         a href="/#{@game.slug}#{'?peek=true' if
         params["peek"].nil?}"
@@ -26,12 +26,20 @@ div style="text-align: center;"
                 img src="/images/cards/#{@game.state[:card_back]}" alt="Back of card" width="140"
       .clearfix
     - else
-      h2 Waiting for Cards.
+      .container.max-w-sm
+        .text-center
+          .logo
+            img src="/images/rbpkr.png" alt="RbPkr Logo"
+          h2.mt-4 Waiting for Cards
   - else
-    h3 You are not in this game, yet.
-    p
-      a.button.button--large(
-        href="/#{@game.slug}/join"
-      ) Join now
+    .container.max-w-sm
+      .text-center
+        .logo
+          img src="/images/rbpkr.png" alt="RbPkr Logo"
+        p.mt-4 You are not in this game, yet.
+        p.mb-2
+          a.button.button--large(
+            href="/#{@game.slug}/join"
+          ) Join now
 == slim :"/_poll",
   locals: { game: @game, interval: 5000 }

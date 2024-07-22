@@ -61,4 +61,38 @@
   .playing-card img { width: 100%; display: block; }
 
   .community-cards .playing-card { max-width: 19%; margin-left: 1%; }
+
+  /* the individual player's cards */
+  .hole_cards {
+    position: relative;
+    left: -2%;
+    right: 0;
+    max-width: 300px;
+    min-height: 380px;
+    margin: 16px auto 0;
+
+    a { display: block; }
+  }
+  .hole_cards .player-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 90%;
+
+    /* reset the default anchor hover */
+    a:hover {
+      @apply brightness-100;
+    }
+
+    img { width: 100%; }
+  }
+  .hole_cards .player-card + .player-card {
+    top: 12px;
+    left: 12%;
+    transform: rotate(10deg);
+  }
+
+  @media (max-width: 768px) {
+    .community-cards .playing-card {  }
+  }
 }

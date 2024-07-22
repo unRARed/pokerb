@@ -15,7 +15,7 @@ RSpec.describe "Creating a Game", type: :feature do
     click_on "Let's go"
 
     click_on "Start the Game"
-    expect(page).to have_content("Ready for Cards?")
+    expect(page).to have_content("JOIN THE GAME")
 
     # Dealer adds himself
     community_url = current_url
@@ -29,27 +29,27 @@ RSpec.describe "Creating a Game", type: :feature do
     expect(page).to have_content("Draw for the button first")
 
     click_on "Draw for the Button"
-    expect(page).to have_content("Touch the deck to Advance")
+    expect(page).to have_content("Touch the deck to deal players")
     # Ok, now we can really deal
     find(id: "advance").find("a").click
 
-    expect(page).to have_content("Pre-Flop Phase")
+    expect(page).to have_content("touch the deck to deal the Flop")
 
     # Show the flop
     find(id: "advance").find("a").click
-    expect(page).to have_selector(".card--back", count: 1)
-    expect(page).to have_selector(".card--face", count: 3)
+    expect(page).to have_selector(".playing-card--back", count: 1)
+    expect(page).to have_selector(".playing-card--face", count: 3)
 
     # Show the turn
     find(id: "advance").find("a").click
-    expect(page).to have_selector(".card--face", count: 4)
+    expect(page).to have_selector(".playing-card--face", count: 4)
 
     # Show the river
     find(id: "advance").find("a").click
-    expect(page).to have_selector(".card--face", count: 5)
+    expect(page).to have_selector(".playing-card--face", count: 5)
 
     # Return to the pre-deal state
     find(id: "advance").find("a").click
-    expect(page).to have_content("Ready for Cards?")
+    expect(page).to have_content("Touch the deck to deal players")
   end
 end
