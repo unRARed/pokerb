@@ -7,5 +7,12 @@
     a.menu__item {
       color: white;
     }
+    h1,h2,h3,h4,h5,h6,label {
+      color: white;
+    }
+    input, select, textarea {
+      background-color: var(--gray);
+      color: white;
+    }
   }
 }
