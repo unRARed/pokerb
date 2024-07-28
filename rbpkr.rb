@@ -55,8 +55,8 @@ class RbPkr < Sinatra::Base
     also_reload Dir.pwd + '/lib/*.rb'
     also_reload Dir.pwd + '/lib/**/*.rb'
 
-    get '/test/?' do
-      slim :test, layout: :layout
+    get '/style-guide/?' do
+      slim :style_guide, layout: :layout
     end
   end
 

@@ -46,8 +46,8 @@ Running the Server
 <img align="left" src="https://raw.githubusercontent.com/unRARed/rbpkr/main/hand_2.jpg">
 
 - First `bundle install`
-- Then run `rackup`.
-  - This will run a server from `http://127.0.0.1:9292`
+- Then run `bin/dev' to start the server
+  - The server runs from `http://127.0.0.1:9292` by default
 - To expose to your network, set `RACK_ENV=production`
   - Further, add `RBPKR_HOSTNAME=yourdomain.com rackup` to specify
     host for qrcode
@@ -62,6 +62,9 @@ Running the Server
 **Development**
 
 - `rspec spec` runs the test suite
+- `ruby seed.rb` creates a game with 1 owner and 9 players
+  the emails are userNUM@example.com
+  the passwords are 'password'
 
 **Conventions**
 

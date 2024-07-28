@@ -35,7 +35,8 @@ html
         - if session[:notice].message.present?
           .notice class="notice--#{session[:notice].color}"
             == session[:notice].read
-        == yield
+      == yield
     footer.layout.layout--footer
-      p.title
-        small &copy; #{Time.now.year} RbPkr
+      .container.container--fluid
+        p.title
+          small &copy; #{Time.now.year} RbPkr

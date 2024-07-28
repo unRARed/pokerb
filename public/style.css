@@ -456,9 +456,13 @@ video {
   --orange: #F49E4C;
   --red1: #FF605C;
   --red2: #991f1f;
+  --red3: #F6214D;
+  --red4: #2f0e12;
   --bg: white;
+  --dark-bg: var(--red4);
   --orange: #f66c0d;
   --green: #237e35;
+  --pink: #eb89c6;
 }
 
 html {
@@ -467,6 +471,10 @@ html {
 
 *, *:before, *:after {
   box-sizing: inherit;
+}
+
+.container {
+  max-width: 1100px;
 }
 
 nav {
@@ -806,7 +814,6 @@ a:hover{
 
 .container {
   margin: 0 auto;
-  padding: 0 1em;
 }
 
 /* sticky footer */
@@ -829,11 +836,15 @@ footer.layout--footer {
   flex-shrink: 0;
 }
 
+[class*="layout--"] .container {
+  padding: 0 1rem;
+}
+
 .layout--header,
   .layout--footer {
   text-align: center;
   background-color: var(--red2);
-  padding: 1rem;
+  padding: 0 1rem;
   color: white;
   a, a:visited {
     color: var(--yellow);
@@ -866,12 +877,11 @@ footer.layout--footer {
 }
 
 .layout--main {
-  max-width: 1200px;
   margin: 0 auto;
 }
 
-.layout--footer {
-  margin-top: 1rem;
+.layout--footer .container {
+  max-width: 1200px;
 }
 
 .game-indicator {
@@ -1122,10 +1132,10 @@ label {
 
 .menu {
   width: 100%;
-  border-radius: 4px;
-  border: 1px solid #999;
+  border-radius: 6px;
   background-color: var(--gray);
   color: white;
+  overflow: hidden;
 }
 
 .menu__item {
@@ -1161,6 +1171,17 @@ a.menu__item {
 .menu__item--primary {
   font-weight: bold;
   color: #72f5ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--dark-bg);
+    color: white;
+  }
+
+  a.menu__item {
+    color: white;
+  }
 }
 
 .board {
@@ -1203,10 +1224,13 @@ a.menu__item {
   }
 }
 
-.community_footer {
+.community_footer .container {
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
+  margin-top: 18px;
+  padding-top: 24px;
+  padding-bottom: 24px;
 }
 
 .player-info {
@@ -1214,88 +1238,109 @@ a.menu__item {
 }
 
 .players {
-  height: 60px;
+  text-align: center;
   padding: 0 4px 2px;
-  display: flex;
-  justify-content: center;
 }
 
 .player {
-  position: relative;
-  min-width: 36px;
+  max-width: 20%;
   text-align: center;
   margin-left: 16px;
+  margin-bottom: 16px;
   cursor: pointer;
+  background-color: var(--red1);
+  color: black;
+  border-radius: 8px;
+  display: inline-block;
+  padding: 3px 12px;
+  box-shadow: 2px 2px 6px var(--red2);
+  white-space:nowrap;
+  overflow: hidden;
+  border: 2px solid transparent;
+  &:hover {
+  }
 }
 
 .player:first-child {
   margin-left: 0;
 }
 
-.player__name {
-  position: absolute;
-  bottom: 0;
-  color: #72f5ff;
-  width: 100%;
-  text-align: center;
+.player:hover {
+  border-top-color: transparent;
 }
 
-.player__cards {
+.player.player--dealer {
   position: relative;
-  background-color: #72f5ff;
-  width: 100%;
-  height: 50%;
-}
-
-.player:hover .player__name {
-  color: pink !important;
-}
-
-.player:hover .player__cards {
-  background: pink !important;
-}
-
-/* black bar separator */
-
-.player__cards:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
-  height: 100%;
-  width: 3px;
-  background-color: var(--bg);
-}
-
-.player.player--dealer .player__cards {
-  background: #76c209;
-}
-
-.player.player--dealer .player__name {
-  color: #76c209;
+  box-shadow: 2px 2px 6px var(--green);
+  background-color: green;
+  &:before {
+    content: "Dealer";
+    position: absolute;
+    top: -15px;
+    left: 0;
+    margin: auto;
+    font-size: 0.7em;
+    color: var(--green);
+  }
 }
 
 .player.player--out {
-  opacity: 0.4;
+  background-color: var(--gray);
+  box-shadow: 2px 2px 6px transparent;
+  color: white;
+  opacity: 0.5;
+  &:hover{
+    --tw-brightness: brightness(.5);
+    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+  }
+  &:hover {
+    border: 2px solid var(--red3);
+    background-color: red;
+  }
 }
 
-.player.player--out .player__cards {
-  background: #999;
+.player.player--dealer.player--out {
+  background-color: var(--green);
+  box-shadow: 2px 2px 6px transparent;
+  color: white;
+  &:hover{
+    --tw-brightness: brightness(.5);
+    filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+  }
+  &:hover {
+    border: 2px solid var(--red3);
+    background-color: red;
+  }
 }
 
-.player.player--out .player__name {
-  color: #999
-}
+@media (prefers-color-scheme: dark) {
+  .player {
+    color: white;
+  }
 
-.player.player--dealer.player--out .player__cards {
-  background: #4d944c;
-}
+  /* .player__cards:before { */
 
-.player.player--dealer.player--out .player__name {
-  color: #4d944c;
+  /*   content: ""; */
+
+  /*   position: absolute; */
+
+  /*   top: 0; */
+
+  /*   left: 0; */
+
+  /*   right: 0; */
+
+  /*   bottom: 0; */
+
+  /*   margin: auto; */
+
+  /*   height: 100%; */
+
+  /*   width: 3px; */
+
+  /*   background-color: var(--dark-bg); */
+
+  /* } */
 }
 
 /* wrappers */
@@ -1342,6 +1387,14 @@ a.menu__item {
 
 .grid-cols-2{
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-5{
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.gap-2{
+  gap: 0.5rem;
 }
 
 .gap-4{

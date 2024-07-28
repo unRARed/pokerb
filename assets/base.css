@@ -6,6 +6,10 @@
     box-sizing: inherit;
   }
 
+  .container {
+    max-width: 1100px;
+  }
+
   nav {
     display: flex;
     justify-content: space-between;

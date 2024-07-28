@@ -1,7 +1,6 @@
 @layer components {
   .container {
     margin: 0 auto;
-    padding: 0 1em;
   }
   /* sticky footer */
   html, body { height: 100%; }
@@ -9,11 +8,14 @@
   main.layout--main { flex: 1 0 auto; width: 100%; }
   footer.layout--footer { flex-shrink: 0; }
 
+  [class*="layout--"] .container {
+    padding: 0 1rem;
+  }
   .layout--header,
   .layout--footer {
     text-align: center;
     background-color: var(--red2);
-    padding: 1rem;
+    padding: 0 1rem;
     color: white;
 
     a, a:visited {
@@ -42,12 +44,9 @@
     }
   }
   .layout--main {
-    max-width: 1200px;
     margin: 0 auto;
   }
-  .layout--footer {
-    margin-top: 1rem;
-  }
+  .layout--footer .container { max-width: 1200px; }
   .game-indicator {
     display: flex;
     justify-content: space-between;

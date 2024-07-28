@@ -32,81 +32,96 @@
     }
   }
   .community_body {
-    padding: 16px 0;
+    padding: 16px;
   }
-  .community_footer {
+  .community_footer .container {
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
+    margin-top: 18px;
+    padding-top: 24px;
+    padding-bottom: 24px;
   }
   .player-info {
     width: 70%;
   }
   .players {
-    height: 60px;
+    text-align: center;
     padding: 0 4px 2px;
-    display: flex;
-    justify-content: center;
   }
   .player {
-    position: relative;
-    min-width: 36px;
+    max-width: 20%;
     text-align: center;
     margin-left: 16px;
+    margin-bottom: 16px;
     cursor: pointer;
+    background-color: var(--red1);
+    color: black;
+    border-radius: 8px;
+    display: inline-block;
+    padding: 3px 12px;
+    box-shadow: 2px 2px 6px var(--red2);
+    white-space:nowrap;
+    overflow: hidden;
+    border: 2px solid transparent;
+
+    &:hover {
+    }
   }
   .player:first-child { margin-left: 0; }
-  .player__name {
-    position: absolute;
-    bottom: 0;
-    color: #72f5ff;
-    width: 100%;
-    text-align: center;
-  }
-  .player__cards {
+  .player:hover { border-top-color: transparent; }
+  .player.player--dealer {
     position: relative;
-    background-color: #72f5ff;
-    width: 100%;
-    height: 50%;
+    box-shadow: 2px 2px 6px var(--green);
+    background-color: green;
+
+    &:before {
+      content: "Dealer";
+      position: absolute;
+      top: -15px;
+      left: 0;
+      margin: auto;
+      font-size: 0.7em;
+      color: var(--green);
+    }
+  }
+  .player.player--out {
+    background-color: var(--gray);
+    box-shadow: 2px 2px 6px transparent;
+    color: white;
+    opacity: 0.5;
+
+    &:hover {
+      @apply brightness-50;
+      border: 2px solid var(--red3);
+      background-color: red;
+    }
+  }
+  .player.player--dealer.player--out {
+    background-color: var(--green);
+    box-shadow: 2px 2px 6px transparent;
+    color: white;
+
+    &:hover {
+      @apply brightness-50;
+      border: 2px solid var(--red3);
+      background-color: red;
+    }
   }
 
-  .player:hover .player__name {
-    color: pink !important;
-  }
-  .player:hover .player__cards {
-    background: pink !important;
-  }
-
-  /* black bar separator */
-  .player__cards:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
-    height: 100%;
-    width: 3px;
-    background-color: var(--bg);
-  }
-  .player.player--dealer .player__cards {
-    background: #76c209;
-  }
-  .player.player--dealer .player__name {
-    color: #76c209;
-  }
-  .player.player--out { opacity: 0.4; }
-  .player.player--out .player__cards {
-    background: #999;
-  }
-  .player.player--out .player__name {
-    color: #999
-  }
-  .player.player--dealer.player--out .player__cards {
-    background: #4d944c;
-  }
-  .player.player--dealer.player--out .player__name {
-    color: #4d944c;
+  @media (prefers-color-scheme: dark) {
+    .player { color: white; }
+    /* .player__cards:before { */
+    /*   content: ""; */
+    /*   position: absolute; */
+    /*   top: 0; */
+    /*   left: 0; */
+    /*   right: 0; */
+    /*   bottom: 0; */
+    /*   margin: auto; */
+    /*   height: 100%; */
+    /*   width: 3px; */
+    /*   background-color: var(--dark-bg); */
+    /* } */
   }
 }

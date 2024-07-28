@@ -1,9 +1,5 @@
 .player-info
-  .text-center
-    h5.text-center style="line-height: 1;" Seated Players
-    p style="margin-bottom: 12px;"
-      | Touch player to remove them from the game.
-  .players
+  .players.grid-cols-5.gap-2
     - game.players.each_with_index do |player|
       - player_class = []
       - unless game.has_cards?(player.user_id)
@@ -22,6 +18,8 @@
         )
         .player__cards
         .player__name = player.name
+  p.text-center
+    | Touch player to remove them from the game.
     javascript:
       document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll("form.player").forEach(function(player) {

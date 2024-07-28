@@ -1,0 +1,11 @@
+@layer components {
+  @media (prefers-color-scheme: dark) {
+    body {
+      background-color: var(--dark-bg);
+      color: white;
+    }
+    a.menu__item {
+      color: white;
+    }
+  }
+}

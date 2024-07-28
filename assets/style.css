@@ -14,6 +14,7 @@
 @import "./playing-cards.css";
 @import "./buttons.css";
 @import "./menus.css";
+@import "./darkmode.css";
 
 /* wrappers */
 @import "./community.css";

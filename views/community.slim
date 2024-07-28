@@ -2,24 +2,22 @@
   new "#{RbPkr.server_url(request)}/#{@game.slug}"
 .community
   .community__body
-    == slim :"/community/_cards", locals: { game: @game }
-    == slim :"/_game_indicator",
-      locals: { modifier: "bottom", game: @game || \
-        Poker::Game.new(id: "RbPkr",
-        is_fresh: true) }
+    .container.container--fluid
+      == slim :"/community/_cards", locals: { game: @game }
   .community_footer
-    - if @game.players.any?
-      == slim :"/community/_players", locals: { game: @game }
-    - else
-      div.text-center style="width: 30%;"
-    div style="margin-right: 2%; min-width: 30%;"
-      h5.text-right Scan QR Code to Join ►
-      - if @game.menu.any? || @game.password.present?
-        == slim :"/community/_menu", locals: { game: @game }
-    .qrcode
-      .hidden-dark == qr_code.as_svg module_size: @game.qr_code_size
-      .hidden-light == qr_code.as_svg color: "FFF",
-        module_size: @game.qr_code_size
+    .container.container--fluid
+      - if @game.players.any?
+        == slim :"/community/_players", locals: { game: @game }
+      - else
+        div.text-center style="width: 30%;"
+      div style="margin-right: 2%; min-width: 30%;"
+        h5.text-right Scan QR Code to Join ►
+        - if @game.menu.any? || @game.password.present?
+          == slim :"/community/_menu", locals: { game: @game }
+      .qrcode
+        .hidden-dark == qr_code.as_svg module_size: @game.qr_code_size
+        .hidden-light == qr_code.as_svg color: "FFF",
+          module_size: @game.qr_code_size
   - if !ENV["DEBUG"].nil?
     = @game.to_hash
     p = @game.deck.all_cards.count

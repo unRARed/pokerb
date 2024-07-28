@@ -7,9 +7,13 @@
     --orange: #F49E4C;
     --red1: #FF605C;
     --red2: #991f1f;
+    --red3: #F6214D;
+    --red4: #2f0e12;
     --bg: white;
+    --dark-bg: var(--red4);
     --orange: #f66c0d;
     --green: #237e35;
+    --pink: #eb89c6;
   }
 
   .bebas-neue {
