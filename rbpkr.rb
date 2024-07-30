@@ -7,6 +7,8 @@ require "sinatra/namespace"
 require "sinatra/cookies"
 require "sinatra/activerecord"
 
+require 'uri'
+require 'net/http'
 require "slim"
 require "securerandom"
 require "byebug"
@@ -189,6 +191,18 @@ class RbPkr < Sinatra::Base
     !current_user.nil? && current_user != ""
   end
 
+  def passed_recaptcha?(token)
+    return true if ["test"].include? ENV["RACK_ENV"]
+
+    recaptcha_token = params["g-recaptcha-response"]
+    recaptcha_result = Net::HTTP.post_form(
+      URI("https://www.google.com/recaptcha/api/siteverify"), {
+        response: token, secret: ENV["RBPKR_RECAPTCHA_SECRET"]
+      }
+    )&.body
+
+    JSON.parse(recaptcha_result)&.dig("success") == true
+  end
   # Route for responding with system images
   #
   #   @param asset_filename [String] the filename of the image
@@ -218,6 +232,10 @@ class RbPkr < Sinatra::Base
   post "/signup/?" do
     raise ArgumentError, "What are you doing?" unless params["user"]
 
+    unless passed_recaptcha?(params["g-recaptcha-response"])
+      raise ArgumentError, "What are you doing?"
+    end
+
     @user = User.create!(
       name: params["user"]["name"],
       password: params["user"]["password"],
@@ -233,9 +251,12 @@ class RbPkr < Sinatra::Base
     session[:notice].color = "green"
     Debug.this "User logged in: #{current_user.name}"
     redirect "/"
+  rescue ActiveRecord::RecordInvalid => e
+    session[:notice].message = e.message
+    slim :signup
   rescue ArgumentError => e
     session[:notice].message = e.message
-    slim :login
+    slim :signup
   end
 
   # Route for logging in a user
@@ -258,6 +279,10 @@ class RbPkr < Sinatra::Base
   # contents of the login form
   #
   post "/login/?" do
+    unless passed_recaptcha?(params["g-recaptcha-response"])
+      raise ArgumentError, "What are you doing?"
+    end
+
     @user = User.find_by(email: params["user"]["email"])
     raise ArgumentError, "Try again" unless @user
     raise ArgumentError, "Try again" unless

@@ -1,15 +1,29 @@
 h2.text-center New Account
 .container.max-w-xs
-  form.form action="/signup" method="POST"
+  form.form action="/signup" method="POST" id="new_user"
     label for="user_name" User Name
-    input type="text" required="required" id="user_name" name="user[name]" value=@user.name
+    input(
+      type="text" required="required" id="user_name"
+      name="user[name]" value="#{@user&.name || ''}"
+    )
     label for="user_email" Email
-    input type="text" required="required" id="user_email" name="user[email]" value=@user.email
+    input(
+      type="text" required="required" id="user_email"
+      name="user[email]" value="#{@user&.name || ''}"
+    )
     label for="user_password" Password
-    input type="password" required="required" id="user_password" name="user[password]"
+    input(
+      type="password" required="required" id="user_password"
+      name="user[password]"
+    )
     p.text-center
-      button.button.button--primary type="submit"
-        span Sign up
+      button.button.button--primary(
+        class="g-recaptcha"
+        data-sitekey="#{ENV["RBPKR_RECAPTCHA_SITE_KEY"]}"
+        data-callback="recaptcha"
+        data-action="submit"
+      ) Sign up
   p.pt-5.text-center
     span> Already have an account?
     a href="/login" Sign in here.
+== slim :"/_recaptcha", locals: { selector: "#new_user" }

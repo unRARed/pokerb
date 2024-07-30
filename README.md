@@ -65,6 +65,12 @@ Running the Server
 - `ruby seed.rb` creates a game with 1 owner and 9 players
   the emails are userNUM@example.com
   the passwords are 'password'
+- Environment variables:
+  - `RBPKR_HOSTNAME` - the hostname to use for QR code
+  - `DEBUG` - set to 1 to enable debug logging
+  - `RACK_ENV` - set to production to expose to network
+  - `RBPKR_RECAPTCHA_SITE_KEY` - set to your recaptcha site key
+  - `RBPKR_RECAPTCHA_SECRET_KEY` - set to your recaptcha secret key
 
 **Conventions**
 
