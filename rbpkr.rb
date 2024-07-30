@@ -334,7 +334,7 @@ class RbPkr < Sinatra::Base
     # manager's session if we set one
     if @game.has_password?
       Debug.this "Setting password for manager"
-      session["#{@game.slug}_password"] = params["password"]
+      session["#{@game.slug}_password"] = @game.password.downcase
     end
     redirect "/#{@game.slug}/community"
   end
@@ -435,10 +435,13 @@ class RbPkr < Sinatra::Base
     post "/password/?" do
       state = RbPkr.load_state_for_game(params["game_slug"])
       @game = Poker::Game.new(state)
-      unless @game.password == params["password"]
+      unless params["password"].present?
+        raise ArgumentError, "No password provided"
+      end
+      unless @game.password.downcase == params["password"].downcase
         raise ArgumentError, "Password incorrect"
       end
-      session["#{@game.slug}_password"] = params["password"]
+      session["#{@game.slug}_password"] = params["password"].downcase
       session[:notice].message = "Password accepted"
       session[:notice].color = "green"
       redirect "/#{@game.slug}"
