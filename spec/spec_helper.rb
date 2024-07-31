@@ -19,6 +19,8 @@ SimpleCov.start do
   filters.clear
   track_files "*.rb"
   track_files "**/*.rb"
+  add_filter "debug.rb"
+  add_filter "/db/"
   add_filter "/spec/"
   add_filter "/config/"
   add_filter "/test-old/"

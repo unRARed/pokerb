@@ -62,7 +62,7 @@ Running the Server
 **Development**
 
 - `rspec spec` runs the test suite
-- `ruby seed.rb` creates a game with 1 owner and 9 players
+- `ruby db/seed.rb` creates a game with 1 owner and 9 players
   the emails are userNUM@example.com
   the passwords are 'password'
 - Environment variables:
