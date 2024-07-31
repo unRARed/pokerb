@@ -93,4 +93,43 @@ RSpec.describe "Game" do
     expect(subject.players_in_turn_order.last).
       to eq(subject.players[2])
   end
+
+  it ".dealer" do
+    subject = Poker::Game.new(is_fresh: true, button_index: 1)
+
+    subject.add_player(Poker::Player.new(user_id: 1))
+    subject.add_player(Poker::Player.new(user_id: 2))
+    subject.add_player(Poker::Player.new(user_id: 3))
+
+    # dealer is the second player per the button index
+    expect(subject.dealer).not_to eq(subject.players[0])
+    expect(subject.dealer).to eq(subject.players[1])
+    expect(subject.dealer).not_to eq(subject.players[2])
+  end
+
+  it ".player_in_small_blind" do
+    subject = Poker::Game.new(is_fresh: true, button_index: 1)
+
+    subject.add_player(Poker::Player.new(user_id: 1))
+    subject.add_player(Poker::Player.new(user_id: 2))
+    subject.add_player(Poker::Player.new(user_id: 3))
+
+    # small blind is the third player per the button index
+    expect(subject.player_in_small_blind).not_to eq(subject.players[0])
+    expect(subject.player_in_small_blind).not_to eq(subject.players[1])
+    expect(subject.player_in_small_blind).to eq(subject.players[2])
+  end
+
+  it ".player_in_big_blind" do
+    subject = Poker::Game.new(is_fresh: true, button_index: 1)
+
+    subject.add_player(Poker::Player.new(user_id: 1))
+    subject.add_player(Poker::Player.new(user_id: 2))
+    subject.add_player(Poker::Player.new(user_id: 3))
+
+    # big blind is the first player (wraps) per the button index
+    expect(subject.player_in_big_blind).to eq(subject.players[0])
+    expect(subject.player_in_big_blind).not_to eq(subject.players[1])
+    expect(subject.player_in_big_blind).not_to eq(subject.players[2])
+  end
 end
