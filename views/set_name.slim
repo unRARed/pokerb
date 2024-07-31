@@ -1,0 +1,13 @@
+h2.text-center Choose a Name
+h4.text-center How other players see you in the game
+.container.max-w-xs
+  form.form action="/set_name" method="POST"
+    label for="user_name" User Name
+    input.text-2xl(
+      type="text" required="required" id="user_name"
+      name="user[name]" value="#{@user&.name || ''}"
+    )
+    p.text-xs
+      | Usernames limited to 4-20 alphanumeric characters.
+    p.text-center.mt-4
+      input.button type="submit" value="Set my name"

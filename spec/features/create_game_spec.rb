@@ -3,7 +3,7 @@ require "spec_helper"
 RSpec.describe "Creating a Game", type: :feature do
   it "creates a new game" do
     User.create(
-      name: "Some User",
+      name: "SomeUser",
       password: "password",
       email: "some@email.com"
     )

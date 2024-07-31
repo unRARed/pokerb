@@ -4,7 +4,7 @@ require "./models/user"
 RSpec.describe "User signs up", type: :feature do
   it "successfully" do
     User.create(
-      name: "Some User",
+      name: "SomeUser",
       password: "password",
       email: "some@email.com"
     )

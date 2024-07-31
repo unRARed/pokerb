@@ -75,12 +75,22 @@ RSpec.describe "Game" do
   end
 
   it ".players_in_turn_order" do
-    pending "Need to implement"
-    fail
+    subject = Poker::Game.new(is_fresh: true, button_index: 0)
     subject.add_player(Poker::Player.new(user_id: 1))
     subject.add_player(Poker::Player.new(user_id: 2))
     subject.add_player(Poker::Player.new(user_id: 3))
+    subject.add_player(Poker::Player.new(user_id: 4))
+    subject.add_player(Poker::Player.new(user_id: 5))
 
-    subject.determine_button
+    # brute force player 3 to be the current dealer
+    subject.instance_variable_set(:@button_index, 2)
+
+    # player after the dealer is first (4th player)
+    expect(subject.players_in_turn_order.first).
+      to eq(subject.players[3])
+
+    # dealer is last
+    expect(subject.players_in_turn_order.last).
+      to eq(subject.players[2])
   end
 end

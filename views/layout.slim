@@ -15,7 +15,8 @@ html
     link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Josefin+Slab:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet"
 
     link rel="stylesheet" href="/style.css"
-    script src="https://www.google.com/recaptcha/api.js"
+    - unless ENV['RACK_ENV'] == 'test'
+      script src="https://www.google.com/recaptcha/api.js"
 
   body
     - color = @game.nil? ? "white" : @game.state[:step_color]

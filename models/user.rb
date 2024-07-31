@@ -2,7 +2,12 @@ class User < ActiveRecord::Base
   has_secure_password
 
   validates :name,
-    presence: true
+    presence: true,
+    format: {
+      with: /\A[a-zA-Z]{3,16}\z/,
+      message: 'must be 3-16 letters'
+    },
+    if: -> { !new_record? }
   validates :email,
     presence: true,
     uniqueness: true,

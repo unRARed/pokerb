@@ -144,6 +144,14 @@ class RbPkr < Sinatra::Base
     if session[:notice].nil? || session[:notice]&.is_read
       session[:notice] = Notifier.new
     end
+
+    if (
+      !request.path_info.include?("session") &&
+      request.path_info != "/set_name" &&
+      current_user && current_user.name.nil?
+    )
+      return redirect "/set_name"
+    end
   end
 
   # A helper method for getting the game instance and
@@ -237,9 +245,8 @@ class RbPkr < Sinatra::Base
     end
 
     @user = User.create!(
-      name: params["user"]["name"],
-      password: params["user"]["password"],
       email: params["user"]["email"],
+      password: params["user"]["password"],
       created_at: Time.now,
       updated_at: Time.now,
     )
@@ -247,9 +254,9 @@ class RbPkr < Sinatra::Base
 
     session[:user_id] = @user.id
     cookies["user_id"] = @user.id
-    session[:notice].message = "Welcome, #{@user[:name]}"
+    session[:notice].message = "Almost there! Just one more step."
     session[:notice].color = "green"
-    Debug.this "User logged in: #{current_user.name}"
+    Debug.this "New user ID ##{current_user.id} signed up"
     redirect "/"
   rescue ActiveRecord::RecordInvalid => e
     session[:notice].message = e.message
@@ -257,6 +264,30 @@ class RbPkr < Sinatra::Base
   rescue ArgumentError => e
     session[:notice].message = e.message
     slim :signup
+  end
+
+  get "/set_name/?" do
+    return redirect "/" if logged_in? && !current_user.name.nil?
+
+    slim :set_name
+  end
+
+  post "/set_name/?" do
+    current_user.update!(
+      name: params["user"]["name"],
+      updated_at: Time.now,
+    )
+    Debug.this "User ID ##{current_user.id} " \
+      "set name to: #{current_user.name}"
+    session[:notice].message = "Welcome, #{current_user.name}"
+    session[:notice].color = "green"
+    redirect "/"
+  rescue ActiveRecord::RecordInvalid => e
+    session[:notice].message = e.message
+    slim :set_name
+  rescue ArgumentError => e
+    session[:notice].message = e.message
+    slim :set_name
   end
 
   # Route for logging in a user

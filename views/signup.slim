@@ -1,11 +1,6 @@
 h2.text-center New Account
 .container.max-w-xs
   form.form action="/signup" method="POST" id="new_user"
-    label for="user_name" User Name
-    input(
-      type="text" required="required" id="user_name"
-      name="user[name]" value="#{@user&.name || ''}"
-    )
     label for="user_email" Email
     input(
       type="text" required="required" id="user_email"
