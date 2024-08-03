@@ -17,6 +17,7 @@ IP_ADDRESS =
 class RbPkr < Sinatra::Base
   configure :production do
     set :bind, IP_ADDRESS
+    set :port, 8080
   end
 end
 
