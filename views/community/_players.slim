@@ -8,6 +8,7 @@
               - klasses = []
               - name = player.name
               - if player == game.dealer
+                - klasses << 'player-info__dealer'
                 - klasses << 'bg-green-700'
               - elsif game.is_player_in_hand?(player.user_id)
                 - klasses << 'bg-blue1'

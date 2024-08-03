@@ -29,39 +29,42 @@ RSpec.describe "Dealing", type: :feature do
     end
 
     visit community_url
-    expect(page).to have_selector(".player", count: 3)
+    expect(page).to have_selector(".player-info__name", count: 3)
 
     # No one is the dealer yet... make it so
     click_on "Draw for the Button"
 
     dealers = []
+    dealer_selector = ".player-info__name.player-info__dealer"
 
-    within ".player--dealer" do
-      expect(dealers).not_to include(find(".player__name").text)
-      dealers << find(".player__name").text
+    page.find(dealer_selector)
+
+    within ".player-info" do
+      expect(dealers).not_to include(find(dealer_selector).text)
+      dealers << find(dealer_selector).text
     end
 
     advance_game
 
     # It's next player's turn to deal
-    within ".player--dealer" do
-      expect(dealers).not_to include(find(".player__name").text)
-      dealers << find(".player__name").text
+    within ".player-info" do
+      expect(dealers).not_to include(find(dealer_selector).text)
+      dealers << find(dealer_selector).text
     end
 
     advance_game
 
     # It's third player's turn to deal
-    within ".player--dealer" do
-      expect(dealers).not_to include(find(".player__name").text)
-      dealers << find(".player__name").text
+    within ".player-info" do
+      expect(dealers).not_to include(find(dealer_selector).text)
+      dealers << find(dealer_selector).text
     end
 
     advance_game
 
     # It's back to the first player
-    within ".player--dealer" do
-      expect(dealers.first).to eq(find(".player__name").text)
+    within ".player-info" do
+      expect(dealers.first).to eq(find(dealer_selector).text)
     end
   end
 
