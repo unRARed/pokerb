@@ -5,16 +5,15 @@
     .container.container--fluid
       == slim :"/community/_cards", locals: { game: @game }
   .community_footer
-    .container.container--fluid
-      - if @game.players.any?
-        == slim :"/community/_players", locals: { game: @game }
-      - else
-        div.text-center style="width: 30%;"
-      div style="margin-right: 2%; min-width: 30%;"
-        h5.text-right Scan QR Code to Join ►
+    .container.container--fluid.lg:grid.lg:grid-cols-8.lg:gap-4
+      div.text-center.col-span-5
+        - if @game.players.any?
+          == slim :"/community/_players", locals: { game: @game }
+      div.col-span-2.mt-3.lg:mt-0
         - if @game.menu.any? || @game.password.present?
           == slim :"/community/_menu", locals: { game: @game }
-      .qrcode
+        h5.lg:text-right.text-center.mt-3.lg:mt-0 Scan QR Code to Join ►
+      div.qrcode
         .hidden-dark == qr_code.as_svg module_size: @game.qr_code_size
         .hidden-light == qr_code.as_svg color: "FFF",
           module_size: @game.qr_code_size

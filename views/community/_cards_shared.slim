@@ -1,0 +1,18 @@
+- if game.is_common_phase?
+  - game.deck.community.each do |card|
+    .playing-card.playing-card--face == card.image
+  - unless game.deck.phase == :river
+    .street-info
+      .phase
+        h3
+          span.phase-prefix> The
+          span.phase-value = game.deck.phase
+        - if game.is_manager?(current_user.id)
+          span.phase-info Touch the deck to advance.
+- else
+  - 5.times do
+    .playing-card.playing-card--placeholder
+      img src="/images/cards/placeholder.png"
+  .street-info
+    == slim :"/community/streets/_#{game.deck.phase}",
+      locals: { game: game }

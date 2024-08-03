@@ -68,59 +68,5 @@
         }
       }
     }
-
   }
 }
-
-/* .clearfix::after { */
-/*   content: ""; */
-/*   display: table; */
-/*   clear: both; */
-/* } */
-
-/* .small { font-size: 0.7rem; } */
-/* .qrcode { margin-left: 12px; } */
-/* .board { position: relative; } */
-/* .board .card + .card { margin-left: 0.5%; } */
-/* .board .card img { width: 100%; } */
-/* .game-indicator { */
-/*   display: flex; */
-/*   justify-content: space-between; */
-/*   align-items: center; */
-/*   font-size: 2rem; */
-/* } */
-/* .game-indicator__slug { */
-/*   margin-right: 8px; */
-/* } */
-/* .game-indicator__color { width: 100%; height: 24px; } */
-
-/* .notice { */
-/*   margin: 0.5rem 0; */
-/*   padding: 0.5rem; */
-/* } */
-
-/* .text-center { text-align: center; } */
-
-
-
-/* .form { */
-/*   max-width: 500px; */
-/*   margin: 0 auto; */
-/* } */
-/* .form input[type="text"], */
-/* .form input[type="password"] { */
-/*   width: 100%; */
-/* } */
-
-/* @media (prefers-color-scheme: dark) { */
-/*   .hidden-dark { display: none; } */
-/*   img, video { opacity: 1; } */
-/* } */
-/* @media (prefers-color-scheme: light) { */
-/*   .hidden-light { display: none; } */
-/*   img, video { opacity: 1; } */
-/* } */
-/* @media only screen and (width <= 720px) { */
-/*   .button { width: 100%; } */
-/*   .button + .button { margin-left: 0; } */
-/* } */

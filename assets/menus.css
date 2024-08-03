@@ -28,4 +28,8 @@
   }
   .menu__item + .menu__item { border-top: 1px solid #999; }
   .menu__item--primary { font-weight: bold; color: #72f5ff; }
+
+  @media (prefers-color-scheme: dark) {
+    .menu__item + .menu__item { border-color: var(--red4); }
+  }
 }

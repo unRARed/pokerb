@@ -1,48 +1,62 @@
 .player-info
-  table.table-auto.w-full.text-sm
-    tbody
-      - game.players.each_slice(2).with_index do |player_slice, si|
-        tr style="width: 100%;"
-          - player_slice.each_with_index do |player, pi|
-            - klasses = []
-            - name = player.name
-            - if player == game.dealer
-              - klasses << 'bg-green-700'
-            - elsif game.is_player_in_hand?(player.user_id)
-              - klasses << 'bg-blue2'
-            - if player == game.dealer
-              - name = "#{name} (Dealer)"
-            - elsif player == game.player_in_small_blind
-              - name = "#{name} (SB)"
-            - elsif player == game.player_in_big_blind
-              - name = "#{name} (BB)"
-            td class="#{klasses.join(' ')}" Seat #{((si * 2) + (pi)) + 1}
-            td.bebas-neue.text-xl style="width: 30%;" class="#{klasses.join(' ')}" = name
-            td style="width: 10%;" class="#{klasses.join(' ')} text-right"
-              form(
-                method="POST"
-                action="/#{game.slug}/remove_player"
-                data-player-name="#{player.name}"
-                class="player-seat"
-              )
-                input(
-                  type="hidden" name="player_user_id"
-                  value="#{player.user_id}"
+  - if game.players.length > 1
+    table.table-auto.w-full.text-sm
+      tbody
+        - game.players.each_slice(2).with_index do |player_slice, si|
+          tr style="width: 100%;"
+            - player_slice.each_with_index do |player, pi|
+              - klasses = []
+              - name = player.name
+              - if player == game.dealer
+                - klasses << 'bg-green-700'
+              - elsif game.is_player_in_hand?(player.user_id)
+                - klasses << 'bg-blue1'
+              - if player == game.dealer
+                - name = "#{name} (Dealer)"
+              - elsif player == game.player_in_small_blind
+                - name = "#{name} (SB)"
+              - elsif player == game.player_in_big_blind
+                - name = "#{name} (BB)"
+              td.player-info__seat class="#{klasses.join(' ')}" Seat #{((si * 2) + (pi)) + 1}
+              td.player-info__name.lg:text-xl style="width: 30%;" class="#{klasses.join(' ')}" = name
+              td.player-info__remove style="width: 10%;" class="#{klasses.join(' ')} text-right"
+                form(
+                  method="POST"
+                  action="/#{game.slug}/remove_player"
+                  data-player-name="#{player.name}"
+                  class="player-seat"
                 )
-                .trigger.text-2xl &times;
-    javascript:
-      document.addEventListener("DOMContentLoaded", function() {
+                  input(
+                    type="hidden" name="player_user_id"
+                    value="#{player.user_id}"
+                  )
+                  .trigger.text-2xl &times;
+  - else
+      form(
+        method="POST"
+        action="/#{game.slug}/remove_player"
+        data-player-name="#{game.players.first.name}"
+        class="player-seat"
+      )
+        input(
+          type="hidden" name="player_user_id"
+          value="#{game.players.first.user_id}"
+        )
+        .trigger.button Remove #{game.players.first.name}
 
-        document.querySelectorAll("form.player-seat").forEach(function(player) {
-          player.addEventListener("click", function(e) {
-            const formData = new FormData(this);
-            e.preventDefault();
-            if (
-              confirm(
-                'Are you sure you want to remove ' +
-                this.dataset.playerName + '?'
-              )
-            ) { this.submit(); }
-          });
+  javascript:
+    document.addEventListener("DOMContentLoaded", function() {
+
+      document.querySelectorAll("form.player-seat").forEach(function(player) {
+        player.addEventListener("click", function(e) {
+          const formData = new FormData(this);
+          e.preventDefault();
+          if (
+            confirm(
+              'Are you sure you want to remove ' +
+              this.dataset.playerName + '?'
+            )
+          ) { this.submit(); }
         });
       });
+    });

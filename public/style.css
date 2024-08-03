@@ -465,15 +465,8 @@ video {
   --pink: #eb89c6;
 }
 
-.bg-blue2 {
-  background-color: var(--blue2);
-}
-
-.bebas-neue {
-  font-family: "Bebas Neue", sans-serif;
-  font-weight: 400;
-  font-style: normal;
-  text-transform: uppercase;
+.bg-blue1 {
+  background-color: var(--blue1);
 }
 
 html {
@@ -699,96 +692,6 @@ a:hover{
   --tw-contain-style:  ;
 }
 
-/* .clearfix::after { */
-
-/*   content: ""; */
-
-/*   display: table; */
-
-/*   clear: both; */
-
-/* } */
-
-/* .small { font-size: 0.7rem; } */
-
-/* .qrcode { margin-left: 12px; } */
-
-/* .board { position: relative; } */
-
-/* .board .card + .card { margin-left: 0.5%; } */
-
-/* .board .card img { width: 100%; } */
-
-/* .game-indicator { */
-
-/*   display: flex; */
-
-/*   justify-content: space-between; */
-
-/*   align-items: center; */
-
-/*   font-size: 2rem; */
-
-/* } */
-
-/* .game-indicator__slug { */
-
-/*   margin-right: 8px; */
-
-/* } */
-
-/* .game-indicator__color { width: 100%; height: 24px; } */
-
-/* .notice { */
-
-/*   margin: 0.5rem 0; */
-
-/*   padding: 0.5rem; */
-
-/* } */
-
-/* .text-center { text-align: center; } */
-
-/* .form { */
-
-/*   max-width: 500px; */
-
-/*   margin: 0 auto; */
-
-/* } */
-
-/* .form input[type="text"], */
-
-/* .form input[type="password"] { */
-
-/*   width: 100%; */
-
-/* } */
-
-/* @media (prefers-color-scheme: dark) { */
-
-/*   .hidden-dark { display: none; } */
-
-/*   img, video { opacity: 1; } */
-
-/* } */
-
-/* @media (prefers-color-scheme: light) { */
-
-/*   .hidden-light { display: none; } */
-
-/*   img, video { opacity: 1; } */
-
-/* } */
-
-/* @media only screen and (width <= 720px) { */
-
-/*   .button { width: 100%; } */
-
-/*   .button + .button { margin-left: 0; } */
-
-/* } */
-
 .container{
   width: 100%;
 }
@@ -847,8 +750,10 @@ footer.layout--footer {
   flex-shrink: 0;
 }
 
-[class*="layout--"] .container {
-  padding: 0 1rem;
+[class*="layout--"] {
+  > .container {
+    padding: 0 1rem;
+  }
 }
 
 .layout--header,
@@ -1013,6 +918,10 @@ label {
   border-radius: 8px;
 }
 
+.playing-card.playing-card--placeholder {
+  opacity: 0.1;
+}
+
 .playing-card.playing-card--back {
   position: relative;
   box-shadow: unset;
@@ -1077,7 +986,7 @@ label {
   left: -2%;
   right: 0;
   max-width: 300px;
-  min-height: 380px;
+  min-height: 420px;
   margin: 16px auto 0;
   a {
     display: block;
@@ -1185,6 +1094,10 @@ a.menu__item {
 }
 
 @media (prefers-color-scheme: dark) {
+  .menu__item + .menu__item {
+    border-color: var(--red4);
+  }
+
   body {
     background-color: var(--dark-bg);
     color: white;
@@ -1208,6 +1121,8 @@ a.menu__item {
   display: flex;
   justify-content: start;
   align-items: center;
+  padding-left: 1rem;
+  padding-right: 1rem;
   .logo {
     max-width: 240px;
     margin: 0 auto 8px;
@@ -1226,6 +1141,7 @@ a.menu__item {
   justify-content: start;
   align-items: center;
   width: 83%;
+  position: relative;
   .phase {
     margin-left: 16px;
     font-size: 1.1em;
@@ -1233,6 +1149,15 @@ a.menu__item {
   }
   .phase-info {
     font-size: 1em;
+  }
+  .street-info {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 8% auto;
+    text-align: center;
   }
 }
 
@@ -1245,17 +1170,16 @@ a.menu__item {
 }
 
 .community_footer .container {
-  display: flex;
   justify-content: flex-end;
   align-items: flex-start;
   margin-top: 18px;
-  padding-top: 24px;
   padding-bottom: 24px;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .player-info {
-  width: 70%;
-  color: #555;
+  color: white;
   table {
     border-radius: 6px;
     overflow: hidden;
@@ -1266,6 +1190,21 @@ a.menu__item {
   }
   tr + tr {
     border-top: 1px solid #555;
+  }
+  .player-info__seat {
+    min-width: 15%;
+  }
+  .player-info__name {
+    text-align: left;
+  }
+  .player-info__name {
+    font-family: "Bebas Neue", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    text-transform: uppercase;
+  }
+  .player-info__remove {
+    min-width: 10%;
   }
 }
 
@@ -1349,50 +1288,45 @@ a.menu__item {
   }
 }
 
-@media (prefers-color-scheme: light) {
-  .player-info {
-    color: white;
+.qrcode {
+  text-align: center;
+  svg {
+    display: inline-block;
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .player {
-    color: white;
-  }
+.game-root .street-info {
+  display: none;
+}
 
-  /* .player__cards:before { */
+.community .community-cards--flop .street-info {
+  position: static;
+}
 
-  /*   content: ""; */
-
-  /*   position: absolute; */
-
-  /*   top: 0; */
-
-  /*   left: 0; */
-
-  /*   right: 0; */
-
-  /*   bottom: 0; */
-
-  /*   margin: auto; */
-
-  /*   height: 100%; */
-
-  /*   width: 3px; */
-
-  /*   background-color: var(--dark-bg); */
-
-  /* } */
+.community .community-cards--turn .street-info {
+  position: static;
 }
 
 /* wrappers */
+
+.col-span-2{
+  grid-column: span 2 / span 2;
+}
+
+.col-span-5{
+  grid-column: span 5 / span 5;
+}
+
+.m-auto{
+  margin: auto;
+}
 
 .mb-2{
   margin-bottom: 0.5rem;
 }
 
-.ml-3{
-  margin-left: 0.75rem;
+.mt-3{
+  margin-top: 0.75rem;
 }
 
 .mt-4{
@@ -1421,6 +1355,10 @@ a.menu__item {
 
 .w-full{
   width: 100%;
+}
+
+.max-w-md{
+  max-width: 28rem;
 }
 
 .max-w-sm{
@@ -1452,11 +1390,6 @@ a.menu__item {
   background-color: rgb(21 128 61 / var(--tw-bg-opacity));
 }
 
-.bg-blue-700{
-  --tw-bg-opacity: 1;
-  background-color: rgb(29 78 216 / var(--tw-bg-opacity));
-}
-
 .pt-5{
   padding-top: 1.25rem;
 }
@@ -1477,11 +1410,6 @@ a.menu__item {
 .text-sm{
   font-size: 0.875rem;
   line-height: 1.25rem;
-}
-
-.text-xl{
-  font-size: 1.25rem;
-  line-height: 1.75rem;
 }
 
 .text-xs{
@@ -1510,5 +1438,32 @@ a.menu__item {
 
   img, video {
     opacity: 1;
+  }
+}
+
+@media (min-width: 1024px){
+  .lg\:mt-0{
+    margin-top: 0px;
+  }
+
+  .lg\:grid{
+    display: grid;
+  }
+
+  .lg\:grid-cols-8{
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .lg\:gap-4{
+    gap: 1rem;
+  }
+
+  .lg\:text-right{
+    text-align: right;
+  }
+
+  .lg\:text-xl{
+    font-size: 1.25rem;
+    line-height: 1.75rem;
   }
 }

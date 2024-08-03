@@ -3,6 +3,8 @@
     display: flex;
     justify-content: start;
     align-items: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
 
     .logo {
       max-width: 240px;
@@ -20,11 +22,22 @@
     justify-content: start;
     align-items: center;
     width: 83%;
+    position: relative;
 
     .phase {
       margin-left: 16px; font-size: 1.1em; line-height: 1;
     }
     .phase-info { font-size: 1em; }
+
+    .street-info {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: 8% auto;
+      text-align: center;
+    }
   }
   @media (max-width: 768px) {
     .community-cards {
@@ -35,20 +48,25 @@
     padding: 16px;
   }
   .community_footer .container {
-    display: flex;
     justify-content: flex-end;
     align-items: flex-start;
     margin-top: 18px;
-    padding-top: 24px;
     padding-bottom: 24px;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   .player-info {
-    width: 70%;
-    color: #555;
+    color: white;
 
     table { border-radius: 6px; overflow: hidden; background-color: var(--gray); }
     td { padding: 0 6px; }
     tr + tr { border-top: 1px solid #555; }
+    .player-info__seat { min-width: 15%; }
+    .player-info__name {
+      text-align: left;
+      @apply bebas-neue;
+    }
+    .player-info__remove { min-width: 10%; }
   }
   .player-seat .trigger {
     cursor: pointer;
@@ -116,23 +134,15 @@
       background-color: red;
     }
   }
+  .qrcode {
+    text-align: center;
 
-  @media (prefers-color-scheme: light) {
-    .player-info { color: white; }
+    svg {
+      display: inline-block;
+    }
   }
-  @media (prefers-color-scheme: dark) {
-    .player { color: white; }
-    /* .player__cards:before { */
-    /*   content: ""; */
-    /*   position: absolute; */
-    /*   top: 0; */
-    /*   left: 0; */
-    /*   right: 0; */
-    /*   bottom: 0; */
-    /*   margin: auto; */
-    /*   height: 100%; */
-    /*   width: 3px; */
-    /*   background-color: var(--dark-bg); */
-    /* } */
-  }
+
+  .game-root .street-info { display: none; }
+  .community .community-cards--flop .street-info { position: static; }
+  .community .community-cards--turn .street-info { position: static; }
 }

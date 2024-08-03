@@ -1,7 +1,9 @@
-.text-center
+.text-center.game-root
   - if @game.is_player_id_found?(current_user.id)
+    .board.max-w-md.m-auto
+      == slim :"/community/_cards_shared", locals: { game: @game }
     - if @game.is_player_in_hand?(current_user.id)
-      p
+      p.mt-4
         a(
           class="button button--primary"
           href="/#{@game.slug}/fold"
@@ -28,9 +30,7 @@
     - else
       .container.max-w-sm
         .text-center
-          .logo
-            img src="/images/rbpkr.png" alt="RbPkr Logo"
-          h2.mt-4 Waiting for Cards
+          h3.mt-4 Waiting for Cards
   - else
     .container.max-w-sm
       .text-center

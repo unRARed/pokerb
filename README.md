@@ -40,10 +40,12 @@ or better yet, a PR.
 - Low stakes cash games can't support paying for a dealer.
 - `rand()` > Dealer
 
+### It also has a Dark Mode
+
+![Dark Mode](https://raw.githubusercontent.com/unRARed/rbpkr/main/dark-mode.jpg)
+
 Running the Server
 ------------------
-
-<img align="left" src="https://raw.githubusercontent.com/unRARed/rbpkr/main/hand_2.jpg">
 
 - First `bundle install`
 - Then run `bin/dev' to start the server
