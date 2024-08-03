@@ -465,6 +465,17 @@ video {
   --pink: #eb89c6;
 }
 
+.bg-blue2 {
+  background-color: var(--blue2);
+}
+
+.bebas-neue {
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  text-transform: uppercase;
+}
+
 html {
   box-sizing: border-box;
 }
@@ -1244,6 +1255,22 @@ a.menu__item {
 
 .player-info {
   width: 70%;
+  color: #555;
+  table {
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--gray);
+  }
+  td {
+    padding: 0 6px;
+  }
+  tr + tr {
+    border-top: 1px solid #555;
+  }
+}
+
+.player-seat .trigger {
+  cursor: pointer;
 }
 
 .players {
@@ -1322,6 +1349,12 @@ a.menu__item {
   }
 }
 
+@media (prefers-color-scheme: light) {
+  .player-info {
+    color: white;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .player {
     color: white;
@@ -1358,6 +1391,10 @@ a.menu__item {
   margin-bottom: 0.5rem;
 }
 
+.ml-3{
+  margin-left: 0.75rem;
+}
+
 .mt-4{
   margin-top: 1rem;
 }
@@ -1382,6 +1419,10 @@ a.menu__item {
   display: none;
 }
 
+.w-full{
+  width: 100%;
+}
+
 .max-w-sm{
   max-width: 24rem;
 }
@@ -1394,20 +1435,26 @@ a.menu__item {
   max-width: 20rem;
 }
 
+.table-auto{
+  table-layout: auto;
+}
+
 .grid-cols-2{
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.grid-cols-5{
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
-.gap-2{
-  gap: 0.5rem;
-}
-
 .gap-4{
   gap: 1rem;
+}
+
+.bg-green-700{
+  --tw-bg-opacity: 1;
+  background-color: rgb(21 128 61 / var(--tw-bg-opacity));
+}
+
+.bg-blue-700{
+  --tw-bg-opacity: 1;
+  background-color: rgb(29 78 216 / var(--tw-bg-opacity));
 }
 
 .pt-5{
@@ -1425,6 +1472,16 @@ a.menu__item {
 .text-2xl{
   font-size: 1.5rem;
   line-height: 2rem;
+}
+
+.text-sm{
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-xl{
+  font-size: 1.25rem;
+  line-height: 1.75rem;
 }
 
 .text-xs{

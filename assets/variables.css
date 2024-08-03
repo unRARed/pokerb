@@ -16,6 +16,10 @@
     --pink: #eb89c6;
   }
 
+  .bg-blue2 {
+    background-color: var(--blue2);
+  }
+
   .bebas-neue {
     font-family: "Bebas Neue", sans-serif;
     font-weight: 400;

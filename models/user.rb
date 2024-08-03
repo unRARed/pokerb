@@ -4,8 +4,8 @@ class User < ActiveRecord::Base
   validates :name,
     presence: true,
     format: {
-      with: /\A[a-zA-Z]{3,16}\z/,
-      message: 'must be 3-16 letters'
+      with: /\A[a-zA-Z\d]{3,16}\z/,
+      message: 'must be 3-16 letters or numbers'
     },
     if: -> { !new_record? }
   validates :email,

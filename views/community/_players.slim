@@ -1,28 +1,39 @@
 .player-info
-  .players.grid-cols-5.gap-2
-    - game.players.each_with_index do |player|
-      - player_class = []
-      - unless game.has_cards?(player.user_id)
-        - player_class << 'player--out'
-      - if game.dealer == player
-        - player_class << 'player--dealer'
-      form.player(
-        method="POST"
-        action="/#{game.slug}/remove_player"
-        class="#{player_class.join(' ')}"
-        data-player-name="#{player.name}"
-      )
-        input(
-          type="hidden" name="player_user_id"
-          value="#{player.user_id}"
-        )
-        .player__cards
-        .player__name = player.name
-  p.text-center
-    | Touch player to remove them from the game.
+  table.table-auto.w-full.text-sm
+    tbody
+      - game.players.each_slice(2).with_index do |player_slice, si|
+        tr style="width: 100%;"
+          - player_slice.each_with_index do |player, pi|
+            - klasses = []
+            - name = player.name
+            - if player == game.dealer
+              - klasses << 'bg-green-700'
+            - elsif game.is_player_in_hand?(player.user_id)
+              - klasses << 'bg-blue2'
+            - if player == game.dealer
+              - name = "#{name} (Dealer)"
+            - elsif player == game.player_in_small_blind
+              - name = "#{name} (SB)"
+            - elsif player == game.player_in_big_blind
+              - name = "#{name} (BB)"
+            td class="#{klasses.join(' ')}" Seat #{((si * 2) + (pi)) + 1}
+            td.bebas-neue.text-xl style="width: 30%;" class="#{klasses.join(' ')}" = name
+            td style="width: 10%;" class="#{klasses.join(' ')} text-right"
+              form(
+                method="POST"
+                action="/#{game.slug}/remove_player"
+                data-player-name="#{player.name}"
+                class="player-seat"
+              )
+                input(
+                  type="hidden" name="player_user_id"
+                  value="#{player.user_id}"
+                )
+                .trigger.text-2xl &times;
     javascript:
       document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll("form.player").forEach(function(player) {
+
+        document.querySelectorAll("form.player-seat").forEach(function(player) {
           player.addEventListener("click", function(e) {
             const formData = new FormData(this);
             e.preventDefault();

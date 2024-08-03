@@ -44,6 +44,14 @@
   }
   .player-info {
     width: 70%;
+    color: #555;
+
+    table { border-radius: 6px; overflow: hidden; background-color: var(--gray); }
+    td { padding: 0 6px; }
+    tr + tr { border-top: 1px solid #555; }
+  }
+  .player-seat .trigger {
+    cursor: pointer;
   }
   .players {
     text-align: center;
@@ -109,6 +117,9 @@
     }
   }
 
+  @media (prefers-color-scheme: light) {
+    .player-info { color: white; }
+  }
   @media (prefers-color-scheme: dark) {
     .player { color: white; }
     /* .player__cards:before { */

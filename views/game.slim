@@ -1,6 +1,6 @@
 .text-center
-  - if @game.is_playing?(current_user.id)
-    - if @game.has_cards?(current_user.id)
+  - if @game.is_player_id_found?(current_user.id)
+    - if @game.is_player_in_hand?(current_user.id)
       p
         a(
           class="button button--primary"

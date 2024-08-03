@@ -4,7 +4,6 @@
 require "sinatra/base"
 require "sinatra/reloader"
 require "sinatra/namespace"
-require "sinatra/cookies"
 require "sinatra/activerecord"
 
 require 'uri'
@@ -67,7 +66,6 @@ class RbPkr < Sinatra::Base
   end
 
   register Sinatra::Namespace
-  helpers Sinatra::Cookies
   enable :sessions
   set :session_secret,
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
@@ -253,7 +251,6 @@ class RbPkr < Sinatra::Base
     @user.reload
 
     session[:user_id] = @user.id
-    cookies["user_id"] = @user.id
     session[:notice].message = "Almost there! Just one more step."
     session[:notice].color = "green"
     Debug.this "New user ID ##{current_user.id} signed up"
@@ -300,7 +297,6 @@ class RbPkr < Sinatra::Base
   #
   get "/logout/?" do
     session[:user_id] = nil
-    cookies[:user_id] = nil
     session[:notice].message = "You have been logged out."
     session[:notice].color = "green"
     redirect "/"
@@ -322,12 +318,14 @@ class RbPkr < Sinatra::Base
     @user.validate!
 
     session[:user_id] = @user.id
-    cookies["user_id"] = @user.id
     session[:notice].message = "Welcome back, #{@user[:name]}"
     session[:notice].color = "green"
     Debug.this "User logged in: #{current_user.name}"
     redirect "/"
   rescue ArgumentError => e
+    session[:notice].message = e.message
+    slim :login
+  rescue ActiveRecord::RecordInvalid => e
     session[:notice].message = e.message
     slim :login
   end
@@ -572,7 +570,7 @@ class RbPkr < Sinatra::Base
       end
 
       if (player = @game.player_by_user_id(params["player_user_id"]))
-        if @game.has_cards?(player.user_id)
+        if @game.is_player_in_hand?(player.user_id)
           @game.deck.discard(player.fold)
         end
         @game.remove_player(params["player_user_id"])
@@ -620,7 +618,7 @@ class RbPkr < Sinatra::Base
     post "/fold/?" do
       set_game
       if (player = @game.player_by_user_id(current_user.id))
-        break unless @game.has_cards?(player.user_id)
+        break unless @game.is_player_in_hand?(player.user_id)
         @game.deck.discard(player.fold)
         @game.change_color
         RbPkr.write_state(@game.to_hash)

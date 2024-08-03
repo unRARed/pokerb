@@ -103,12 +103,12 @@ module Poker
       [:flop, :turn, :river].include? @deck.phase
     end
 
-    def is_playing?(user_id)
+    def is_player_id_found?(user_id)
       players.any?{ |p| p.user_id == user_id&.to_i }
     end
 
-    def has_cards?(user_id)
-      return false unless is_playing? user_id
+    def is_player_in_hand?(user_id)
+      return false unless is_player_id_found? user_id
       player_by_user_id(user_id).hole_cards.size > 0
     end
 
