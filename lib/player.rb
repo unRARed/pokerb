@@ -12,7 +12,7 @@ module Poker
 
     def name
       return "" unless (@user_id.present? && @user_id > 0)
-      User.find(@user_id)&.name || "Anonymous"
+      User.find_by(id: @user_id)&.name || "Anonymous"
     end
 
     def draw(card)

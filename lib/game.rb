@@ -50,7 +50,7 @@ module Poker
     end
 
     def manager
-      User.find(@state[:user_id])
+      User.find_by(id: @state[:user_id])
     end
 
     def phase
