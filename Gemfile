@@ -16,6 +16,7 @@ gem "sinatra-activerecord"
 gem "sqlite3", "~> 1.5"
 gem "rake"
 gem "bcrypt"
+gem "mail"
 
 group :development do
   gem 'byebug'

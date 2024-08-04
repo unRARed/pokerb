@@ -3,10 +3,14 @@ require "spec_helper"
 RSpec.describe "Password protection", type: :feature do
   it "prevents unauthorized access" do
     User.create(
-      name: "Myself", password: "password", email: "myself@rbpkr.com"
+      name: "Myself", password: "password",
+      email: "myself@rbpkr.com",
+      email_confirmed_at: Time.now,
     )
     User.create(
-      name: "Friend", password: "password", email: "Friend@rbpkr.com"
+      name: "Friend", password: "password",
+      email: "Friend@rbpkr.com",
+      email_confirmed_at: Time.now,
     )
     visit "/login"
     fill_in "user[email]", with: "myself@rbpkr.com"

@@ -3,13 +3,16 @@ require "spec_helper"
 RSpec.describe "Dealing", type: :feature do
   it "is relative to the button" do
     User.create(
-      name: "Foo", password: "password", email: "Foo@rbpkr.com"
+      name: "Foo", password: "password", email: "Foo@rbpkr.com",
+      email_confirmed_at: Time.now
     )
     User.create(
-      name: "Bar", password: "password", email: "Bar@rbpkr.com"
+      name: "Bar", password: "password", email: "Bar@rbpkr.com",
+      email_confirmed_at: Time.now
     )
     User.create(
-      name: "Baz", password: "password", email: "Baz@rbpkr.com"
+      name: "Baz", password: "password", email: "Baz@rbpkr.com",
+      email_confirmed_at: Time.now
     )
     visit "/login"
     fill_in "user[email]", with: "Foo@rbpkr.com"

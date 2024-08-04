@@ -5,7 +5,8 @@ RSpec.describe "Creating a Game", type: :feature do
     User.create(
       name: "SomeUser",
       password: "password",
-      email: "some@email.com"
+      email: "some@email.com",
+      email_confirmed_at: Time.now,
     )
     visit "/login"
     fill_in "user[email]", with: "some@email.com"

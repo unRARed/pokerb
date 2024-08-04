@@ -1,5 +1,6 @@
 class User < ActiveRecord::Base
   has_secure_password
+  has_secure_token :email_confirmation_token
 
   validates :name,
     presence: true,
@@ -7,7 +8,7 @@ class User < ActiveRecord::Base
       with: /\A[a-zA-Z\d]{3,16}\z/,
       message: 'must be 3-16 letters or numbers'
     },
-    if: -> { !new_record? }
+    if: ->(user) { user.is_confirmed? }
   validates :email,
     presence: true,
     uniqueness: true,
@@ -16,4 +17,6 @@ class User < ActiveRecord::Base
     presence: true,
     length: { minimum: 8 },
     if: -> { new_record? || !password.nil? }
+
+  def is_confirmed?; email_confirmed_at.present? end
 end

@@ -13,6 +13,7 @@ require "securerandom"
 require "byebug"
 require 'socket'
 require 'rqrcode'
+require 'mail'
 
 require "./models/user"
 require "./models/game"
@@ -50,6 +51,42 @@ class Notifier
   end
 end
 
+class Emailer
+  CONFIG = {
+    address: ENV['RBPKR_SMTP_HOST'],
+    port: 587,
+    domain: ENV['RBPKR_SMTP_DOMAIN'],
+    user_name: ENV['RBPKR_SMTP_USERNAME'],
+    password: ENV['RBPKR_SMTP_PASSWORD'],
+    authentication: 'plain',
+    enable_starttls_auto: true
+  }
+
+  def initialize
+    Mail.defaults do
+      RbPkr.test? ?
+        delivery_method(:test) :
+        delivery_method(:smtp, CONFIG)
+    end
+  end
+
+  def send_activation_email(user)
+    # User.save is supposed to trigger setting the
+    # token, but doesn't seem to with Sinatra
+    user.regenerate_email_confirmation_token
+    email = Mail.new do
+      from 'noreply@rbpkr.com'
+      to user.email
+      subject 'Confirm your account at RbPkr.com'
+      body "Before using RbPkr, you need to confirm this email." \
+        "<br><br><a href='#{RbPkr.server_url}" \
+        "/confirm/#{user.email_confirmation_token}'>" \
+        "Click here to confirm</a>"
+    end
+    email.deliver
+  end
+end
+
 class RbPkr < Sinatra::Base
   configure :development do
     register Sinatra::Reloader
@@ -74,6 +111,18 @@ class RbPkr < Sinatra::Base
 
   register Sinatra::ActiveRecordExtension
   # set :database, {adapter: "sqlite3", database: "games/foo.sqlite3"}
+
+  def self.mailer_config
+    {
+      address: ENV['RBPKR_SMTP_HOST'],
+      port: 587,
+      domain: ENV['RBPKR_SMTP_DOMAIN'],
+      user_name: ENV['RBPKR_SMTP_USERNAME'],
+      password: ENV['RBPKR_SMTP_PASSWORD'],
+      authentication: 'plain',
+      enable_starttls_auto: true
+    }
+  end
 
   # Returns hash of the game state for the given :game_slug
   #
@@ -111,17 +160,19 @@ class RbPkr < Sinatra::Base
   #   @param req [Sinatra::Request] the request object
   #   @return [String] the base url for the server
   #
-  def self.server_url(req)
-    env = req.env
-    parts = ENV["RACK_ENV"] == "production" ?
-      ["https://"] : ["http://"]
-    if !ENV["RBPKR_HOSTNAME"].nil?
-      parts << ENV["RBPKR_HOSTNAME"]
-    else
-      parts << env["SERVER_NAME"]
-    end
-    unless ENV["RACK_ENV"] == "production"
-      parts << ":#{env["SERVER_PORT"]}" if env["SERVER_PORT"]
+  def self.server_url(req = nil)
+    env = req&.env
+    parts = RbPkr.production? ?  ["https://"] : ["http://"]
+    parts <<
+      if env && !env["SERVER_NAME"].nil?
+        env["SERVER_NAME"]
+      elsif !ENV["RBPKR_HOSTNAME"].nil?
+        ENV["RBPKR_HOSTNAME"]
+      else
+        "localhost"
+      end
+    if env && !env["SERVER_NAME"].nil?
+      parts << ":#{env["SERVER_PORT"]}"
     end
     parts.join
   end
@@ -135,21 +186,20 @@ class RbPkr < Sinatra::Base
     RQRCode::QRCode.new "#{RbPkr.server_url}/#{game_slug}"
   end
 
-  # Akin to Rails Flash messages, for setting and
-  # displaying simple notices in views
-  #
-  before do
-    if session[:notice].nil? || session[:notice]&.is_read
-      session[:notice] = Notifier.new
+  def self.send_activation_email(user)
+    mail = Mail.new do
+      from 'noreply@rbpkr.com'
+      to user.email
+      subject 'Confirm your account at RbPkr.com'
+      body "Before using RbPkr, you need to confirm #{user.email}."
     end
+    mail.delivery_method = :smtp, mailer_config
+    mail.deliver
+  end
 
-    if (
-      !request.path_info.include?("session") &&
-      request.path_info != "/set_name" &&
-      current_user && current_user.name.nil?
-    )
-      return redirect "/set_name"
-    end
+  def self.is_safe_path?(path_info)
+    path_info == "/" || ["/images", "/logout", "/confirm"].
+      any?{ |p| path_info.start_with? p }
   end
 
   # A helper method for getting the game instance and
@@ -181,21 +231,14 @@ class RbPkr < Sinatra::Base
   #  @return [User] the logged in user
   #
   def current_user
-    return nil unless !session["user_id"].nil?
-
-    if (user = User.find(session["user_id"]))
-      return user
-    end
-    nil
+    @current_user ||= User.find_by(id: session[:user_id])
   end
 
   # Helper method for checking if a user is logged in
   #
   #   @return [Boolean] whether the user is logged in
   #
-  def logged_in?
-    !current_user.nil? && current_user != ""
-  end
+  def logged_in?; !current_user.nil? end
 
   def passed_recaptcha?(token)
     return true if ["test"].include? ENV["RACK_ENV"]
@@ -209,6 +252,37 @@ class RbPkr < Sinatra::Base
 
     JSON.parse(recaptcha_result)&.dig("success") == true
   end
+
+  before do
+    # Akin to Rails Flash messages, for setting and
+    # displaying simple notices in views
+    #
+    if session[:notice].nil? || session[:notice]&.is_read
+      session[:notice] = Notifier.new
+    end
+
+    # User has signed up, but they haven't confirmed their email
+    if (
+      !RbPkr.is_safe_path?(request.path_info) &&
+      logged_in? && !current_user.is_confirmed?
+    )
+      session[:notice].message = "Please check your email " \
+        "#{current_user.email} and confirm your RbPkr account " \
+        "to get in the game."
+      session[:notice].color = "green"
+      return redirect "/"
+    end
+
+    # User is confirmed, but they haven't set their name yet
+    if (
+      !RbPkr.is_safe_path?(request.path_info) &&
+      request.path_info != "/set_name" &&
+      logged_in? && current_user.name.nil?
+    )
+      return redirect "/set_name"
+    end
+  end
+
   # Route for responding with system images
   #
   #   @param asset_filename [String] the filename of the image
@@ -242,17 +316,19 @@ class RbPkr < Sinatra::Base
       raise ArgumentError, "What are you doing?"
     end
 
-    @user = User.create!(
+    @user = User.new(
       email: params["user"]["email"],
       password: params["user"]["password"],
       created_at: Time.now,
       updated_at: Time.now,
     )
-    @user.reload
+    @user.save!
+
+    Emailer.new.send_activation_email(@user)
 
     session[:user_id] = @user.id
-    session[:notice].message = "Almost there! Just one more step."
-    session[:notice].color = "green"
+    session[:notice].message = "An email has been sent to " \
+      "#{@user.email}. Please confirm your account to play."
     Debug.this "New user ID ##{current_user.id} signed up"
     redirect "/"
   rescue ActiveRecord::RecordInvalid => e
@@ -261,6 +337,34 @@ class RbPkr < Sinatra::Base
   rescue ArgumentError => e
     session[:notice].message = e.message
     slim :signup
+  end
+
+  get "/confirm/:token/?" do
+    unless (@user =
+      User.find_by(email_confirmation_token: params[:token])
+    )
+      raise(
+        ArgumentError,
+        "Something went wrong confirming your account."
+      )
+    end
+
+    # Update around validations to prevent name
+    # validation from firing prematurely
+    @user.update_columns(
+      email_confirmation_token: nil,
+      email_confirmed_at: Time.now,
+      updated_at: Time.now,
+    )
+    session[:user_id] = @user.id
+    session[:notice].message = "Your account has been confirmed."
+    redirect "/set_name"
+  rescue ActiveRecord::RecordInvalid => e
+    session[:notice].message = e.message
+    redirect "/"
+  rescue ArgumentError => e
+    session[:notice].message = e.message
+    redirect "/"
   end
 
   get "/set_name/?" do
@@ -286,6 +390,7 @@ class RbPkr < Sinatra::Base
     session[:notice].message = e.message
     slim :set_name
   end
+
 
   # Route for logging in a user
   #
