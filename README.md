@@ -73,6 +73,10 @@ Running the Server
   - `RACK_ENV` - set to production to expose to network
   - `RBPKR_RECAPTCHA_SITE_KEY` - set to your recaptcha site key
   - `RBPKR_RECAPTCHA_SECRET_KEY` - set to your recaptcha secret key
+  - `RBPKR_SMTP_USERNAME` - the SMTP username
+  - `RBPKR_SMTP_PASSWORD` - the SMTP password
+  - `RBPKR_SMTP_HOST` - the SMTP host (ie. smtp.provider.com)
+  - `RBPKR_SMTP_DOMAIN` - set to your domain (ie. example.com)
 
 **Conventions**
 
