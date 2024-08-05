@@ -63,7 +63,7 @@ class Emailer
     enable_starttls_auto: true
   }
 
-  def initialize(env = settings.environment)
+  def initialize(env = :development)
     Mail.defaults do
       case env
       when :development
@@ -99,11 +99,6 @@ class Emailer
                 render(self, url: "#{RbPkr.server_url}/confirm/" \
                   "#{user.email_confirmation_token}"
                 )
-              # :body => "<div style=''>Before using RbPkr, you " \
-              #   "need to confirm this email.</div><br><br>" \
-              #   "<a href='#{RbPkr.server_url}/confirm" \
-              #   "/#{user.email_confirmation_token}'>" \
-              #   "Click here to confirm</a>"
           end
         end
       end
@@ -343,7 +338,7 @@ class RbPkr < Sinatra::Base
     )
     @user.save!
 
-    Emailer.new.send_activation_email(@user)
+    Emailer.new(settings.environment).send_activation_email(@user)
 
     session[:user_id] = @user.id
     session[:notice].message = "An email has been sent to " \
