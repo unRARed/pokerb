@@ -372,6 +372,7 @@ class RbPkr < Sinatra::Base
     )
     session[:user_id] = @user.id
     session[:notice].message = "Your account has been confirmed."
+    session[:notice].color = "green"
     redirect "/set_name"
   rescue ActiveRecord::RecordInvalid => e
     session[:notice].message = e.message
@@ -695,6 +696,8 @@ class RbPkr < Sinatra::Base
         @game.remove_player(params["player_user_id"])
         RbPkr.write_state(@game.to_hash)
       end
+      session[:notice].color = "green"
+      session[:notice].message = "Player removed."
       redirect "/#{params["game_slug"]}/community"
     rescue NotFoundError => e
       session[:notice].message = e
