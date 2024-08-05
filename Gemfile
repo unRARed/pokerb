@@ -21,6 +21,7 @@ gem "mail"
 group :development do
   gem 'byebug'
   gem 'foreman'
+  gem "letter_opener"
 end
 
 group :test do

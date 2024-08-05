@@ -1417,6 +1417,10 @@ a.menu__item {
   line-height: 1rem;
 }
 
+.italic{
+  font-style: italic;
+}
+
 .hidden {
   display: none !important;
 }

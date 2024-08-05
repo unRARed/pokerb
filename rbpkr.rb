@@ -6,6 +6,7 @@ require "sinatra/reloader"
 require "sinatra/namespace"
 require "sinatra/activerecord"
 
+
 require 'uri'
 require 'net/http'
 require "slim"
@@ -62,11 +63,19 @@ class Emailer
     enable_starttls_auto: true
   }
 
-  def initialize
+  def initialize(env = settings.environment)
     Mail.defaults do
-      RbPkr.test? ?
-        delivery_method(:test) :
+      case env
+      when :development
+        delivery_method(
+          LetterOpener::DeliveryMethod,
+          location: Dir.pwd + '/tmp/letter_opener'
+        )
+      when :test
+        delivery_method(:test)
+      else
         delivery_method(:smtp, CONFIG)
+      end
     end
   end
 
@@ -75,13 +84,32 @@ class Emailer
     # token, but doesn't seem to with Sinatra
     user.regenerate_email_confirmation_token
     email = Mail.new do
-      from 'noreply@rbpkr.com'
+      part :content_type => "multipart/mixed" do |p1|
+        p1.part :content_type => "multipart/related" do |p2|
+          p2.part :content_type => "multipart/alternative",
+            :content_disposition => "inline" do |p3|
+            p3.part :content_type => "text/plain; charset=utf-8",
+              :body => "Before using RbPkr, you " \
+                "need to confirm your email address. Follow " \
+                "this URL to activate your account: " \
+                "#{RbPkr.server_url}/confirm" \
+                "/#{user.email_confirmation_token}"
+            p3.part :content_type => "text/html; charset=utf-8",
+              :body => Tilt.new("views/email_confirmation.slim").
+                render(self, url: "#{RbPkr.server_url}/confirm/" \
+                  "#{user.email_confirmation_token}"
+                )
+              # :body => "<div style=''>Before using RbPkr, you " \
+              #   "need to confirm this email.</div><br><br>" \
+              #   "<a href='#{RbPkr.server_url}/confirm" \
+              #   "/#{user.email_confirmation_token}'>" \
+              #   "Click here to confirm</a>"
+          end
+        end
+      end
+      from 'RbPkr <noreply@rbpkr.com>'
       to user.email
       subject 'Confirm your account at RbPkr.com'
-      body "Before using RbPkr, you need to confirm this email." \
-        "<br><br><a href='#{RbPkr.server_url}" \
-        "/confirm/#{user.email_confirmation_token}'>" \
-        "Click here to confirm</a>"
     end
     email.deliver
   end
@@ -89,6 +117,8 @@ end
 
 class RbPkr < Sinatra::Base
   configure :development do
+    require "letter_opener"
+
     register Sinatra::Reloader
     also_reload Dir.pwd + '/lib/*.rb'
     also_reload Dir.pwd + '/lib/**/*.rb'
@@ -171,7 +201,7 @@ class RbPkr < Sinatra::Base
       else
         "localhost"
       end
-    if env && !env["SERVER_NAME"].nil?
+    if env && !env["SERVER_PORT"].nil?
       parts << ":#{env["SERVER_PORT"]}"
     end
     parts.join
@@ -184,17 +214,6 @@ class RbPkr < Sinatra::Base
   #
   def self.qr_code(game_slug)
     RQRCode::QRCode.new "#{RbPkr.server_url}/#{game_slug}"
-  end
-
-  def self.send_activation_email(user)
-    mail = Mail.new do
-      from 'noreply@rbpkr.com'
-      to user.email
-      subject 'Confirm your account at RbPkr.com'
-      body "Before using RbPkr, you need to confirm #{user.email}."
-    end
-    mail.delivery_method = :smtp, mailer_config
-    mail.deliver
   end
 
   def self.is_safe_path?(path_info)

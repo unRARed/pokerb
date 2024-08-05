@@ -18,5 +18,5 @@ class User < ActiveRecord::Base
     length: { minimum: 8 },
     if: -> { new_record? || !password.nil? }
 
-  def is_confirmed?; email_confirmed_at.present? end
+  def is_confirmed?; !email_confirmed_at.nil? end
 end

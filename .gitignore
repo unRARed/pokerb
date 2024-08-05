@@ -13,3 +13,7 @@ spec/examples.txt
 # debugging
 .byebug*
 capybara-*.html
+
+# letter opener
+tmp/*
+!tmp/letter_opener/.keep
