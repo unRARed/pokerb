@@ -21,19 +21,10 @@ require "./models/game"
 require "./poker"
 require "./debug"
 
-IP_ADDRESS =
-  Socket.
-    ip_address_list.
-    map{|addr| addr.inspect_sockaddr }.
-    reject do |addr|
-      addr.length > 15 ||
-        addr == "127.0.0.1" ||
-        addr.count(".") < 3
-    end.
-    first
 
 PUBLIC_ROUTES = [
   /\A\/\z/,
+  /\A\/cleanup/,
   /\A\/signup/,
   /\A\/login/,
   /\A\/password/,
@@ -137,7 +128,7 @@ class RbPkr < Sinatra::Base
   end
 
   configure :production do
-    set :bind, IP_ADDRESS
+    set :port, 8080
   end
 
   register Sinatra::Namespace

@@ -50,8 +50,7 @@ Running the Server
 - First `bundle install`
 - Then run `bin/dev' to start the server
   - The server runs from `http://127.0.0.1:9292` by default
-- To expose to your network, set `RACK_ENV=production`
-  - Further, add `RBPKR_HOSTNAME=yourdomain.com rackup` to specify
+- Run with `RBPKR_HOSTNAME=yourdomain.com rackup` to specify
     host for qrcode
   - Use `DEBUG=1 rackup` to view debug logging
 

@@ -17,7 +17,8 @@ RSpec.describe "Public routes", type: :feature do
     [
       "/", "/login",
       "/signup", "/confirm",
-      "/set_name"
+      "/set_name", "/cleanup", "/set_name",
+      "/images/rbpkr.png"
     ].each{ |path| visit path; access_granted; }
   end
 
