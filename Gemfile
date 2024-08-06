@@ -30,5 +30,5 @@ group :test do
   gem "capybara"
   gem "rack-test"
   gem 'simplecov'
-  gem "database_cleaner"
+  gem "database_cleaner-active_record"
 end

@@ -2,12 +2,16 @@ require "spec_helper"
 
 RSpec.describe "Creating a Game", type: :feature do
   it "creates a new game" do
-    User.create(
+    User.create!(
       name: "SomeUser",
       password: "password",
       email: "some@email.com",
       email_confirmed_at: Time.now,
     )
+    visit "/new"
+    expect(page).
+      to have_content("You must be signed in to do that")
+
     visit "/login"
     fill_in "user[email]", with: "some@email.com"
     fill_in "user[password]", with: "password"

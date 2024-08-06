@@ -72,6 +72,7 @@ players = []
     email: "user#{i+1}@rbpkr.com",
     created_at: Time.now,
     updated_at: Time.now,
+    email_confirmed_at: Time.now,
   )
   if i == 0
     game.user_id = user.id

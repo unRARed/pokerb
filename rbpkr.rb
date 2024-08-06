@@ -32,6 +32,19 @@ IP_ADDRESS =
     end.
     first
 
+PUBLIC_ROUTES = [
+  /\A\/\z/,
+  /\A\/signup/,
+  /\A\/login/,
+  /\A\/password/,
+  /\A\/confirm/,
+  /\A\/set_name/,
+  /\A\/images\/.*\.png/,
+  /\A\/[A-Z]{4}\/community/,
+  /\A\/[A-Z]{4}\/password/,
+  /\A\/[A-Z]{4}\/join/,
+]
+
 class NotFoundError < StandardError; end
 
 # A simple class for storing and displaying
@@ -135,7 +148,7 @@ class RbPkr < Sinatra::Base
   set :game_slug, capture: { slug: /[A-Z]{4}/ }
 
   register Sinatra::ActiveRecordExtension
-  # set :database, {adapter: "sqlite3", database: "games/foo.sqlite3"}
+  set :database_file, "config/database.yml"
 
   def self.mailer_config
     {
@@ -226,11 +239,7 @@ class RbPkr < Sinatra::Base
     state = RbPkr.load_state_for_game(params["game_slug"])
     Debug.this "Setting game #{params["game_slug"]}: #{state}"
     @game = Poker::Game.new(state)
-    unless logged_in?
-      session[:notice].message =
-        "You must be logged in to access this game."
-      return redirect "/login"
-    end
+
     if @game.has_password?
       if @game.password != session["#{@game.slug}_password"]
         session[:notice].message =
@@ -267,6 +276,17 @@ class RbPkr < Sinatra::Base
     JSON.parse(recaptcha_result)&.dig("success") == true
   end
 
+  def require_session
+    return if logged_in?
+
+    unless PUBLIC_ROUTES.any?{ |r| request.path_info.match? r }
+      Debug.this "#{request.path_info} is not public"
+      session[:notice].message =
+        "You must be signed in to do that."
+      redirect "/login"
+    end
+  end
+
   before do
     # Akin to Rails Flash messages, for setting and
     # displaying simple notices in views
@@ -274,6 +294,8 @@ class RbPkr < Sinatra::Base
     if session[:notice].nil? || session[:notice]&.is_read
       session[:notice] = Notifier.new
     end
+
+    require_session
 
     # User has signed up, but they haven't confirmed their email
     if (
