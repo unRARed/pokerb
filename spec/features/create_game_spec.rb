@@ -1,11 +1,13 @@
 require "spec_helper"
+require 'securerandom'
 
 RSpec.describe "Creating a Game", type: :feature do
   it "creates a new game" do
+    email = "#{SecureRandom.hex}@email.com"
     User.create!(
       name: "SomeUser",
       password: "password",
-      email: "some@email.com",
+      email: email,
       email_confirmed_at: Time.now,
     )
     visit "/new"
@@ -13,7 +15,7 @@ RSpec.describe "Creating a Game", type: :feature do
       to have_content("You must be signed in to do that")
 
     visit "/login"
-    fill_in "user[email]", with: "some@email.com"
+    fill_in "user[email]", with: email
     fill_in "user[password]", with: "password"
     click_on "Sign in"
 
