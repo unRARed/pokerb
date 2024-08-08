@@ -31,9 +31,7 @@ PUBLIC_ROUTES = [
   /\A\/confirm/,
   /\A\/set_name/,
   /\A\/images\/.*\.png/,
-  /\A\/[A-Z]{4}\/community/,
-  /\A\/[A-Z]{4}\/password/,
-  /\A\/[A-Z]{4}\/join/,
+  /\A\/[A-Z]{4}/,
 ]
 
 class NotFoundError < StandardError; end
@@ -136,8 +134,6 @@ class RbPkr < Sinatra::Base
   set :session_secret,
     "secret_key_with_size_of_32_bytes_dff054b19c2de43fc406f251376ad40"
 
-  set :game_slug, capture: { slug: /[A-Z]{4}/ }
-
   register Sinatra::ActiveRecordExtension
   set :database_file, "config/database.yml"
 
@@ -227,8 +223,8 @@ class RbPkr < Sinatra::Base
   #  @return [Poker::Game] the game instance
   #
   def set_game
-    state = RbPkr.load_state_for_game(params["game_slug"])
-    Debug.this "Setting game #{params["game_slug"]}: #{state}"
+    state = RbPkr.load_state_for_game(@game_slug)
+    Debug.this "Setting game #{@game_slug}: #{state}"
     @game = Poker::Game.new(state)
 
     if @game.has_password?
@@ -348,10 +344,14 @@ class RbPkr < Sinatra::Base
       password: params["user"]["password"],
       created_at: Time.now,
       updated_at: Time.now,
+      # for getting the user into the game
+      # they either signed up from or last joined
+      current_game_id: session[:game_id]
     )
     @user.save!
 
-    Emailer.new(settings.environment).send_activation_email(@user)
+    Emailer.new(settings.environment).
+      send_activation_email(@user)
 
     session[:user_id] = @user.id
     session[:notice].message = "An email has been sent to " \
@@ -410,6 +410,9 @@ class RbPkr < Sinatra::Base
       "set name to: #{current_user.name}"
     session[:notice].message = "Welcome, #{current_user.name}"
     session[:notice].color = "green"
+    if (game = Game.find_by(id: current_user&.current_game_id))
+      return redirect "/#{game.slug}"
+    end
     redirect "/"
   rescue ActiveRecord::RecordInvalid => e
     session[:notice].message = e.message
@@ -454,6 +457,9 @@ class RbPkr < Sinatra::Base
     session[:notice].message = "Welcome back, #{@user[:name]}"
     session[:notice].color = "green"
     Debug.this "User logged in: #{current_user.name}"
+    if (game = Game.find_by(id: current_user&.current_game_id))
+      return redirect "/#{game.slug}"
+    end
     redirect "/"
   rescue ArgumentError => e
     session[:notice].message = e.message
@@ -530,10 +536,10 @@ class RbPkr < Sinatra::Base
   # Namespace for game-specific routes. For some reason, this
   # overrides all the root routes even with them defined above.
   # As a workaround, we match on the game slug pattern.
-  namespace '/:game_slug' do
+  namespace /\/([A-Z]{4})/i do
     before do
-      pass unless params["game_slug"].match? /[A-Z]{4}/
-      state = RbPkr.load_state_for_game(params["game_slug"])
+      @game_slug = params["captures"].first
+      state = RbPkr.load_state_for_game(@game_slug)
     rescue NotFoundError => e
       session[:notice].message = e.message
       redirect "/"
@@ -542,7 +548,7 @@ class RbPkr < Sinatra::Base
     # logged in user for the current game
     #
     get "/?" do
-      RbPkr.load_state_for_game(params["game_slug"])
+      RbPkr.load_state_for_game(@game_slug)
       set_game
       slim :game
     rescue NotFoundError, ArgumentError => e
@@ -553,7 +559,16 @@ class RbPkr < Sinatra::Base
     # Route for joining a new user to the game
     #
     get "/join/?" do
-      state = RbPkr.load_state_for_game(params["game_slug"])
+      unless logged_in?
+        if (game = Game.find_by(slug: @game_slug))
+          session[:game_id] = game.id
+        end
+        session[:notice].color = "green"
+        session[:notice].message =
+          "You must be signed in to do that."
+        return redirect "/login"
+      end
+      state = RbPkr.load_state_for_game(@game_slug)
       @game = Poker::Game.new(state)
 
       if @game.player_by_user_id(current_user.id)
@@ -565,17 +580,17 @@ class RbPkr < Sinatra::Base
       )
 
       RbPkr.write_state(@game.to_hash)
+      redirect "/#{@game_slug}"
     rescue ArgumentError => e
       session[:notice].message = e.message
-    ensure
-      redirect "/#{params["game_slug"]}"
+      redirect "/#{@game_slug}"
     end
 
     # Route for prompting the user for a password
     # when the game is password-protected
     #
     get "/password/?" do
-      state = RbPkr.load_state_for_game(params["game_slug"])
+      state = RbPkr.load_state_for_game(@game_slug)
       @game = Poker::Game.new(state)
       unless @game.has_password?
         raise ArgumentError, "This is not a password-protected game."
@@ -586,7 +601,7 @@ class RbPkr < Sinatra::Base
       slim :password
     rescue ArgumentError => e
       session[:notice].message = e
-      redirect "/#{params["game_slug"]}"
+      redirect "/#{@game_slug}"
     rescue NotFoundError => e
       session[:notice].message = e
       redirect "/"
@@ -595,7 +610,7 @@ class RbPkr < Sinatra::Base
     # Route for authenticating the game password
     #
     post "/password/?" do
-      state = RbPkr.load_state_for_game(params["game_slug"])
+      state = RbPkr.load_state_for_game(@game_slug)
       @game = Poker::Game.new(state)
       unless params["password"].present?
         raise ArgumentError, "No password provided"
@@ -609,7 +624,7 @@ class RbPkr < Sinatra::Base
       redirect "/#{@game.slug}"
     rescue ArgumentError => e
       session[:notice].message = e
-      redirect "/#{params["game_slug"]}/password"
+      redirect "/#{@game_slug}/password"
     rescue NotFoundError => e
       session[:notice].message = e
       redirect "/"
@@ -623,7 +638,7 @@ class RbPkr < Sinatra::Base
       slim :community
     rescue ArgumentError => e
       session[:notice].message = e
-      redirect "/#{params["game_slug"]}"
+      redirect "/#{@game_slug}"
     rescue NotFoundError => e
       session[:notice].message = e
       redirect "/"
@@ -646,7 +661,7 @@ class RbPkr < Sinatra::Base
         session[:notice].message =
           "Only the manager can determine the button"
       end
-      redirect "/#{params["game_slug"]}/community"
+      redirect "/#{@game_slug}/community"
     rescue NotFoundError => e
       session[:notice].message = e
       redirect "/"
@@ -664,7 +679,7 @@ class RbPkr < Sinatra::Base
         session[:notice].message =
           "Only the manager can advance the game"
       end
-      redirect "/#{params["game_slug"]}/community"
+      redirect "/#{@game_slug}/community"
     rescue NotFoundError => e
       session[:notice].message = e
       redirect "/"
@@ -686,7 +701,7 @@ class RbPkr < Sinatra::Base
       redirect "/#{@game.slug}/community"
     rescue ArgumentError => e
       session[:notice].message = e.message
-      return redirect "/#{params["game_slug"]}/community"
+      return redirect "/#{@game_slug}/community"
     rescue NotFoundError => e
       session[:notice].message = e
       redirect "/"
@@ -699,7 +714,7 @@ class RbPkr < Sinatra::Base
       if current_user.id != @game.state[:user_id]
         session[:notice].message =
           "Only #{@game.manager.name} can remove players."
-        redirect "/#{params["game_slug"]}/community"
+        redirect "/#{@game_slug}/community"
       end
 
       if (player = @game.player_by_user_id(params["player_user_id"]))
@@ -711,7 +726,7 @@ class RbPkr < Sinatra::Base
       end
       session[:notice].color = "green"
       session[:notice].message = "Player removed."
-      redirect "/#{params["game_slug"]}/community"
+      redirect "/#{@game_slug}/community"
     rescue NotFoundError => e
       session[:notice].message = e
       redirect "/"
@@ -727,7 +742,7 @@ class RbPkr < Sinatra::Base
     post "/poll/?" do
       return unless (data = JSON.parse(request.body.read))
 
-      state = RbPkr.load_state_for_game(data["game_slug"])
+      state = RbPkr.load_state_for_game(data["@game_slug"])
       if data["step_color"] != state[:step_color]
         Debug.this "Step color mismatch"
         return { in_sync: false }.to_json

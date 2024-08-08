@@ -42,7 +42,8 @@ module Poker
         phase: @state[:deck_phase].to_sym,
       )
       @password = @state[:password]
-      @players = @state[:players].map{ |p| Poker::Player.new p.symbolize_keys }
+      @players = @state[:players].
+        map{ |p| Poker::Player.new p.symbolize_keys }
       @button_index = @state[:button_index]
 
       Debug.this "Game #{@slug} initialized"

@@ -42,7 +42,7 @@ RSpec.describe "Password protection", type: :feature do
 
       fill_in "password", with: "mypassword"
       click_on "Let me in"
-      # why is the Flash not working here?
+
       expect(page).to have_content("Password accepted")
       click_on "Join"
       expect(page).to have_content("WAITING FOR CARDS")

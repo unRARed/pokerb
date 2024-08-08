@@ -7,9 +7,10 @@ RSpec.describe "User signs up", type: :feature do
 
     fill_in "user[email]", with: "#{SecureRandom.hex}@email.com"
     fill_in "user[password]", with: "password"
-    expect{click_on "Sign up"}.to change{User.count}.by(1)
+    expect{click_on "Sign up"}.
+      to change{User.count}.by(1).
+      and change{Mail::TestMailer.deliveries.length}.by(1)
 
-    expect(Mail::TestMailer.deliveries.length).to eq(1)
     expect(page).to have_content("Please confirm your account")
 
     visit "/new"
@@ -24,7 +25,8 @@ RSpec.describe "User signs up", type: :feature do
 
     expect(user.reload.is_confirmed?).to be(true)
 
-    expect(page).to have_content("Your account has been confirmed")
+    expect(page).
+      to have_content("Your account has been confirmed")
 
     # User is redirected to set a name
     fill_in "user[name]", with: "durrrr"

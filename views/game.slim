@@ -1,5 +1,5 @@
 .text-center.game-root
-  - if @game.is_player_id_found?(current_user.id)
+  - if @game.is_player_id_found?(current_user&.id)
     .board.max-w-md.m-auto
       == slim :"/community/_cards_shared", locals: { game: @game }
     - if @game.is_player_in_hand?(current_user.id)
@@ -41,5 +41,6 @@
           a.button.button--large(
             href="/#{@game.slug}/join"
           ) Join now
-== slim :"/_poll",
-  locals: { game: @game, interval: 5000 }
+- if logged_in?
+  == slim :"/_poll",
+    locals: { game: @game, interval: 5000 }
