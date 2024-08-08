@@ -578,8 +578,13 @@ class RbPkr < Sinatra::Base
       @game.add_player Poker::Player.new(
         { user_id: current_user.id }
       )
+      if (game = Game.find_by(slug: @game_slug))
+        current_user.update!(current_game_id: game.id)
+      end
 
       RbPkr.write_state(@game.to_hash)
+      session[:notice].color = "green"
+      session[:notice].message = "You have joined the game."
       redirect "/#{@game_slug}"
     rescue ArgumentError => e
       session[:notice].message = e.message
