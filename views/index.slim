@@ -1,11 +1,13 @@
-.text-center
-  h2 Play Texas Holdem Poker
-  p With your friends, on your device.
-  .section
-    - if logged_in?
-      a.button.button--large href="/new" Let's go
-    - else
-      a.button.button--large href="/login" Sign in
-      p.pt-5
-        span> No account, yet?
-        a href="/signup" Sign up here.
+.container
+  .text-center.m-auto.max-w-sm
+    img src="/images/rbpkr-photo1.png" alt="RbPkr Photo"
+    h2.mt-3 Play Texas Holdem Poker
+    p With your friends, on your device.
+    .section
+      - if logged_in?
+        a.button.button--large href="/new" Let's go
+      - else
+        a.button.button--large href="/login" Sign in
+        p.pt-5
+          span> No account, yet?
+          a href="/signup" Sign up here.
